@@ -45,7 +45,7 @@ variable "num_zones" {
   default     = 2
   validation {
     condition     = var.num_zones <= length(data.aws_availability_zones.available.names)
-    error_message = "The number of zones specified (num_zones) exceeds the number of available availability zones in the selected region."
+    error_message = "The number of zones specified (num_zones) exceeds the number of available availability zones in the selected region. The number of available AZ's is ${length(data.aws_availability_zones.available.names)}"
   }
 }
 
