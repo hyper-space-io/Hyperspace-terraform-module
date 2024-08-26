@@ -82,5 +82,11 @@ variable "flow_logs_retention" {
 variable "flow_log_group_class" {
   description = "vpc flow logs log group class in cloudwatch"
   type        = string
-  default     = "value"
+  default     = ""
+}
+
+variable "flow_log_file_format" {
+  description = "The format for the flow log."
+  type        = string
+  default     = "parquet"
 }

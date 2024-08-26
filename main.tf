@@ -20,6 +20,7 @@ module "vpc" {
   flow_log_cloudwatch_log_group_retention_in_days = var.flow_logs_retention
   flow_log_cloudwatch_log_group_class             = var.flow_log_group_class
   create_flow_log_cloudwatch_iam_role             = var.create_vpc_flow_logs
+  flow_log_file_format                            = var.flow_log_file_format
   public_subnet_tags = {
     "kubernetes.io/role/elb" = "1"
     "Type"                   = "public"
