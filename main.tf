@@ -3,7 +3,7 @@ module "vpc" {
   version                                         = "~>5.13.0"
   name                                            = "${var.project}-${var.environment}-vpc"
   cidr                                            = var.vpc_cidr
-  azs                                             = length(var.availability_zones) == 0 ? local.availability_zones : var.availability_zones
+  azs                                             = local.availability_zones
   private_subnets                                 = local.private_subnets
   public_subnets                                  = local.public_subnets
   create_database_subnet_group                    = false
