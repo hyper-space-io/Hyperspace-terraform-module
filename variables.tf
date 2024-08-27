@@ -103,3 +103,15 @@ variable "flow_log_file_format" {
     error_message = "Flow log file format must be one of 'parquet', 'plain-text', or 'json'."
   }
 }
+
+
+
+##################
+# EKS 
+##################
+
+variable "create_eks" {
+  default     = true
+  type        = bool
+  description = "Should we create the eks cluster?"
+}

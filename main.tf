@@ -62,3 +62,34 @@ module "endpoints" {
   }
   tags = var.tags
 }
+
+
+########################
+# EKS
+########################
+
+module "eks" {
+  source                                   = "terraform-aws-modules/eks/aws"
+  version                                  = "~> 20.13.1"
+  create                                   = var.create_eks
+  cluster_name                             = local.cluster_name
+  cluster_version                          = 1.28
+  subnet_ids                               = slice(module.vpc.private_subnets, 0, var.num_zones)
+  vpc_id                                   = module.vpc.vpc_id
+  eks_managed_node_groups                  = local.eks_managed_node_groups
+  self_managed_node_groups                 = local.additional_self_managed_nodes
+  self_managed_node_group_defaults         = local.self_managed_node_group_defaults
+  eks_managed_node_group_defaults          = local.eks_managed_node_group_defaults
+  cluster_security_group_additional_rules  = local.cluster_security_group_additional_rules
+  enable_cluster_creator_admin_permissions = true
+  enable_irsa                              = "true"
+  cluster_endpoint_private_access          = "true"
+  cluster_endpoint_public_access           = "false"
+  create_kms_key                           = true
+  kms_key_description                      = "EKS Secret Encryption Key"
+  cloudwatch_log_group_retention_in_days   = "7"
+  cluster_enabled_log_types                = local.enabled_cluster_logs
+  cluster_addons                           = local.cluster_addons
+  tags                                     = var.tags
+  depends_on                               = [module.vpc]
+}
