@@ -94,7 +94,7 @@ module "eks" {
   depends_on                               = [module.vpc]
 }
 
-resource "aws_iam_policy" "this" {
+resource "aws_iam_policy" "policies" {
   for_each = local.iam_policies
   name = each.value.name
   path = each.value.path
