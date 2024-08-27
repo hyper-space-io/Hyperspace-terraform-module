@@ -33,7 +33,7 @@ locals {
           effect = "NO_SCHEDULE"
         }
       }
-      ami_id                   = "ami-050477574b83e5dcd"
+      ami_id                   = "ami-0b4e17a8ddffadd10"
       bootstrap_extra_args     = "--kubelet-extra-args '--node-labels=hyperspace.io/type=fpga --register-with-taints=fpga=true:NoSchedule'"
       post_bootstrap_user_data = <<-EOT
       #!/bin/bash -e
@@ -104,14 +104,9 @@ locals {
       desired_size   = 1
       instance_types = ["m5n.xlarge"]
       capacity_type  = "ON_DEMAND"
-      labels = {
-        Environment = "${var.environment}"
-      }
-      tags = merge(var.tags, {
-        nodegroup = "workers"
-        Name      = "hyperspace-eks-${var.environment}-medium"
-      })
-      ami_type = "BOTTLEROCKET_x86_64"
+      labels         = { Environment = "${var.environment}" }
+      tags           = merge(var.tags, { nodegroup = "workers", Name = "hyperspace-eks-${var.environment}-medium" })
+      ami_type       = "BOTTLEROCKET_x86_64"
     }
   }
   cluster_addons = {
@@ -198,7 +193,7 @@ locals {
 
   iam_policies = {
     fpga_pull = {
-      name = "${local.cluster_name}-FpgaPullAccessPolicy"
+      name        = "${local.cluster_name}-FpgaPullAccessPolicy"
       path        = "/"
       description = "Policy for loading AFI in eks"
       policy      = data.aws_iam_policy_document.fpga_pull_access.json

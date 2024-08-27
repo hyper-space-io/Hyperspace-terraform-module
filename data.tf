@@ -1,7 +1,7 @@
+data "aws_caller_identity" "current" {}
 data "aws_availability_zones" "available" {
   state = "available"
 }
-
 data "aws_iam_policy_document" "fpga_pull_access" {
   statement {
     sid = "PullAccessAGFI"
@@ -16,7 +16,8 @@ data "aws_iam_policy_document" "fpga_pull_access" {
       "kms:*"
     ]
     resources = [
-      "*",
+      "arn:aws:ec2:${var.aws_region}::*",
+      "arn:aws:kms:${var.aws_region}::*",
     ]
     effect = "Allow"
   }
