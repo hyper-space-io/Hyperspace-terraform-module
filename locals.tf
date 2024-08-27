@@ -175,7 +175,7 @@ locals {
     iam_role_additional_policies = {
       AmazonSSMManagedInstanceCore = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore",
       AmazonEBSCSIDriverPolicy     = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy",
-      Additional                   = "${aws_iam_policy.policies[fpga_pull].arn}"
+      Additional                   = "${aws_iam_policy.policies["fpga_pull"].arn}"
     }
   }
   eks_managed_node_group_defaults = {
