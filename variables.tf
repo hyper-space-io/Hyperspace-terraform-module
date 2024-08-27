@@ -28,8 +28,8 @@ variable "aws_region" {
   type        = string
   default     = "us-east-1"
   validation {
-    condition     = contains(["us-east-1", "us-west-1", "eu-west-1"], var.aws_region)
-    error_message = "Hyperspace currently does not support this region, valid values: [us-east-1, eu-west-1, eu-central-1]."
+    condition     = contains(["us-east-1", "us-west-1", "eu-west-1", "eu-west-2"], var.aws_region)
+    error_message = "Hyperspace currently does not support this region, valid values: [us-east-1, eu-west-1, eu-central-1, eu-west-2]."
   }
 }
 
