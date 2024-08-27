@@ -74,7 +74,7 @@ module "eks" {
   create                                   = var.create_eks
   cluster_name                             = local.cluster_name
   cluster_version                          = 1.28
-  subnet_ids                               = slice(module.vpc.private_subnets, 0, var.num_zones)
+  subnet_ids                               = local.private_subnets
   vpc_id                                   = module.vpc.vpc_id
   eks_managed_node_groups                  = local.eks_managed_node_groups
   self_managed_node_groups                 = local.additional_self_managed_nodes

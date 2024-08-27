@@ -129,7 +129,7 @@ locals {
   }
   cluster_security_group_additional_rules = {
     recieve_traffic_from_vpc = {
-      description = "traffic from whole vpc"
+      description = "Allow all traffic from within the VPC"
       protocol    = "-1"
       from_port   = 0
       to_port     = 0
@@ -146,17 +146,17 @@ locals {
       type        = "ingress"
       self        = true
     }
-    egress_all = {
-      description      = "Node all egress"
+    egress_vpc_only = {
+      description      = "Node all egress within VPC"
       protocol         = "-1"
       from_port        = 0
       to_port          = 0
       type             = "egress"
-      cidr_blocks      = ["0.0.0.0/0"]
-      ipv6_cidr_blocks = ["::/0"]
+      cidr_blocks      = [var.vpc_cidr]
+      ipv6_cidr_blocks = []
     }
     cluster_nodes_incoming = {
-      description                   = "allow from cluster To node 1025-65535"
+      description                   = "Allow traffic from cluster to node on ports 1025-65535"
       protocol                      = "tcp"
       from_port                     = 1025
       to_port                       = 65535
@@ -179,7 +179,7 @@ locals {
       AmazonSSMManagedInstanceCore = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore",
       AmazonEBSCSIDriverPolicy     = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
     },
-    subnets = slice(module.vpc.private_subnets, 0, var.num_zones)
+    subnets = local.private_subnets
     tags = {
       "k8s.io/cluster-autoscaler/enabled"               = "True"
       "k8s.io/cluster-autoscaler/${local.cluster_name}" = "True"
