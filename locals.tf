@@ -179,7 +179,7 @@ locals {
       AmazonSSMManagedInstanceCore = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore",
       AmazonEBSCSIDriverPolicy     = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
     },
-    subnets = local.private_subnets
+    subnets = module.vpc.private_subnets
     tags = {
       "k8s.io/cluster-autoscaler/enabled"               = "True"
       "k8s.io/cluster-autoscaler/${local.cluster_name}" = "True"
