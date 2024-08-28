@@ -2,6 +2,11 @@ data "aws_caller_identity" "current" {}
 data "aws_availability_zones" "available" {
   state = "available"
 }
+
+data "kubernetes_storage_class" "name" {
+  metadata { name = "gp2" }
+}
+
 data "aws_iam_policy_document" "fpga_pull_access" {
   statement {
     sid = "PullAccessAGFI"

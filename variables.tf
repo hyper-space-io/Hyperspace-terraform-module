@@ -28,7 +28,7 @@ variable "aws_region" {
   type        = string
   default     = "us-east-1"
   validation {
-    condition     = contains(["us-east-1", "us-west-1", "eu-west-1"], var.aws_region)
+    condition     = contains(["us-east-1", "us-west-1", "eu-central-1"], var.aws_region)
     error_message = "Hyperspace currently does not support this region, valid values: [us-east-1, eu-west-1, eu-central-1]."
   }
 }
@@ -114,4 +114,14 @@ variable "create_eks" {
   default     = true
   type        = bool
   description = "Should we create the eks cluster?"
+}
+
+variable "storage_reclaim_policy" {
+  description = "The reclaim policy of the default storage class"
+  type        = string
+  default     = "Delete"
+  validation {
+    condition     = contains(["Delete", "Retain"], var.storage_reclaim_policy)
+    error_message = "Storage reclaim policy must be one of 'Delete' or 'Retain'."
+  }
 }
