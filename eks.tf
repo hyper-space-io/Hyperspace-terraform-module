@@ -71,21 +71,21 @@ locals {
       }
     }
   }
-  additional_self_managed_nodes_list = flatten([
-    for subnet in slice(module.vpc.private_subnets, 0, var.num_zones) : [
-      for pool_name, pool_values in local.additional_self_managed_node_pools : {
-        key = "${var.environment}-${subnet}-${pool_name}"
-        value = merge(
-          pool_values,
-          {
-            name       = pool_name,
-            subnet_ids = [subnet]
-          }
-        )
-      }
-    ]
-  ])
-  additional_self_managed_nodes = { for entry in local.additional_self_managed_nodes_list : entry.key => entry.value }
+  #   additional_self_managed_nodes_list = flatten([
+  #     for subnet in slice(module.vpc.private_subnets, 0, var.num_zones) : [
+  #       for pool_name, pool_values in local.additional_self_managed_node_pools : {
+  #         key = "${var.environment}-${subnet}-${pool_name}"
+  #         value = merge(
+  #           pool_values,
+  #           {
+  #             name       = pool_name,
+  #             subnet_ids = [subnet]
+  #           }
+  #         )
+  #       }
+  #     ]
+  #   ])
+  #   additional_self_managed_nodes = { for entry in local.additional_self_managed_nodes_list : entry.key => entry.value }
 }
 
 
@@ -173,7 +173,15 @@ module "eks" {
   # SELF MANAGED NODE GROUPS #
   ############################
 
-  self_managed_node_groups = local.additional_self_managed_nodes
+  self_managed_node_groups = { for entry in flatten([
+    for subnet in slice(module.vpc.private_subnets, 0, var.num_zones) : [
+      for pool_name, pool_values in local.additional_self_managed_node_pools : {
+        key = "${var.environment}-${subnet}-${pool_name}"
+        value = merge(pool_values, { name = pool_name, subnet_ids = [subnet] }
+        )
+      }
+    ]
+  ]) : entry.key => entry.value }
   self_managed_node_group_defaults = {
     update_launch_template_default_version = true
     iam_role_use_name_prefix               = true
@@ -283,6 +291,7 @@ resource "kubernetes_annotations" "default_storageclass" {
   annotations = {
     "storageclass.kubernetes.io/is-default-class" = "false"
   }
+  depends_on = [module.eks]
 }
 
 resource "kubernetes_storage_class" "ebs_sc_gp3" {
