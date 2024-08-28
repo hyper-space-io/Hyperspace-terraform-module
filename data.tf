@@ -5,7 +5,7 @@ data "aws_availability_zones" "available" {
 
 data "kubernetes_storage_class" "name" {
   metadata { name = "gp2" }
-  depends_on = [ module.eks ]
+  depends_on = [module.eks]
 }
 
 data "aws_iam_policy_document" "fpga_pull_access" {
