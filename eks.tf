@@ -4,7 +4,6 @@
 
 locals {
   cluster_name = "${var.project}-${var.environment}"
-  terraform_cloud_ip_ranges = jsondecode(data.http.terraform_cloud_ips.response_body)
   additional_self_managed_node_pools = {
     # data-nodes service nodes
     eks-data-node-hyperspace = {
