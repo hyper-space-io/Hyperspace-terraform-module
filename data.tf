@@ -8,6 +8,14 @@ data "kubernetes_storage_class" "name" {
   depends_on = [module.eks]
 }
 
+data "aws_eks_cluster" "main" {
+  name = module.eks.cluster_name
+}
+
+data "aws_eks_cluster_auth" "main" {
+  name = data.aws_eks_cluster.main.name
+}
+
 data "aws_iam_policy_document" "fpga_pull_access" {
   statement {
     sid = "PullAccessAGFI"

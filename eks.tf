@@ -71,21 +71,6 @@ locals {
       }
     }
   }
-  #   additional_self_managed_nodes_list = flatten([
-  #     for subnet in slice(module.vpc.private_subnets, 0, var.num_zones) : [
-  #       for pool_name, pool_values in local.additional_self_managed_node_pools : {
-  #         key = "${var.environment}-${subnet}-${pool_name}"
-  #         value = merge(
-  #           pool_values,
-  #           {
-  #             name       = pool_name,
-  #             subnet_ids = [subnet]
-  #           }
-  #         )
-  #       }
-  #     ]
-  #   ])
-  #   additional_self_managed_nodes = { for entry in local.additional_self_managed_nodes_list : entry.key => entry.value }
   additional_self_managed_nodes_list = flatten([
     for az in var.availability_zones : [
       for pool_name, pool_values in local.additional_self_managed_node_pools : {
