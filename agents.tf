@@ -69,7 +69,7 @@ resource "aws_instance" "terraform_agent" {
                 usermod -a -G docker ec2-user
 
                 # Set environment variables for Terraform Cloud Agent
-                export TFC_AGENT_TOKEN="${TFE_TOKEN}"  # Use Terraform Cloud environment variable
+                export TFC_AGENT_TOKEN="${var.agent_token}"
                 export TFC_AGENT_NAME="agent1"
 
                 # Run the Terraform Cloud Agent Docker container

@@ -125,3 +125,9 @@ variable "storage_reclaim_policy" {
     error_message = "Storage reclaim policy must be one of 'Delete' or 'Retain'."
   }
 }
+
+variable "agent_token" {
+  type = string
+  description = "tf agent token"
+  default = ""
+}
