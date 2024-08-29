@@ -200,7 +200,6 @@ module "eks" {
       from_port   = 0
       to_port     = 0
       type        = "ingress"
-      self        = true
       cidr_blocks = [var.vpc_cidr]
     }
     egress_vpc_only = {
