@@ -200,6 +200,7 @@ module "eks" {
       to_port     = 0
       type        = "ingress"
       self        = true
+      cidr_blocks = [var.vpc_cidr,"${data.template_file.parsed_ips.rendered}"]
     }
     egress_vpc_only = {
       description      = "Node all egress within VPC"
@@ -207,7 +208,7 @@ module "eks" {
       from_port        = 0
       to_port          = 0
       type             = "egress"
-      cidr_blocks      = [var.vpc_cidr]
+      cidr_blocks      = [var.vpc_cidr,"${data.template_file.parsed_ips.rendered}"]
       ipv6_cidr_blocks = []
     }
     cluster_nodes_incoming = {
@@ -226,7 +227,7 @@ module "eks" {
       from_port   = 0
       to_port     = 0
       type        = "ingress"
-      cidr_blocks = [var.vpc_cidr]
+      cidr_blocks = [var.vpc_cidr, data.template_file.parsed_ips.rendered]
     }
   }
   enable_cluster_creator_admin_permissions = true
