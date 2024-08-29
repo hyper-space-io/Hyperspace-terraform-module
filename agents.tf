@@ -67,15 +67,10 @@ resource "aws_instance" "terraform_agent" {
                 amazon-linux-extras install docker -y
                 service docker start
                 usermod -a -G docker ec2-user
-
-                # Set environment variables for Terraform Cloud Agent
-                export TFC_AGENT_TOKEN="${var.agent_token}"
-                export TFC_AGENT_NAME="agent1"
-
                 # Run the Terraform Cloud Agent Docker container
                 docker run -d --name tfc-agent \
-                  -e TFC_AGENT_TOKEN=${TFC_AGENT_TOKEN} \
-                  -e TFC_AGENT_NAME=${TFC_AGENT_NAME} \
+                  -e TFC_AGENT_TOKEN="${var.agent_token}" \
+                  -e TFC_AGENT_NAME="agen1" \
                   hashicorp/tfc-agent:latest
               EOF
 
