@@ -4,6 +4,7 @@
 
 locals {
   cluster_name = "${var.project}-${var.environment}"
+  terraform_cloud_ip_ranges = jsondecode(data.http.terraform_cloud_ips.response_body)
   additional_self_managed_node_pools = {
     # data-nodes service nodes
     eks-data-node-hyperspace = {
@@ -200,7 +201,7 @@ module "eks" {
       to_port     = 0
       type        = "ingress"
       self        = true
-      cidr_blocks = [var.vpc_cidr,"${data.template_file.parsed_ips.rendered}"]
+      cidr_blocks = [var.vpc_cidr]
     }
     egress_vpc_only = {
       description      = "Node all egress within VPC"
@@ -208,7 +209,7 @@ module "eks" {
       from_port        = 0
       to_port          = 0
       type             = "egress"
-      cidr_blocks      = [var.vpc_cidr,"${data.template_file.parsed_ips.rendered}"]
+      cidr_blocks      = [var.vpc_cidr]
       ipv6_cidr_blocks = []
     }
     cluster_nodes_incoming = {
@@ -219,6 +220,14 @@ module "eks" {
       type                          = "ingress"
       source_cluster_security_group = true
     }
+    allow_terraform_cloud_ingress = {
+      description = "Allow traffic from Terraform Cloud IP ranges"
+      protocol    = "tcp"
+      from_port   = 443
+      to_port     = 443
+      type        = "ingress"
+      cidr_blocks = local.terraform_cloud_ip_ranges["api"]
+    }
   }
   cluster_security_group_additional_rules = {
     recieve_traffic_from_vpc = {
@@ -227,7 +236,15 @@ module "eks" {
       from_port   = 0
       to_port     = 0
       type        = "ingress"
-      cidr_blocks = [var.vpc_cidr, data.template_file.parsed_ips.rendered]
+      cidr_blocks = [var.vpc_cidr]
+    }
+    allow_terraform_cloud_ingress = {
+      description = "Allow traffic from Terraform Cloud IP ranges"
+      protocol    = "tcp"
+      from_port   = 443
+      to_port     = 443
+      type        = "ingress"
+      cidr_blocks = local.terraform_cloud_ip_ranges["api"]
     }
   }
   enable_cluster_creator_admin_permissions = true

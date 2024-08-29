@@ -12,11 +12,6 @@ data "http" "terraform_cloud_ips" {
   url = "https://app.terraform.io/api/meta/ip-ranges"
 }
 
-# Parse the JSON response to extract specific IP ranges
-data "template_file" "parsed_ips" {
-  template = "${jsondecode(data.http.terraform_cloud_ips.body)["api"]}"
-}
-
 data "aws_iam_policy_document" "fpga_pull_access" {
   statement {
     sid = "PullAccessAGFI"
