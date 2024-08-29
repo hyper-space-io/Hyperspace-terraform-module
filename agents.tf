@@ -21,8 +21,4 @@ module "terraform_cloud_agents" {
   ip_cidr_agent_subnet = module.vpc.vpc_cidr
   desired_count     = 1
   max_agents        = 2
-
-  tags = {
-    Name = "Terraform Cloud Agent Pool"
-  }
 }
