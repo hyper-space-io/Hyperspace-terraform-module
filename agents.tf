@@ -11,9 +11,8 @@ data "aws_ami" "amazon_linux" {
 
 # Use the terraform-aws-ec2-agent-pool module
 module "terraform_cloud_agents" {
-  source  = "github.com/glenngillen/terraform-aws-ec2-agent-pool"
-  version = "main" # Use a specific version or tag for stability
-
+  source            = "glenngillen/ec2-agent-pool/aws"
+  version           = "1.0.6"
   # Required Parameters
   name              = "terraform-agent-pool"
   org_name          = "Hyperspace_project" # Replace with your Terraform Cloud organization name
