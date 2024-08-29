@@ -219,14 +219,6 @@ module "eks" {
       type                          = "ingress"
       source_cluster_security_group = true
     }
-    allow_terraform_cloud_ingress = {
-      description = "Allow traffic from Terraform Cloud IP ranges"
-      protocol    = "tcp"
-      from_port   = 443
-      to_port     = 443
-      type        = "ingress"
-      cidr_blocks = local.terraform_cloud_ip_ranges["api"]
-    }
   }
   cluster_security_group_additional_rules = {
     recieve_traffic_from_vpc = {
@@ -236,14 +228,6 @@ module "eks" {
       to_port     = 0
       type        = "ingress"
       cidr_blocks = [var.vpc_cidr]
-    }
-    allow_terraform_cloud_ingress = {
-      description = "Allow traffic from Terraform Cloud IP ranges"
-      protocol    = "tcp"
-      from_port   = 443
-      to_port     = 443
-      type        = "ingress"
-      cidr_blocks = local.terraform_cloud_ip_ranges["api"]
     }
   }
   enable_cluster_creator_admin_permissions = true

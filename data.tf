@@ -3,11 +3,6 @@ data "aws_availability_zones" "available" {
   state = "available"
 }
 
-data "kubernetes_storage_class" "name" {
-  metadata { name = "gp2" }
-  depends_on = [module.eks]
-}
-
 data "http" "terraform_cloud_ips" {
   url = "https://app.terraform.io/api/meta/ip-ranges"
 }
