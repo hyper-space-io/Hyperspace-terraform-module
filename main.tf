@@ -33,8 +33,8 @@ module "vpc" {
 }
 
 module "endpoints" {
-  source = "terraform-aws-modules/vpc/aws//modules/vpc-endpoints"
-
+  source                     = "terraform-aws-modules/vpc/aws//modules/vpc-endpoints"
+  version                    = "~>5.13.0"
   vpc_id                     = module.vpc.vpc_id
   subnet_ids                 = module.vpc.private_subnets
   create_security_group      = true
