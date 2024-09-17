@@ -110,11 +110,6 @@ variable "tfc_agent_token" {
 }
 
 # EKS
-variable "kubernetes_version" {
-  description = "Which version of k8s to install by default"
-  type        = string
-}
-
 variable "create_eks" {
   default     = true
   type        = bool
