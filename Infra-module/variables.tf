@@ -104,7 +104,7 @@ variable "flow_log_file_format" {
   }
 }
 
-variable "agent_token" {
+variable "tfc_agent_token" {
   type      = string
   sensitive = true
 }

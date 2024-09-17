@@ -6,5 +6,5 @@ usermod -a -G docker ec2-user
 # Run Terraform Cloud Agent
 docker run -d \
   --name=terraform-agent \
-  -e TFC_AGENT_TOKEN=${agent_token} \
+  -e TFC_AGENT_TOKEN=${tfc_agent_token} \
   hashicorp/tfc-agent:latest
