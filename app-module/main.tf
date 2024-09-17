@@ -28,3 +28,17 @@ output "s3_endpoint_id" {
   value = data.terraform_remote_state.infra.outputs.s3_endpoint_id
   description = "kuku"
 }
+
+provider "kubernetes" {
+  host                   = data.terraform_remote_state.infra.outputs.eks_endpoint
+  cluster_ca_certificate = base64decode(data.terraform_remote_state.infra.outputs.eks_ca_certificate)
+  token                  = data.terraform_remote_state.infra.outputs.eks_token
+}
+
+provider "helm" {
+  kubernetes {
+    host                   = data.terraform_remote_state.infra.outputs.eks_endpoint
+    cluster_ca_certificate = base64decode(data.terraform_remote_state.infra.outputs.eks_ca_certificate)
+    token                  = data.terraform_remote_state.infra.outputs.eks_token
+  }
+}

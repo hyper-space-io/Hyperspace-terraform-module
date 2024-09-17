@@ -21,3 +21,19 @@ output "s3_endpoint_id" {
 output "eks_cluster_name" {
   value = module.eks.cluster_name
 }
+
+output "eks_endpoint" {
+  value       = module.eks.cluster_endpoint
+  description = "EKS cluster endpoint"
+}
+
+output "eks_ca_certificate" {
+  value       = module.eks.cluster_certificate_authority_data
+  description = "EKS cluster CA certificate"
+}
+
+output "eks_token" {
+  value       = data.aws_eks_cluster_auth.eks.token
+  description = "EKS authentication token"
+  sensitive   = true
+}
