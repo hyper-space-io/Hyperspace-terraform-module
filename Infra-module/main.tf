@@ -82,9 +82,7 @@ resource "aws_instance" "tfc_agent" {
   instance_type          = "t3.medium"
   subnet_id              = module.vpc.private_subnets[0]
   vpc_security_group_ids = [aws_security_group.tfc_agent_sg.id]
-  user_data = templatefile("user_data.sh.tpl", {
-    tfc_agent_token = var.agent_token
-  })
+  user_data = templatefile("user_data.sh.tpl")
   tags = {
     Name = "tfc-agent"
   }
