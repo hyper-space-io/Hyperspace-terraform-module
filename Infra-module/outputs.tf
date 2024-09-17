@@ -15,5 +15,5 @@ output "public_subnet_ids" {
 
 output "s3_endpoint_id" {
   description = "The ID of the S3 VPC endpoint"
-  value       = module.endpoints.endpoints["s3"].vpc_endpoint_id
+  value       = module.endpoints.endpoints["s3"].id
 }
