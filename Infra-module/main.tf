@@ -1,3 +1,5 @@
+# NETWORKING
+
 module "vpc" {
   source                                          = "terraform-aws-modules/vpc/aws"
   version                                         = "~>5.13.0"
@@ -63,20 +65,92 @@ module "endpoints" {
   tags = var.tags
 }
 
-data "aws_ami" "amazon_linux_2" {
-  most_recent = true
-  owners = ["amazon"]
-  filter {
-    name   = "name"
-    values = ["amzn2-ami-hvm-*-x86_64-gp2"]
+# EKS
+
+module "eks" {
+  source                                   = "terraform-aws-modules/eks/aws"
+  version                                  = "~> 20.13.1"
+  create                                   = var.create_eks
+  cluster_name                             = local.cluster_name
+  cluster_version                          = var.kubernetes_version
+  subnet_ids                               = slice(module.vpc.private_subnets, 0, var.num_zones)
+  vpc_id                                   = module.vpc.vpc_id
+  enable_cluster_creator_admin_permissions = true
+  enable_irsa                              = "true"
+  cluster_endpoint_private_access          = "true"
+  cluster_endpoint_public_access           = "false"
+  eks_managed_node_groups                  = var.additional_managed_node_pools
+  self_managed_node_groups                 = local.additional_self_managed_nodes
+  create_kms_key                           = true
+  kms_key_description                      = "EKS Secret Encryption Key"
+  cloudwatch_log_group_retention_in_days   = "7"
+  cluster_enabled_log_types                = local.enabled_cluster_logs
+  tags                                     = var.tags
+  cluster_addons                           = var.cluster_addons
+  cluster_security_group_additional_rules = {
+    recieve_traffic_from_vpc = {
+      description = "traffic from whole vpc"
+      protocol    = "-1"
+      from_port   = 0
+      to_port     = 0
+      type        = "ingress"
+      cidr_blocks = [var.vpc_cidr]
+    }
   }
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
+  node_security_group_additional_rules = {
+    ingress_self_all = {
+      description = "Node to node all ports/protocols"
+      protocol    = "-1"
+      from_port   = 0
+      to_port     = 0
+      type        = "ingress"
+      self        = true
+    }
+    egress_all = {
+      description      = "Node all egress"
+      protocol         = "-1"
+      from_port        = 0
+      to_port          = 0
+      type             = "egress"
+      cidr_blocks      = ["0.0.0.0/0"]
+      ipv6_cidr_blocks = ["::/0"]
+    }
+    cluster_nodes_incoming = {
+      description                   = "allow from cluster To node 1025-65535"
+      protocol                      = "tcp"
+      from_port                     = 1025
+      to_port                       = 65535
+      type                          = "ingress"
+      source_cluster_security_group = true
+    }
   }
+
+  self_managed_node_group_defaults = {
+    update_launch_template_default_version = true
+    iam_role_use_name_prefix               = true
+    iam_role_additional_policies = {
+      AmazonSSMManagedInstanceCore = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore",
+      AmazonEBSCSIDriverPolicy     = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy",
+      Additional                   = "${aws_iam_policy.this.arn}"
+    }
+  }
+  eks_managed_node_group_defaults = {
+    update_launch_template_default_version = true
+    iam_role_additional_policies = {
+      AmazonSSMManagedInstanceCore = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore",
+      AmazonEBSCSIDriverPolicy     = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
+    },
+    subnets = slice(module.vpc.private_subnets, 0, var.num_zones)
+    tags = {
+      "k8s.io/cluster-autoscaler/enabled"               = "True"
+      "k8s.io/cluster-autoscaler/${local.cluster_name}" = "True"
+      "Name"                                            = "${local.cluster_name}"
+    }
+  }
+  depends_on = [module.vpc]
 }
 
-
+# TFC AGENT
 resource "aws_instance" "tfc_agent" {
   ami                    = data.aws_ami.amazon_linux_2.id
   instance_type          = "t3.medium"
