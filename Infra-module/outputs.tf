@@ -17,3 +17,7 @@ output "s3_endpoint_id" {
   description = "The ID of the S3 VPC endpoint"
   value       = module.endpoints.endpoints["s3"].id
 }
+
+output "eks_cluster_name" {
+  value = module.eks.cluster_name
+}

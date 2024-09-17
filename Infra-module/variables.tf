@@ -120,21 +120,3 @@ variable "create_eks" {
   type        = bool
   description = "Should we create the eks cluster?"
 }
-
-variable "additional_self_managed_node_pools" {
-  description = "(Optional) set of additional self managed nodes for the cluster"
-  type        = any
-  default     = {}
-}
-
-variable "additional_managed_node_pools" {
-  description = "(Optional) set of additional self managed nodes for the cluster"
-  type        = any
-  default     = {}
-}
-
-variable "cluster_addons" {
-  description = "map of eks addons"
-  type        = map(any)
-  default     = {}
-}
