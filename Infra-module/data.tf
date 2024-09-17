@@ -35,3 +35,7 @@ data "aws_iam_policy_document" "fpga_pull_access" {
     effect = "Allow"
   }
 }
+
+data "aws_eks_cluster_auth" "eks" {
+  name = module.eks.cluster_name
+}
