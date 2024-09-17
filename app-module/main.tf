@@ -17,9 +17,9 @@ data "terraform_remote_state" "infra" {
   backend = "remote"
 
   config = {
-    organization = var.organization
+    organization = "Hyperspace_project"
     workspaces = {
-      name = var.infra_workspace_name
+      name = "Infra-module"
     }
   }
 }
