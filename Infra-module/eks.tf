@@ -1,9 +1,14 @@
 ########################
-######### EKS ##########
+#         EKS          #
 ########################
-#############################################################################################################################################
+
+
 module "eks" {
+
+
   ##################################################################################
+
+
   #######################
   #       GENERAL       #
   #######################
@@ -16,24 +21,23 @@ module "eks" {
   subnet_ids      = module.vpc.private_subnets
   vpc_id          = module.vpc.vpc_id
   tags            = var.tags
+
   cluster_addons = {
-    aws-ebs-csi-driver = {
-      most_recent = true
-    }
-    coredns = {
-      most_recent = true
-    }
-    kube-proxy = {
-      most_recent = true
-    }
-    vpc-cni = {
-      most_recent = true
-    }
+    aws-ebs-csi-driver = { most_recent = true }
+    coredns            = { most_recent = true }
+    kube-proxy         = { most_recent = true }
+    vpc-cni            = { most_recent = true }
   }
+
+
   ##################################################################################
+
+
   #######################
   # MANAGED NODE GROUPS #
   #######################
+
+
   eks_managed_node_groups = {
     eks-hyperspace-medium = {
       min_size       = 1
@@ -44,6 +48,7 @@ module "eks" {
       labels         = { Environment = "${var.environment}" }
       tags           = merge(var.tags, { nodegroup = "workers", Name = "${local.cluster_name}-eks-medium" })
       ami_type       = "BOTTLEROCKET_x86_64"
+      
       block_device_mappings = {
         xvdb = {
           device_name = "/dev/xvdb"
@@ -59,37 +64,52 @@ module "eks" {
       }
     }
   }
+
   eks_managed_node_group_defaults = {
     update_launch_template_default_version = true
     iam_role_additional_policies = {
       AmazonSSMManagedInstanceCore = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore",
       AmazonEBSCSIDriverPolicy     = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
-    },
+    }
     subnets = module.vpc.private_subnets
+
     tags = {
       "k8s.io/cluster-autoscaler/enabled"               = "True"
       "k8s.io/cluster-autoscaler/${local.cluster_name}" = "True"
       "Name"                                            = "${local.cluster_name}"
     }
   }
+
+
   ##################################################################################
+
+
   ############################
   # SELF MANAGED NODE GROUPS #
   ############################
+
+
   self_managed_node_groups = local.additional_self_managed_nodes
+
   self_managed_node_group_defaults = {
     update_launch_template_default_version = true
     iam_role_use_name_prefix               = true
     iam_role_additional_policies = {
-      AmazonSSMManagedInstanceCore = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore",
-      AmazonEBSCSIDriverPolicy     = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy",
+      AmazonSSMManagedInstanceCore = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+      AmazonEBSCSIDriverPolicy     = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
       Additional                   = "${aws_iam_policy.policies["fpga_pull"].arn}"
     }
   }
+
+
   ##################################################################################
+
+
   #######################
   #      SECURITY       #
   #######################
+
+
   node_security_group_additional_rules = {
     ingress_self_all = {
       description = "Node to node all ports/protocols"
@@ -99,6 +119,7 @@ module "eks" {
       type        = "ingress"
       cidr_blocks = [var.vpc_cidr]
     }
+
     egress_vpc_only = {
       description      = "Node all egress within VPC"
       protocol         = "-1"
@@ -108,6 +129,7 @@ module "eks" {
       cidr_blocks      = [var.vpc_cidr]
       ipv6_cidr_blocks = []
     }
+
     cluster_nodes_incoming = {
       description                   = "Allow traffic from cluster to node on ports 1025-65535"
       protocol                      = "tcp"
@@ -117,6 +139,7 @@ module "eks" {
       source_cluster_security_group = true
     }
   }
+
   cluster_security_group_additional_rules = {
     recieve_traffic_from_vpc = {
       description = "Allow all traffic from within the VPC"
@@ -127,31 +150,49 @@ module "eks" {
       cidr_blocks = [var.vpc_cidr]
     }
   }
+
   enable_cluster_creator_admin_permissions = true
   enable_irsa                              = "true"
   cluster_endpoint_private_access          = "true"
   cluster_endpoint_public_access           = "false"
   create_kms_key                           = true
   kms_key_description                      = "EKS Secret Encryption Key"
+
+
   ##################################################################################
+
+
   #######################
   #      LOGGING        #
   #######################
+
+
   cloudwatch_log_group_retention_in_days = "7"
   cluster_enabled_log_types              = ["api", "audit", "controllerManager", "scheduler", "authenticator"]
+
+
   ##################################################################################
+
+
   #######################
   #    DEPENDENCIES     #
   #######################
+
   depends_on = [module.vpc]
+
 }
+
+
 #############################################################################################################################################
+
+
 # EBS CSI Driver IRSA 
 module "irsa-ebs-csi" {
   source                = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
   version               = "~>5.44.0"
   role_name             = "${local.cluster_name}-ebs-csi"
   attach_ebs_csi_policy = true
+
   oidc_providers = {
     eks = {
       provider_arn               = module.eks.oidc_provider_arn
@@ -159,3 +200,6 @@ module "irsa-ebs-csi" {
     }
   }
 }
+
+
+#############################################################################################################################################

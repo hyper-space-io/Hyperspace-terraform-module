@@ -37,3 +37,13 @@ output "eks_token" {
   description = "EKS authentication token"
   sensitive   = true
 }
+
+output "aws_region" {
+  value = var.aws_region
+  description = "aws region"
+}
+
+output "create_eks" {
+  value = var.create_eks
+  description = "whether we create eks or not"
+}

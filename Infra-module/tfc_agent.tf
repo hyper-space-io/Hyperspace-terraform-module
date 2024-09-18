@@ -1,12 +1,3 @@
-# IAM
-resource "aws_iam_policy" "policies" {
-  for_each    = local.iam_policies
-  name        = each.value.name
-  path        = each.value.path
-  description = each.value.description
-  policy      = each.value.policy
-}
-
 # TFC AGENT
 resource "aws_instance" "tfc_agent" {
   ami                    = data.aws_ami.amazon_linux_2.id
