@@ -2,10 +2,10 @@ module "eks_blueprints_addons" {
   source            = "aws-ia/eks-blueprints-addons/aws"
   version           = "1.16.3"
   count             = local.create_eks ? 1 : 0
-  cluster_name      = module.eks.cluster_name
-  cluster_endpoint  = module.eks.cluster_endpoint
-  cluster_version   = module.eks.cluster_version
-  oidc_provider_arn = module.eks.oidc_provider_arn
+  cluster_name      = local.eks_module.cluster_name
+  cluster_endpoint  = local.eks_module.cluster_endpoint
+  cluster_version   = local.eks_module.cluster_version
+  oidc_provider_arn = local.eks_module.oidc_provider_arn
   enable_aws_load_balancer_controller = local.create_eks
   aws_load_balancer_controller        = { values = [local.alb_values], wait = true }
 }
