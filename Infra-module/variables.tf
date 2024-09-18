@@ -104,14 +104,15 @@ variable "flow_log_file_format" {
   }
 }
 
-variable "tfc_agent_token" {
-  type      = string
-  sensitive = true
-}
-
 # EKS
 variable "create_eks" {
   default     = true
   type        = bool
   description = "Should we create the eks cluster?"
+}
+
+variable "tfc_agent_token" {
+  type        = string
+  sensitive   = true
+  description = "The token to use in the user_data script"
 }

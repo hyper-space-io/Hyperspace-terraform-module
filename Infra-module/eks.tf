@@ -48,7 +48,7 @@ module "eks" {
       labels         = { Environment = "${var.environment}" }
       tags           = merge(var.tags, { nodegroup = "workers", Name = "${local.cluster_name}-eks-medium" })
       ami_type       = "BOTTLEROCKET_x86_64"
-      
+
       block_device_mappings = {
         xvdb = {
           device_name = "/dev/xvdb"
