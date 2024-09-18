@@ -36,34 +36,6 @@ data "aws_iam_policy_document" "fpga_pull_access" {
   }
 }
 
-
-data "aws_iam_policy_document" "tfc_agent_ssm_access" {
-  statement {
-    sid = "SSMAccess"
-    actions = [
-      "ssm:DescribeInstanceInformation",
-      "ssm:SendCommand",
-      "ssm:GetCommandInvocation",
-      "ssm:ListCommandInvocations",
-      "ssm:ListCommands",
-      "ssm:PutComplianceItems",
-      "ssm:PutInventory",
-      "ssm:UpdateInstanceInformation",
-      "ec2messages:AcknowledgeMessage",
-      "ec2messages:SendReply",
-      "ec2messages:OpenTunnel",
-      "ec2messages:GetMessages",
-      "logs:CreateLogStream",
-      "logs:PutLogEvents",
-      "logs:CreateLogGroup",
-      "logs:DescribeLogStreams",
-      "logs:DescribeLogGroups"
-    ]
-    resources = ["*"]
-    effect    = "Allow"
-  }
-}
-
 data "aws_eks_cluster_auth" "eks" {
   name = module.eks.cluster_name
 }

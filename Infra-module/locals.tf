@@ -98,11 +98,5 @@ locals {
       description = "Policy for loading AFI in eks"
       policy      = data.aws_iam_policy_document.fpga_pull_access.json
     }
-    tfc_agent_role = {
-      name        = "${var.environment}-tfc-agent-SSM-AccessPolicy"
-      path        = "/"
-      description = "Policy for enabling SSM access in tfc-agent EC2 machine"
-      policy      = data.aws_iam_policy_document.tfc_agent_ssm_access.json
-    }
   }
 }
