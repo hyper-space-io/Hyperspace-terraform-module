@@ -1,12 +1,12 @@
 provider "kubernetes" {
-  host                   = local.eks_module.eks_endpoint
+  host                   = local.eks_module.cluster_endpoint
   cluster_ca_certificate = base64decode(local.eks_module.eks_ca_certificate)
   token                  = local.eks_module.eks_token
 }
 
 provider "helm" {
   kubernetes {
-    host                   = local.eks_module.eks_endpoint
+    host                   = local.eks_module.cluster_endpoint
     cluster_ca_certificate = base64decode(local.eks_module.eks_ca_certificate)
     token                  = local.eks_module.eks_token
   }
