@@ -1,30 +1,30 @@
 locals {
-  # NETWORK LOCALS
+  ##################
+  #      VPC       #
+  ##################
   availability_zones = length(var.availability_zones) == 0 ? slice(data.aws_availability_zones.available.names, 0, var.num_zones) : var.availability_zones
   private_subnets    = [for azs_count in local.availability_zones : cidrsubnet(var.vpc_cidr, 4, index(local.availability_zones, azs_count))]
   public_subnets     = [for azs_count in local.availability_zones : cidrsubnet(var.vpc_cidr, 4, index(local.availability_zones, azs_count) + 5)]
 
-  # EKS
+  ##################
+  #      EKS       #
+  ##################
   cluster_name = "${var.project}-${var.environment}"
+  default_node_pool_tags = {
+    "k8s.io/cluster-autoscaler/enabled"               = "True"
+    "k8s.io/cluster-autoscaler/${local.cluster_name}" = "True"
+  }
+
   additional_self_managed_node_pools = {
     # data-nodes service nodes
     eks-data-node-hyperspace = {
-      name              = "eks-data-node-${local.cluster_name}"
-      iam_role_name     = "data-node-${local.cluster_name}"
-      enable_monitoring = true
-      min_size          = 0
-      max_size          = 20
-      desired_size      = 0
-      instance_type     = "f1.2xlarge"
-      autoscaling_group_tags = {
-        "k8s.io/cluster-autoscaler/node-template/taint/fpga"              = "true:NoSchedule"
-        "k8s.io/cluster-autoscaler/node-template/resources/hugepages-1Gi" = "100Gi"
-        "k8s.io/cluster-autoscaler/${local.cluster_name}"                 = "True"
-        "k8s.io/cluster-autoscaler/enabled"                               = "True"
-      }
-      tags = merge(var.tags, {
-        nodegroup = "fpga"
-      })
+      name                     = "eks-data-node-${local.cluster_name}"
+      iam_role_name            = "data-node-${local.cluster_name}"
+      enable_monitoring        = true
+      min_size                 = 0
+      max_size                 = 20
+      desired_size             = 0
+      instance_type            = "f1.2xlarge"
       ami_id                   = "ami-0b4e17a8ddffadd10"
       bootstrap_extra_args     = "--kubelet-extra-args '--node-labels=hyperspace.io/type=fpga --register-with-taints=fpga=true:NoSchedule'"
       post_bootstrap_user_data = <<-EOT
@@ -38,6 +38,11 @@ locals {
       echo "/dev/mapper/data-data /data xfs defaults,noatime 1 1" >> /etc/fstab
       mkdir /data/private/
       EOT
+      tags                     = merge(var.tags, { nodegroup = "fpga" })
+      autoscaling_group_tags = merge(local.default_node_pool_tags, {
+        "k8s.io/cluster-autoscaler/node-template/taint/fpga"              = "true:NoSchedule"
+        "k8s.io/cluster-autoscaler/node-template/resources/hugepages-1Gi" = "100Gi"
+      })
     },
     # Redis Nodes
     redis = {
@@ -50,13 +55,13 @@ locals {
       capacity_type     = "ON_DEMAND"
       ami_type          = "BOTTLEROCKET_ARM_64"
       enable_monitoring = true
-      tags = merge(var.tags, {
-        nodegroup = "redis"
-      })
+      tags              = merge(var.tags, { nodegroup = "redis" })
+
       labels = {
         Environment = "${var.environment}"
         redis       = "true"
       }
+
       taints = {
         redis = {
           key    = "redis"
@@ -64,31 +69,29 @@ locals {
           effect = "NO_SCHEDULE"
         }
       }
-      autoscaling_group_tags = {
+
+      autoscaling_group_tags = merge(local.default_node_pool_tags, {
         "k8s.io/cluster-autoscaler/node-template/resources/ephemeral-storage" = "20G"
         "k8s.io/cluster-autoscaler/node-template/taint/redis"                 = "true:NoSchedule"
         "redis"                                                               = "true"
-        "k8s.io/cluster-autoscaler/enabled"                                   = "True"
-        "k8s.io/cluster-autoscaler/${local.cluster_name}"                     = "True"
-      }
+      })
     }
   }
+
   additional_self_managed_nodes_list = flatten([
     for az in var.availability_zones : [
       for pool_name, pool_values in local.additional_self_managed_node_pools : {
-        key = "${var.environment}-${az}-${pool_name}"
-        value = merge(
-          pool_values,
-          {
-            name               = pool_name,
-            availability_zones = [az]
-          }
-        )
+        key   = "${var.environment}-${az}-${pool_name}"
+        value = merge(pool_values, { name = pool_name, availability_zones = [az] })
       }
     ]
   ])
   additional_self_managed_nodes = { for entry in local.additional_self_managed_nodes_list : entry.key => entry.value }
 
+
+  ##################
+  #  IAM POLICIES  #
+  ##################
 
 
   iam_policies = {
