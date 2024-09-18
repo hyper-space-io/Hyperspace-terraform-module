@@ -10,6 +10,11 @@ resource "aws_instance" "tfc_agent" {
   tags = {
     Name = "tfc-agent"
   }
+  root_block_device {
+    volume_type = "gp3"
+    volume_size = 20
+    delete_on_termination = true
+  }
 }
 
 
