@@ -18,34 +18,15 @@ output "s3_endpoint_id" {
   value       = module.endpoints.endpoints["s3"].id
 }
 
-output "eks_cluster_name" {
-  value = module.eks.cluster_name
-}
-
-output "eks_endpoint" {
-  value       = module.eks.cluster_endpoint
-  description = "EKS cluster endpoint"
-}
-
-output "eks_ca_certificate" {
-  value       = module.eks.cluster_certificate_authority_data
-  description = "EKS cluster CA certificate"
+output "aws_region" {
+  value = var.aws_region
+  description = "aws region"
 }
 
 output "eks_token" {
   value       = data.aws_eks_cluster_auth.eks.token
   description = "EKS authentication token"
   sensitive   = true
-}
-
-output "aws_region" {
-  value = var.aws_region
-  description = "aws region"
-}
-
-output "create_eks" {
-  value = var.create_eks
-  description = "whether we create eks or not"
 }
 
 output "eks_cluster" {
