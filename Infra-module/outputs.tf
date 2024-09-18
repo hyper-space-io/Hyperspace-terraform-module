@@ -52,3 +52,8 @@ output "eks_cluster" {
   value = module.eks
   description = "The whole eks cluster object"
 }
+
+output "vpc" {
+  value = module.vpc
+  description = "The whole VPC object"
+}
