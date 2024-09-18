@@ -47,3 +47,8 @@ output "create_eks" {
   value = var.create_eks
   description = "whether we create eks or not"
 }
+
+output "eks_cluster" {
+  value = module.eks
+  description = "The whole eks cluster object"
+}
