@@ -89,12 +89,20 @@ locals {
   ])
   additional_self_managed_nodes = { for entry in local.additional_self_managed_nodes_list : entry.key => entry.value }
 
+
+
   iam_policies = {
     fpga_pull = {
       name        = "${local.cluster_name}-FpgaPullAccessPolicy"
       path        = "/"
       description = "Policy for loading AFI in eks"
       policy      = data.aws_iam_policy_document.fpga_pull_access.json
+    }
+    tfc_agent_role = {
+      name        = "${var.environment}-tfc-agent-SSM-AccessPolicy"
+      path        = "/"
+      description = "Policy for enabling SSM access in tfc-agent EC2 machine"
+      policy      = data.aws_iam_policy_document.tfc_agent_ssm_access.json
     }
   }
 }

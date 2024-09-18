@@ -1,9 +1,38 @@
 # TFC AGENT
+
+resource "aws_iam_role" "tfc_agent_role" {
+  name = "${var.environment}-tfc-agent-role"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action    = "sts:AssumeRole"
+        Effect    = "Allow"
+        Principal = {
+          Service = "ec2.amazonaws.com"
+        }
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "tfc_agent_policy_attachment" {
+  role       = aws_iam_role.tfc_agent_role.name
+  policy_arn = aws_iam_policy.policies["tfc_agent_role"].arn
+}
+
+resource "aws_iam_instance_profile" "tfc_agent_instance_profile" {
+  name = "tfc-agent-instance-profile"
+  role = aws_iam_role.tfc_agent_role.name
+}
+
+
 resource "aws_instance" "tfc_agent" {
   ami                    = data.aws_ami.amazon_linux_2.id
   instance_type          = "t3.medium"
   subnet_id              = module.vpc.private_subnets[0]
   vpc_security_group_ids = [aws_security_group.tfc_agent_sg.id]
+  iam_instance_profile   = aws_iam_instance_profile.tfc_agent_instance_profile.name
   user_data = templatefile("user_data.sh.tpl", {
     tfc_agent_token = var.tfc_agent_token
   })
@@ -11,6 +40,8 @@ resource "aws_instance" "tfc_agent" {
     Name = "tfc-agent"
   }
 }
+
+
 resource "aws_security_group" "tfc_agent_sg" {
   name        = "tfc-agent-sg"
   description = "Security group for Terraform Cloud Agent"
