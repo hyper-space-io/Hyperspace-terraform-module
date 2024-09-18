@@ -32,7 +32,7 @@ resource "kubernetes_storage_class" "ebs_sc_gp3" {
     }
   }
   storage_provisioner = "ebs.csi.aws.com"
-#   reclaim_policy      = var.storage_reclaim_policy
+  reclaim_policy      = "Delete"
   parameters = {
     "csi.storage.k8s.io/fstype" = "ext4"
     encrypted                   = "true"
