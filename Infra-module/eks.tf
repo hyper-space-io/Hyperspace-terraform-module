@@ -118,7 +118,7 @@ module "eks" {
       to_port          = 0
       type             = "ingress"
       cidr_blocks      = [var.vpc_cidr]
-      ipv6_cidr_blocks = [module.vpc.vpc_ipv6_cidr_block]
+      ipv6_cidr_blocks = length(module.vpc.vpc_ipv6_cidr_block) > 0 ? [module.vpc.vpc_ipv6_cidr_block] : []
     }
 
     egress_vpc_only = {
@@ -128,7 +128,7 @@ module "eks" {
       to_port          = 0
       type             = "egress"
       cidr_blocks      = [var.vpc_cidr]
-      ipv6_cidr_blocks = [module.vpc.vpc_ipv6_cidr_block]
+      ipv6_cidr_blocks = length(module.vpc.vpc_ipv6_cidr_block) > 0 ? [module.vpc.vpc_ipv6_cidr_block] : []
     }
 
     cluster_nodes_incoming = {
@@ -149,7 +149,7 @@ module "eks" {
       to_port          = 0
       type             = "ingress"
       cidr_blocks      = [var.vpc_cidr]
-      ipv6_cidr_blocks = [module.vpc.vpc_ipv6_cidr_block]
+      ipv6_cidr_blocks = length(module.vpc.vpc_ipv6_cidr_block) > 0 ? [module.vpc.vpc_ipv6_cidr_block] : []
     }
   }
 
