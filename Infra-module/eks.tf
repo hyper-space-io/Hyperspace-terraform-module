@@ -41,7 +41,7 @@ module "eks" {
   eks_managed_node_groups = {
     eks-hyperspace-medium = {
       min_size       = 1
-      max_size       = 10
+      max_size       = var.worker_nodes_max
       desired_size   = 1
       instance_types = ["m5n.xlarge"]
       capacity_type  = "ON_DEMAND"

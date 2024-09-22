@@ -116,3 +116,13 @@ variable "tfc_agent_token" {
   sensitive   = true
   description = "The token to use in the user_data script"
 }
+
+variable "worker_nodes_max" {
+  type = number
+  description = "The maximum amount of worker nodes you can allow"
+  default = 10
+  validation {
+    condition = var.worker_nodes_max > 0 
+    error_message = "Invalid input for 'worker_nodes_max'. The value must be a number greater than 0."
+  }
+}
