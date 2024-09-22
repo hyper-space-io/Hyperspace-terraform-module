@@ -126,3 +126,13 @@ variable "worker_nodes_max" {
     error_message = "Invalid input for 'worker_nodes_max'. The value must be a number greater than 0."
   }
 }
+
+variable "worker_instance_type" {
+  type        = list(string)
+  description = "The list of allowed instance types for worker nodes."
+  default     = ["m5n.xlarge"]
+  validation {
+    condition     = alltrue([for instance in var.worker_instance_type : contains(["m5n.xlarge"], instance)])
+    error_message = "Invalid input for 'worker_instance_type'. Only the following instance type(s) are allowed: ['m5n.xlarge']."
+  }
+}
