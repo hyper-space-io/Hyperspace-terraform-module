@@ -112,12 +112,13 @@ module "eks" {
 
   node_security_group_additional_rules = {
     ingress_self_all = {
-      description = "Node to node all ports/protocols"
-      protocol    = "-1"
-      from_port   = 0
-      to_port     = 0
-      type        = "ingress"
-      cidr_blocks = [var.vpc_cidr]
+      description      = "Node to node all ports/protocols"
+      protocol         = "-1"
+      from_port        = 0
+      to_port          = 0
+      type             = "ingress"
+      cidr_blocks      = [var.vpc_cidr]
+      ipv6_cidr_blocks = [module.vpc.vpc_ipv6_cidr_block]
     }
 
     egress_vpc_only = {
@@ -127,7 +128,7 @@ module "eks" {
       to_port          = 0
       type             = "egress"
       cidr_blocks      = [var.vpc_cidr]
-      ipv6_cidr_blocks = []
+      ipv6_cidr_blocks = [module.vpc.vpc_ipv6_cidr_block]
     }
 
     cluster_nodes_incoming = {
@@ -142,12 +143,13 @@ module "eks" {
 
   cluster_security_group_additional_rules = {
     recieve_traffic_from_vpc = {
-      description = "Allow all traffic from within the VPC"
-      protocol    = "-1"
-      from_port   = 0
-      to_port     = 0
-      type        = "ingress"
-      cidr_blocks = [var.vpc_cidr]
+      description      = "Allow all traffic from within the VPC"
+      protocol         = "-1"
+      from_port        = 0
+      to_port          = 0
+      type             = "ingress"
+      cidr_blocks      = [var.vpc_cidr]
+      ipv6_cidr_blocks = [module.vpc.vpc_ipv6_cidr_block]
     }
   }
 

@@ -118,11 +118,11 @@ variable "tfc_agent_token" {
 }
 
 variable "worker_nodes_max" {
-  type = number
+  type        = number
   description = "The maximum amount of worker nodes you can allow"
-  default = 10
+  default     = 10
   validation {
-    condition = var.worker_nodes_max > 0 
+    condition     = var.worker_nodes_max > 0
     error_message = "Invalid input for 'worker_nodes_max'. The value must be a number greater than 0."
   }
 }
