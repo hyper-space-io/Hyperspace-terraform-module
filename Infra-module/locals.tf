@@ -79,7 +79,7 @@ locals {
   }
 
   additional_self_managed_nodes_list = flatten([
-    for az in var.availability_zones : [
+    for az in local.availability_zones : [
       for pool_name, pool_values in local.additional_self_managed_node_pools : {
         key   = "${var.environment}-${az}-${pool_name}"
         value = merge(pool_values, { name = pool_name, availability_zones = [az] })
