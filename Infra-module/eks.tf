@@ -94,7 +94,7 @@ module "eks" {
   self_managed_node_group_defaults = {
     update_launch_template_default_version = true
     iam_role_use_name_prefix               = true
-    availability_zones = local.availability_zones
+    vpc_zone_identifier = module.vpc.private_subnets
     iam_role_additional_policies = {
       AmazonSSMManagedInstanceCore = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
       AmazonEBSCSIDriverPolicy     = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
