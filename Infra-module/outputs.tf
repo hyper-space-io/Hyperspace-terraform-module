@@ -5,8 +5,8 @@ output "aws_region" {
 
 output "eks_token" {
   value       = data.aws_eks_cluster_auth.eks.token
-  description = "The authentication token used for connecting to the EKS cluster. This token is sensitive and used for secure communication with the cluster."
   sensitive   = true
+  description = "The authentication token used for connecting to the EKS cluster. This token is sensitive and used for secure communication with the cluster."
 }
 
 output "eks_cluster" {
