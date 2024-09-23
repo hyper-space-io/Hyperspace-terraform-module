@@ -5,7 +5,7 @@ if ! command -v docker &> /dev/null; then
   systemctl enable docker
   usermod -a -G docker ec2-user
 else
-  service docker start
+  systemctl start docker
 fi
 systemctl enable docker
 cat << 'EOF' > /var/lib/cloud/scripts/per-boot/tfc-agent-start.sh
