@@ -89,7 +89,14 @@ module "eks" {
   ############################
 
 
-  self_managed_node_groups = local.additional_self_managed_nodes
+  self_managed_node_groups = flatten([
+    for subnet in module.vpc.private_subnets : [
+      for pool_name, pool_values in local.additional_self_managed_node_pools : {
+        key   = "${var.environment}-${subnet}-${pool_name}"
+        value = merge(pool_values, { name = pool_name, subnet_ids = [subnet] })
+      }
+    ]
+  ])
 
   self_managed_node_group_defaults = {
     update_launch_template_default_version = true
