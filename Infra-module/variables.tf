@@ -3,19 +3,19 @@
 ########################
 
 variable "project" {
-  type    = string
-  default = "hyperspace"
+  type        = string
+  default     = "hyperspace"
   description = "Name of the project - this is used to generate names for resources"
 }
 
 variable "environment" {
-  type    = string
-  default = "development"
+  type        = string
+  default     = "development"
   description = "The environment we are creating - used to generate names for resource"
 }
 
 variable "tags" {
-  type    = map(any)
+  type = map(any)
   default = {
     terraform  = true
     hyperspace = true
@@ -58,38 +58,38 @@ variable "num_zones" {
 }
 
 variable "availability_zones" {
-  type    = list(string)
-  default = []
+  type        = list(string)
+  default     = []
   description = "List of availability zones to deploy the resources. Leave empty to automatically select based on the region and the variable num_zones."
 }
 
 variable "enable_nat_gateway" {
-  type    = bool
-  default = true
+  type        = bool
+  default     = true
   description = "Dictates if nat gateway is enabled or not"
 }
 
 variable "single_nat_gateway" {
-  type    = bool
-  default = false
+  type        = bool
+  default     = false
   description = "Whether to create a single NAT gateway (true) or one per availability zone (false)."
 }
 
 variable "create_vpc_flow_logs" {
-  type    = bool
-  default = false
+  type        = bool
+  default     = false
   description = "Whether we create vpc flow logs or not"
 }
 
 variable "flow_logs_retention" {
-  type    = number
-  default = 14
+  type        = number
+  default     = 14
   description = "vpc flow logs retention in days"
 }
 
 variable "flow_log_group_class" {
-  type    = string
-  default = ""
+  type        = string
+  default     = ""
   description = "VPC flow logs log group class in CloudWatch. Leave empty for default or provide a specific class."
 }
 
@@ -108,14 +108,14 @@ variable "flow_log_file_format" {
 ########################
 
 variable "create_eks" {
-  type    = bool
-  default = true
+  type        = bool
+  default     = true
   description = "Should we create the eks cluster?"
 }
 
 variable "tfc_agent_token" {
-  type      = string
-  sensitive = true
+  type        = string
+  sensitive   = true
   description = "The token to use in the user_data script"
 }
 
