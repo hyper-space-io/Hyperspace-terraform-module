@@ -18,3 +18,13 @@ output "vpc" {
   value       = module.vpc
   description = "The complete object representing the VPC, including all associated subnets, route tables, and other VPC resources."
 }
+
+output "tags" {
+  value       = var.tags
+  description = "Our tags"
+}
+
+output "s3_buckets" {
+  value       = module.s3_buckets
+  description = "The complete S3 module"
+}
