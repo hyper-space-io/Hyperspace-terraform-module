@@ -1,9 +1,7 @@
 locals {
   create_acm   = var.domain_name != "" ? true : false
-  internal_acm = var.domain_name != "" ? module.acm["internal_acm"].acm_certificate_arn : var.internal_acm_arn != "" ? var.internal_acm_arn : ""
-  external_acm = var.domain_name != "" ? module.acm["regular"].acm_certificate_arn : var.external_acm_arn != "" ? var.external_acm_arn : ""
   acm_config = {
-    regular = {
+    external_acm = {
       domain_name = var.domain_name
       subject_alternative_names = [
         "*.${var.domain_name}",
@@ -25,7 +23,7 @@ module "acm" {
   for_each                  = local.acm_config
   create_certificate        = each.value.create_certificate
   domain_name               = each.value.domain_name
-  zone_id                   = each.key == "regular" ? aws_route53_zone.zones["external"].zone_id : aws_route53_zone.internal_domain.0.zone_id
+  zone_id                   = each.key == "external_acm" ? aws_route53_zone.zones["external"].zone_id : module.zones["${local.internal_domain_name}"].route53_zone_zone_id
   subject_alternative_names = each.value.subject_alternative_names
   tags                      = local.tags
   validation_method         = "DNS"
