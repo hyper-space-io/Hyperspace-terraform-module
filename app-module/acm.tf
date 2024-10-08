@@ -23,7 +23,7 @@ module "acm" {
   for_each                  = local.acm_config
   create_certificate        = each.value.create_certificate
   domain_name               = each.value.domain_name
-  zone_id                   = each.key == "external_acm" && var.create_public_zone ? module.zones[var.domain_name].route53_zone_zone_id : module.zones[local.internal_domain_name].route53_zone_zone_id
+  zone_id                   = each.key == "external_acm" && var.create_public_zone ? module.zones["external"].route53_zone_zone_id : module.zones["internal"].route53_zone_zone_id
   subject_alternative_names = each.value.subject_alternative_names
   tags                      = local.tags
   validation_method         = "DNS"
