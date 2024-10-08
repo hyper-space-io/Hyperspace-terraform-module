@@ -28,3 +28,7 @@ data "kubernetes_ingress_v1" "internal_ingress" {
   }
   depends_on = [kubernetes_ingress_v1.nginx_ingress["internal"]]
 }
+
+data "aws_eks_cluster_auth" "eks" {
+  name = local.eks_module.cluster_name
+}
