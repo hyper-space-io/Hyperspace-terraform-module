@@ -1,10 +1,10 @@
 locals {
-  eks_exists = local.eks_module.cluster_arn != "" ? 1 : 0
+  eks_exists = local.eks_module.cluster_arn != "" ? true : false
 }
 module "eks_blueprints_addons" {
   source                              = "aws-ia/eks-blueprints-addons/aws"
   version                             = "1.16.3"
-  count                               = local.eks_exists
+  count                               = local.eks_exists ? 1 : 0
   cluster_name                        = local.eks_module.cluster_name
   cluster_endpoint                    = local.eks_module.cluster_endpoint
   cluster_version                     = local.eks_module.cluster_version
