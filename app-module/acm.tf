@@ -28,5 +28,5 @@ module "acm" {
   tags                      = local.tags
   validation_method         = "DNS"
   wait_for_validation       = true
-  depends_on                = [aws_route53_record.internal_domain_ns]
+  depends_on                = [ module.zones ]
 }
