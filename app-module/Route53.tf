@@ -28,7 +28,7 @@ locals {
 module "zones" {
   source  = "terraform-aws-modules/route53/aws//modules/zones"
   version = "~> 4.1.0"
-  zones   = { for k, v in local.zones : v.domain_name => v if v != null }
+  zones   = { for k, v in local.zones : k => v if v != null }
 }
 
 resource "aws_route53_record" "wildcard" {
