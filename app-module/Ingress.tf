@@ -168,5 +168,5 @@ resource "kubernetes_ingress_v1" "nginx_ingress" {
       }
     }
   }
-  depends_on = [ helm_release.nginx-ingress ]
+  depends_on = [helm_release.nginx-ingress]
 }
