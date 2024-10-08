@@ -32,6 +32,10 @@ module "zones" {
   zones   = { for k, v in local.zones : k => v if v != null }
 }
 
+output "zones" {
+  value = module.zones
+}
+
 resource "aws_route53_record" "wildcard" {
   count      = var.create_public_zone ? local.create_records : 0
   zone_id    = module.zones["external"].route53_zone_zone_id
