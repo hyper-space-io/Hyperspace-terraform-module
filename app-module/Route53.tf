@@ -1,12 +1,13 @@
 locals {
-  internal_domain_name = var.domain_name != "" ? "internal${var.domain_name}" : ""
+  internal_domain_name = var.domain_name != "" ? "internal${local.environment}.${var.domain_name}" : ""
+  public_domain_name   = var.domain_name != "" ? "${local.environment}.${var.domain_name}" : ""
   create_records       = var.domain_name != "" ? 1 : 0
   zones = {
-    external = var.create_public_zone && var.domain_name != "" ? {
-      domain_name = var.domain_name
-      comment     = "Public hosted zone for ${var.domain_name}"
+    external = var.create_public_zone && local.public_domain_name != "" ? {
+      domain_name = "${local.environment}.${var.domain_name}"
+      comment     = "Public hosted zone for ${local.public_domain_name}"
       tags = merge(local.tags, {
-        Name = var.domain_name
+        Name = local.public_domain_name
       })
     } : null
 
