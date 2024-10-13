@@ -4,7 +4,6 @@ locals {
     external_acm = var.create_public_zone && local.public_domain_name != "" ? {
       domain_name = local.public_domain_name
       subject_alternative_names = [
-        "${var.domain_name}",
         "*.${local.public_domain_name}",
       ]
       create_certificate = local.create_acm
