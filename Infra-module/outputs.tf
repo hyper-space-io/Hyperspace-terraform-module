@@ -28,3 +28,8 @@ output "s3_buckets" {
   value       = module.s3_buckets
   description = "The complete S3 module"
 }
+
+output "environment" {
+  value = var.environment
+  description = "environment"
+}
