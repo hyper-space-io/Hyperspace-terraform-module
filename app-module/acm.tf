@@ -29,5 +29,6 @@ module "acm" {
   tags                      = local.tags
   validation_method         = "DNS"
   wait_for_validation       = true
+  create_route53_records    = false
   depends_on                = [module.zones]
 }
