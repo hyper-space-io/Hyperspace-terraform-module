@@ -32,6 +32,7 @@ resource "helm_release" "nginx-ingress" {
   namespace        = "ingress"
   create_namespace = true
   wait             = true
+  timeout = 600
   values = [<<EOF
 controller:
   electionID: ${each.key}-controller-leader
