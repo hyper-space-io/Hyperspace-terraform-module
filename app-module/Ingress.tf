@@ -46,7 +46,7 @@ controller:
       cpu: 100m      
       memory: 100Mi 
   autoscaling:
-    enabled: "true"
+    enabled: true
     minReplicas: 2
     maxReplicas: 6
     targetCPUUtilizationPercentage: 50    
@@ -69,9 +69,9 @@ controller:
           periodSeconds: 15              
         selectPolicy: Max               
   publishService:
-    enabled: "true"
+    enabled: true
   metrics:
-    enabled: "true"
+    enabled: true
   ingressClassByName: true
   ingressClassResource:
     name: nginx-${each.key}
@@ -83,7 +83,6 @@ controller:
     compute-full-forwarded-for: "true"
   service:
     type: NodePort
-    server-tokens: false
     externalTrafficPolicy: Local
     ports:
       http: 80
