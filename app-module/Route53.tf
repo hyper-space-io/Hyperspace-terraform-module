@@ -1,5 +1,5 @@
 locals {
-  internal_domain_name = var.domain_name != "" ? "internal${local.environment}.${var.domain_name}" : ""
+  internal_domain_name = var.domain_name != "" ? "internal-${local.environment}.${var.domain_name}" : ""
   public_domain_name   = var.domain_name != "" ? "${local.environment}.${var.domain_name}" : ""
   create_records       = var.domain_name != "" ? 1 : 0
   zones = {

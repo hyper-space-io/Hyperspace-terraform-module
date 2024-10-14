@@ -11,7 +11,7 @@ locals {
     internal_acm = local.internal_domain_name != "" ? {
       domain_name = local.internal_domain_name
       subject_alternative_names = [
-        "${var.domain_name}",
+        # "${var.domain_name}",
         "*.${local.internal_domain_name}",
       ]
       create_certificate = local.create_acm
