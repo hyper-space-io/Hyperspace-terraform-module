@@ -25,8 +25,7 @@ module "acm" {
   domain_name               = each.value.domain_name
   subject_alternative_names = each.value.subject_alternative_names
   tags                      = local.tags
-  zone_id                   = contains("${each.key}", "external") ? module.zones["external"].route53_zone_zone_id : ""
-  create_route53_records    = contains("${each.key}", "external") ? true : false
+  create_route53_records    = false
   validation_method         = "DNS"
   wait_for_validation       = true
 }
