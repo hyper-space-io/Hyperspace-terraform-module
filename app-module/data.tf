@@ -9,9 +9,9 @@ data "terraform_remote_state" "infra" {
   }
 }
 
-# data "kubernetes_storage_class" "name" {
-#   metadata { name = "gp2" }
-# }
+data "kubernetes_storage_class" "name" {
+  metadata { name = "gp2" }
+}
 
 # data "kubernetes_ingress_v1" "ingress" {
 #   metadata {
