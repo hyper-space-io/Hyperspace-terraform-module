@@ -13,7 +13,7 @@ data "kubernetes_storage_class" "name" {
   metadata { name = "gp2" }
 }
 
-data "kubernetes_ingress_v1" "ingress" {
+data "kubernetes_ingress_v1" "external_ingress" {
   metadata {
     name      = "external-ingress"
     namespace = "ingress"
