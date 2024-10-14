@@ -97,22 +97,24 @@ controller:
     https: 9443
   affinity:
     podAntiAffinity:
-      requiredDuringSchedulingIgnoredDuringExecution:
-      - labelSelector:
-          matchExpressions:
-          - key: app.kubernetes.io/name
-            operator: In
-            values:
-            - ingress-nginx
-          - key: app.kubernetes.io/instance
-            operator: In
-            values:
-            - ingress-nginx-${each.key}
-          - key: app.kubernetes.io/component
-            operator: In
-            values:
-            - controller
-        topologyKey: "kubernetes.io/hostname"
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+            - key: app.kubernetes.io/name
+              operator: In
+              values:
+              - ingress-nginx
+            - key: app.kubernetes.io/instance
+              operator: In
+              values:
+              - ingress-nginx-${each.key}
+            - key: app.kubernetes.io/component
+              operator: In
+              values:
+              - controller
+          topologyKey: "kubernetes.io/hostname"
   EOF
   ]
   depends_on = [module.eks_blueprints_addons, module.acm]
