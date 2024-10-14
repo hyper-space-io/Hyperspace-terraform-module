@@ -32,6 +32,7 @@ resource "helm_release" "nginx-ingress" {
   namespace        = "ingress"
   create_namespace = true
   wait             = true
+  cleanup_on_fail = true
   timeout = 600
   values = [<<EOF
 controller:
@@ -173,6 +174,5 @@ resource "kubernetes_ingress_v1" "nginx_ingress" {
 
 resource "time_sleep" "wait_for_ingress_alb" {
 create_duration = "300s"
-
 depends_on = [kubernetes_ingress_v1.nginx_ingress["internal"]]
 }
