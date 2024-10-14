@@ -36,7 +36,7 @@ module "zones" {
 
 resource "aws_route53_record" "wildcard" {
   count      = var.create_public_zone ? local.create_records : 0
-  zone_id    = module.zones["external"].route53_zone_zone_id
+  zone_id    = module.zones.route53_zone_zone_id["external"]
   name       = "*"
   type       = "CNAME"
   ttl        = "300"
