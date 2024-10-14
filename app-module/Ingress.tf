@@ -175,6 +175,7 @@ resource "kubernetes_ingress_v1" "nginx_ingress" {
 }
 
 resource "time_sleep" "wait_for_ingress_alb" {
+for_each = toset(["internal","external"])
 create_duration = "300s"
-depends_on = [kubernetes_ingress_v1.nginx_ingress["internal"]]
+depends_on = [kubernetes_ingress_v1.nginx_ingress["${each.key}"]]
 }

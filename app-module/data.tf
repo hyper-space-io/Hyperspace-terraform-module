@@ -18,7 +18,7 @@ data "kubernetes_ingress_v1" "ingress" {
     name      = "external-ingress"
     namespace = "ingress"
   }
-  depends_on = [time_sleep.wait_for_ingress_alb]
+  depends_on = [time_sleep.wait_for_external_ingress]
 }
 
 data "kubernetes_ingress_v1" "internal_ingress" {
@@ -26,7 +26,7 @@ data "kubernetes_ingress_v1" "internal_ingress" {
     name      = "internal-ingress"
     namespace = "ingress"
   }
-  depends_on = [time_sleep.wait_for_ingress_alb]
+  depends_on = [time_sleep.wait_for_internal_ingress]
 }
 
 data "aws_eks_cluster_auth" "eks" {
