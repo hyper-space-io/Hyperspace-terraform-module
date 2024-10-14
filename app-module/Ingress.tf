@@ -32,8 +32,8 @@ resource "helm_release" "nginx-ingress" {
   namespace        = "ingress"
   create_namespace = true
   wait             = true
-  cleanup_on_fail = true
-  timeout = 600
+  cleanup_on_fail  = true
+  timeout          = 600
   values = [<<EOF
 controller:
   electionID: ${each.key}-controller-leader
@@ -127,11 +127,11 @@ resource "kubernetes_ingress_v1" "nginx_ingress" {
     name      = "${each.key}-ingress"
     namespace = "ingress"
     annotations = merge({
-      "alb.ingress.kubernetes.io/certificate-arn"          = local.create_acm ? (each.key == "internal" ? module.acm["internal_acm"].acm_certificate_arn : module.acm["external_acm"].acm_certificate_arn) : (each.key == "internal" ? (var.internal_acm_arn != "" ? var.internal_acm_arn : "") : (var.external_acm_arn != "" ? var.external_acm_arn : ""))
+      "alb.ingress.kubernetes.io/certificate-arn"          = local.create_acm ? (each.key == "internal" ? module.acm["internal_acm"].acm_certificate_arn : module.acm["external_acm"].acm_certificate_arn) : ""
       "alb.ingress.kubernetes.io/scheme"                   = "${each.value.scheme}"
       "alb.ingress.kubernetes.io/load-balancer-attributes" = "idle_timeout.timeout_seconds=600, access_logs.s3.enabled=true, access_logs.s3.bucket=${local.s3_buckets["logs-ingress"].s3_bucket_id},access_logs.s3.prefix=${each.value.s3_prefix}"
-      "alb.ingress.kubernetes.io/actions.ssl-redirect"     = (each.key == "internal" && module.acm["internal_acm"].acm_certificate_arn != "") || (each.key == "external" && var.create_public_zone && var.domain_name != "" ) ? "{\"Type\": \"redirect\", \"RedirectConfig\": { \"Protocol\": \"HTTPS\", \"Port\": \"443\", \"StatusCode\": \"HTTP_301\"}}" : ""
-      "alb.ingress.kubernetes.io/listen-ports"             = (each.key == "internal" && module.acm["internal_acm"].acm_certificate_arn != "") || (each.key == "external" && var.create_public_zone && var.domain_name != "" ) ? "[{\"HTTP\": 80}, {\"HTTPS\":443}]" : "[{\"HTTP\": 80}]"
+      "alb.ingress.kubernetes.io/actions.ssl-redirect"     = (each.key == "internal" && module.acm["internal_acm"].acm_certificate_arn != "") || (each.key == "external" && var.create_public_zone && var.domain_name != "") ? "{\"Type\": \"redirect\", \"RedirectConfig\": { \"Protocol\": \"HTTPS\", \"Port\": \"443\", \"StatusCode\": \"HTTP_301\"}}" : ""
+      "alb.ingress.kubernetes.io/listen-ports"             = (each.key == "internal" && module.acm["internal_acm"].acm_certificate_arn != "") || (each.key == "external" && var.create_public_zone && var.domain_name != "") ? "[{\"HTTP\": 80}, {\"HTTPS\":443}]" : "[{\"HTTP\": 80}]"
     }, local.common_ingress_annotations)
   }
   spec {
@@ -176,10 +176,10 @@ resource "kubernetes_ingress_v1" "nginx_ingress" {
 
 resource "time_sleep" "wait_for_internal_ingress" {
   create_duration = "300s"
-  depends_on = [kubernetes_ingress_v1.nginx_ingress["internal"]]
+  depends_on      = [kubernetes_ingress_v1.nginx_ingress["internal"]]
 }
 
 resource "time_sleep" "wait_for_external_ingress" {
   create_duration = "300s"
-  depends_on = [kubernetes_ingress_v1.nginx_ingress["external"]]
+  depends_on      = [kubernetes_ingress_v1.nginx_ingress["external"]]
 }

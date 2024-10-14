@@ -11,21 +11,9 @@ variable "infra_workspace_name" {
 
 # Routing
 variable "domain_name" {
-  description = "The domain name to create if we don't have an existing domain configured"
+  description = "The main domain name to use to create sub-domains"
   type        = string
   default     = ""
-}
-
-variable "internal_acm_arn" {
-  description = "ARN of an ACM certificate to use - will be created if not configured"
-  default     = ""
-  type        = string
-}
-
-variable "external_acm_arn" {
-  description = "ARN of an ACM certificate to use for external domains - will be created if not configured"
-  default     = ""
-  type        = string
 }
 
 variable "create_public_zone" {

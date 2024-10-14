@@ -26,10 +26,10 @@ output "tags" {
 
 output "s3_buckets" {
   value       = module.s3_buckets
-  description = "The complete S3 module"
+  description = "The complete object representing all S3 buckets created by the S3 module, including bucket configurations, policies, and associated resources."
 }
 
 output "environment" {
-  value = var.environment
-  description = "environment"
+  value       = var.environment
+  description = "The deployment environment (e.g., dev, staging, prod) for this infrastructure."
 }
