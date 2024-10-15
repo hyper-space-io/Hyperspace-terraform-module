@@ -1,4 +1,13 @@
 locals {
+  #####################
+  #      GENERAL      #
+  #####################
+  tags = merge(var.tags, {
+    project     = "hyperspace"
+    environment = "${var.environment}"
+    terraform   = "true"
+  })
+
   ##################
   #      VPC       #
   ##################
@@ -39,42 +48,10 @@ locals {
       echo "/dev/mapper/data-data /data xfs defaults,noatime 1 1" >> /etc/fstab
       mkdir /data/private/
       EOT
-      tags                     = merge(var.tags, { nodegroup = "fpga" })
+      tags                     = merge(local.tags, { nodegroup = "fpga" })
       autoscaling_group_tags = merge(local.default_node_pool_tags, {
         "k8s.io/cluster-autoscaler/node-template/taint/fpga"              = "true:NoSchedule"
         "k8s.io/cluster-autoscaler/node-template/resources/hugepages-1Gi" = "100Gi"
-      })
-    },
-    # Redis Nodes
-    redis = {
-      name              = "eks-redis-${local.cluster_name}"
-      min_size          = 0
-      max_size          = 40
-      desired_size      = 0
-      iam_role_name     = "redis-${local.cluster_name}"
-      instance_type     = "r6g.large"
-      capacity_type     = "ON_DEMAND"
-      ami_type          = "BOTTLEROCKET_ARM_64"
-      enable_monitoring = true
-      tags              = merge(var.tags, { nodegroup = "redis" })
-
-      labels = {
-        Environment = "${var.environment}"
-        redis       = "true"
-      }
-
-      taints = {
-        redis = {
-          key    = "redis"
-          value  = "true"
-          effect = "NO_SCHEDULE"
-        }
-      }
-
-      autoscaling_group_tags = merge(local.default_node_pool_tags, {
-        "k8s.io/cluster-autoscaler/node-template/resources/ephemeral-storage" = "20G"
-        "k8s.io/cluster-autoscaler/node-template/taint/redis"                 = "true:NoSchedule"
-        "redis"                                                               = "true"
       })
     }
   }

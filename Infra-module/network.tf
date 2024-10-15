@@ -15,7 +15,7 @@ module "vpc" {
   enable_dns_hostnames                            = true
   manage_default_security_group                   = true
   enable_flow_log                                 = var.create_vpc_flow_logs
-  vpc_flow_log_tags                               = var.create_vpc_flow_logs ? var.tags : null
+  vpc_flow_log_tags                               = var.create_vpc_flow_logs ? local.tags : null
   flow_log_destination_type                       = "cloud-watch-logs"
   create_flow_log_cloudwatch_log_group            = var.create_vpc_flow_logs
   flow_log_cloudwatch_log_group_retention_in_days = var.flow_logs_retention
@@ -30,7 +30,7 @@ module "vpc" {
     "kubernetes.io/role/internal-elb" = "1"
     "Type"                            = "private"
   }
-  tags = var.tags
+  tags = local.tags
 }
 
 
@@ -57,10 +57,10 @@ module "endpoints" {
       dns_options = {
         private_dns_only_for_inbound_resolver_endpoint = false
       }
-      tags = merge(var.tags, {
+      tags = merge(local.tags, {
         Name = "Hyperspace S3 Endpoint"
       })
     }
   }
-  tags = var.tags
+  tags = local.tags
 }

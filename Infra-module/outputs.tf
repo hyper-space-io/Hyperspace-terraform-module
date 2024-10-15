@@ -20,8 +20,8 @@ output "vpc" {
 }
 
 output "tags" {
-  value       = var.tags
-  description = "Our tags"
+  value       = local.tags
+  description = "A map of tags that is applied to all resources created by this Terraform configuration. These tags are used consistently across all modules for resource identification, cost allocation, access control, and operational purposes. They typically include information such as environment, project, and other relevant metadata."
 }
 
 output "s3_buckets" {

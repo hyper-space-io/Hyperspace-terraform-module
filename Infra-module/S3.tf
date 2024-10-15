@@ -25,7 +25,7 @@ module "s3_buckets" {
   version       = "~> 4.2.1"
   for_each      = local.s3_config
   bucket        = "hyperspace-${var.environment}-${each.key}-${random_string.random[each.key].result}"
-  tags          = var.tags
+  tags          = local.tags
   acl           = null
   policy        = try(each.value.existing_policy_arn, null)
   attach_policy = try(each.value.existing_policy_arn, null) != null

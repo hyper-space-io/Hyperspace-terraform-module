@@ -15,11 +15,8 @@ variable "environment" {
 }
 
 variable "tags" {
-  type = map(any)
-  default = {
-    terraform  = true
-    hyperspace = true
-  }
+  type        = map(any)
+  default     = {}
   description = "List of tags to assign to resources created in this module"
 }
 

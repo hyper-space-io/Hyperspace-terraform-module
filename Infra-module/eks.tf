@@ -20,7 +20,7 @@ module "eks" {
   cluster_version = 1.28
   subnet_ids      = module.vpc.private_subnets
   vpc_id          = module.vpc.vpc_id
-  tags            = var.tags
+  tags            = local.tags
 
   cluster_addons = {
     aws-ebs-csi-driver = { most_recent = true }
@@ -46,7 +46,7 @@ module "eks" {
       instance_types = var.worker_instance_type
       capacity_type  = "ON_DEMAND"
       labels         = { Environment = "${var.environment}" }
-      tags           = merge(var.tags, { nodegroup = "workers", Name = "${local.cluster_name}-eks-medium" })
+      tags           = merge(local.tags, { nodegroup = "workers", Name = "${local.cluster_name}-eks-medium" })
       ami_type       = "BOTTLEROCKET_x86_64"
 
       block_device_mappings = {
