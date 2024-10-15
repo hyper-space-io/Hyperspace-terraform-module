@@ -41,13 +41,16 @@ resource "aws_iam_role" "tfc_agent_role" {
   })
 }
 
-resource "aws_iam_role_policy_attachment" "tfc_agent_eks_policy" {
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
-  role       = aws_iam_role.tfc_agent_role.name
-}
+resource "aws_iam_role_policy_attachment" "tfc_agent_policies" {
+  for_each = toset([
+    "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy",
+    "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy",
+    "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy",
+    "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM",
+    "arn:aws:iam::aws:policy/AmazonSSMFullAccess"
+  ])
 
-resource "aws_iam_role_policy_attachment" "tfc_agent_eks_cni_policy" {
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
+  policy_arn = each.value
   role       = aws_iam_role.tfc_agent_role.name
 }
 
