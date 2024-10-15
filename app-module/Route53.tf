@@ -24,7 +24,6 @@ locals {
       })
     } : null
   }
-  zones_merged = { for k, v in local.zones : k => v if v != null }
 }
 
 module "zones" {
