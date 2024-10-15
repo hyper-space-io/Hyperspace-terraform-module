@@ -13,7 +13,7 @@ locals {
 }
 module "s3_buckets" {
   source        = "terraform-aws-modules/s3-bucket/aws"
-  version       = "4.1.1"
+  version       = "~> 4.2.1"
   for_each      = local.s3_config
   bucket        = "hyperspace-${var.environment}-${each.key}-${random_string.random[each.key].result}"
   tags          = var.tags

@@ -19,7 +19,7 @@ locals {
 }
 module "acm" {
   source                    = "terraform-aws-modules/acm/aws"
-  version                   = "5.0.1"
+  version                   = "~> 5.1.1"
   for_each                  = { for k, v in local.acm_config : k => v if v != null }
   create_certificate        = each.value.create_certificate
   domain_name               = each.value.domain_name
