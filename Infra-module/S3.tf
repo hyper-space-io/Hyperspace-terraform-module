@@ -8,6 +8,15 @@ locals {
       block_public_acls              = false
       attach_elb_log_delivery_policy = true
       attach_lb_log_delivery_policy  = true
+      lifecycle_rule = [
+        {
+          id      = "expire-after-one-year"
+          enabled = true
+          expiration = {
+            days = 365
+          }
+        }
+      ]
     }
   }
 }
@@ -29,6 +38,7 @@ module "s3_buckets" {
   ignore_public_acls             = try(each.value.ignore_public_acls, false)
   block_public_policy            = try(each.value.block_public_policy, false)
   block_public_acls              = try(each.value.block_public_acls, false)
+  lifecycle_rule                 = try(each.value.lifecycle_rule, [])
 }
 
 resource "random_string" "random" {
