@@ -45,14 +45,11 @@ fi
 log "Setting up Terraform Cloud Agent..."
 cat << 'EOF' > /var/lib/cloud/scripts/per-boot/tfc-agent-start.sh
 #!/bin/bash
-if ! sudo docker ps -q -f name=terraform-agent; then
-    sudo docker rm -f terraform-agent 2>/dev/null
-    sudo docker run -d \
-        --name=terraform-agent \
-        --restart=unless-stopped \
-        -e TFC_AGENT_TOKEN=${tfc_agent_token} \
-        hashicorp/tfc-agent:latest || echo "Failed to start Terraform Cloud Agent container."
-fi
+sudo docker run -d \
+    --name=terraform-agent \
+    --restart=unless-stopped \
+    -e TFC_AGENT_TOKEN=${tfc_agent_token} \
+    hashicorp/tfc-agent:latest || echo "Failed to start Terraform Cloud Agent container."
 EOF
 chmod +x /var/lib/cloud/scripts/per-boot/tfc-agent-start.sh || { log "Failed to make tfc-agent-start.sh executable."; exit 1; }
 /var/lib/cloud/scripts/per-boot/tfc-agent-start.sh
