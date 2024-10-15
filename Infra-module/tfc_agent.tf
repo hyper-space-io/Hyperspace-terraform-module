@@ -49,7 +49,6 @@ resource "aws_iam_role_policy_attachment" "tfc_agent_policies" {
     "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM",
     "arn:aws:iam::aws:policy/AmazonSSMFullAccess"
   ])
-
   policy_arn = each.value
   role       = aws_iam_role.tfc_agent_role.name
 }
