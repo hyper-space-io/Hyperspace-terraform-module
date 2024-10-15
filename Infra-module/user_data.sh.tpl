@@ -41,20 +41,13 @@ else
     sudo systemctl enable --now docker || { log "Failed to enable and start Docker."; exit 1; }
 fi
 
-# Add ec2-user to docker group
-sudo usermod -aG docker ec2-user
-log "Added ec2-user to docker group"
-
-log "Switching to ec2-user and running TFC agent start script"
-sudo su ec2-user
-
 # Create and run Terraform Cloud Agent start script
 log "Setting up Terraform Cloud Agent..."
 cat << 'EOF' > /var/lib/cloud/scripts/per-boot/tfc-agent-start.sh
 #!/bin/bash
-if ! docker ps -q -f name=terraform-agent; then
-    docker rm -f terraform-agent 2>/dev/null
-    docker run -d \
+if ! sudo docker ps -q -f name=terraform-agent; then
+    sudo docker rm -f terraform-agent 2>/dev/null
+    sudo docker run -d \
         --name=terraform-agent \
         --restart=unless-stopped \
         -e TFC_AGENT_TOKEN=${tfc_agent_token} \
