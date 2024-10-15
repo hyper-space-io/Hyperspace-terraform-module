@@ -3,12 +3,6 @@ output "aws_region" {
   description = "The AWS region where the VPC and all associated resources are deployed."
 }
 
-output "eks_token" {
-  value       = data.aws_eks_cluster_auth.eks.token
-  sensitive   = true
-  description = "The authentication token used for connecting to the EKS cluster. This token is sensitive and used for secure communication with the cluster."
-}
-
 output "eks_cluster" {
   value       = module.eks
   description = "The complete object representing the EKS cluster, including configuration details and metadata about the cluster."
