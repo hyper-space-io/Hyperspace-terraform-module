@@ -1,4 +1,26 @@
 locals {
+  s3_default_config = {
+    force_destroy                         = true
+    ignore_public_acls                    = true
+    block_public_policy                   = true
+    block_public_acls                     = true
+    attach_deny_insecure_transport_policy = true
+    attach_elb_log_delivery_policy        = false
+    attach_lb_log_delivery_policy         = false
+    versioning                            = true
+    encryption                            = true
+    lifecycle_rule = [
+      {
+        id      = "expire-after-ten-years"
+        enabled = true
+        expiration = {
+          days = 3650
+        }
+      }
+    ]
+  }
+  s3_config  = yamldecode(file("${path.module}/s3_buckets.yaml"))
+  s3_buckets = { for name, config in local.s3_config : name => merge(local.s3_default_config, config) }
   # s3_config = {
   #   "logs-ingress" = {
   #     versioning                     = true
@@ -19,42 +41,24 @@ locals {
   #     ]
   #   }
   # }
-  s3_default_config = {
-    force_destroy                  = true
-    ignore_public_acls             = true
-    block_public_policy            = true
-    block_public_acls              = true
-    attach_elb_log_delivery_policy = false
-    attach_lb_log_delivery_policy  = false
-    versioning                     = true
-    encryption                     = true
-    lifecycle_rule = [
-      {
-        id      = "expire-after-ten-years"
-        enabled = true
-        expiration = {
-          days = 3650
-        }
-      }
-    ]
-  }
-
-  s3_config = yamldecode(file("${path.module}/s3_buckets.yaml"))
-  s3_buckets = {
-    for name, config in local.s3_config : name => merge(local.s3_default_config, config)
-  }
 }
 
 
 module "s3_buckets" {
-  source        = "terraform-aws-modules/s3-bucket/aws"
-  version       = "~> 4.2.1"
-  for_each = local.s3_buckets
-  bucket = lower("${var.project}-${var.environment}-${each.key}-${random_string.random[each.key].result}")
-  acl           = null
-  force_destroy = each.value.force_destroy
-  attach_elb_log_delivery_policy = each.value.attach_elb_log_delivery_policy
-  attach_lb_log_delivery_policy  = each.value.attach_lb_log_delivery_policy
+  source                                = "terraform-aws-modules/s3-bucket/aws"
+  version                               = "~> 4.2.1"
+  for_each                              = local.s3_buckets
+  bucket                                = lower("${var.project}-${var.environment}-${each.key}-${random_string.random[each.key].result}")
+  acl                                   = null
+  force_destroy                         = each.value.force_destroy
+  attach_elb_log_delivery_policy        = each.value.attach_elb_log_delivery_policy
+  attach_lb_log_delivery_policy         = each.value.attach_lb_log_delivery_policy
+  block_public_acls                     = each.value.block_public_acls
+  block_public_policy                   = each.value.block_public_policy
+  ignore_public_acls                    = each.value.ignore_public_acls
+  attach_deny_insecure_transport_policy = each.value.attach_deny_insecure_transport_policy
+  restrict_public_buckets               = true
+  lifecycle_rule                        = each.value.lifecycle_rule
   versioning = {
     enabled = each.value.versioning
   }
@@ -65,14 +69,8 @@ module "s3_buckets" {
       }
     }
   } : {}
-  # Public access block
-  block_public_acls       = each.value.block_public_acls
-  block_public_policy     = each.value.block_public_policy
-  ignore_public_acls      = each.value.ignore_public_acls
-  restrict_public_buckets = true
-  lifecycle_rule = each.value.lifecycle_rule
-  tags = merge(var.tags, {
-    Name = "${var.project}-${var.environment}-${each.key}"
+  tags = merge(local.tags, {
+    Name = lower("${var.project}-${var.environment}-${each.key}-${random_string.random[each.key].result}")
   })
   # for_each      = local.s3_config
   # bucket        = "hyperspace-${var.environment}-${each.key}-${random_string.random[each.key].result}"
