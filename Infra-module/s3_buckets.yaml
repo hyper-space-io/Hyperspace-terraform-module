@@ -1,0 +1,8 @@
+logs-ingress:
+  attach_elb_log_delivery_policy: true
+  attach_lb_log_delivery_policy: true
+  lifecycle_rule:
+    - id: "expire-after-one-year"
+      enabled: true
+      expiration:
+        days: 365
