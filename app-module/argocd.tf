@@ -33,7 +33,7 @@ resource "helm_release" "system_tools" {
 awsRegion: "${local.aws_region}"
 clusterName: "${local.eks_module.cluster_name}"
 clusterAutoscaler:
-    roleArn: "${local.iam_roles["cluster_autoscaler"].iam_role_arn}"
+    roleArn: "${local.iam_roles["cluster-autoscaler"].iam_role_arn}"
 updateTimestamp: "${timestamp()}"
 EOF
   ]
