@@ -21,7 +21,7 @@ spec:
           create: true
           serviceAccount:
             create: true
-            name: cluster_autoscaler
+            name: cluster-autoscaler
             annotations:
               eks.amazonaws.com/role-arn: {{ .Values.clusterAutoscaler.roleArn }}
   destination:
