@@ -68,8 +68,8 @@ locals {
       description = "Policy for loading AFI in eks"
       policy      = data.aws_iam_policy_document.fpga_pull_access.json
     }
-    cluster-autoscaler1 = {
-      name                  = "${module.eks.cluster_name}-cluster-autoscaler1"
+    cluster-autoscaler = {
+      name                  = "${module.eks.cluster_name}-cluster-autoscaler"
       path                  = "/"
       description           = "Policy for cluster-autoscaler service"
       policy                = data.aws_iam_policy_document.cluster_autoscaler.json
