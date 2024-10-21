@@ -15,7 +15,7 @@ configs:
           %{~ if key == "orgs" }
           ${key}: 
           %{~ for org in split(",", value) }
-            - ${trim(org, " ")}
+            - ${tostring(trim(org, " "))}
           %{~ endfor }
           %{~ else }
           ${key}: ${value}
