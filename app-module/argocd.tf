@@ -25,6 +25,7 @@ resource "helm_release" "argocd" {
 resource "helm_release" "system_tools" {
   name            = "system-tools"
   chart           = "${path.module}/system-tools"
+  version         = "1.0.1"
   wait            = true
   force_update    = true
   cleanup_on_fail = true
@@ -33,6 +34,7 @@ awsRegion: "${local.aws_region}"
 clusterName: "${local.eks_module.cluster_name}"
 clusterAutoscaler:
     roleArn: "${local.iam_roles["cluster_autoscaler"].iam_role_arn}"
+updateTimestamp: "${timestamp()}"
 EOF
   ]
   depends_on = [helm_release.argocd]
