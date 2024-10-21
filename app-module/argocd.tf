@@ -1,5 +1,5 @@
 locals {
-  argocd_values = templatefile("${path.module}/argocd_values.tpl", {
+  argocd_values = templatefile("${path.module}/argocd_values.tftpl", {
     dex_enabled                = length(var.dex_connectors) > 0
     domain                     = local.internal_domain_name
     dex_connectors             = var.dex_connectors
