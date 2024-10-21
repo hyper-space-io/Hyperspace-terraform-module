@@ -47,7 +47,7 @@ variable "dex_connectors" {
     type   = string
     id     = string
     name   = string
-    config = map(any)
+    config = map(string)
   }))
   default     = []
   description = "List of Dex connector configurations"
