@@ -21,3 +21,46 @@ variable "create_public_zone" {
   type        = bool
   default     = false
 }
+
+# Auto-scaling
+variable "enable_cluster_autoscaler" {
+  description = "should we enable and install cluster-autoscaler"
+  type        = bool
+  default     = true
+}
+
+# ArgoCD
+variable "enable_argocd" {
+  description = "should we enable and install argocd"
+  type        = bool
+  default     = true
+}
+
+variable "enable_ha_argocd" {
+  description = "should we install argocd in ha mode"
+  type        = bool
+  default     = true
+}
+
+variable "dex_connectors" {
+  type = list(object({
+    type   = string
+    id     = string
+    name   = string
+    config = map(string)
+  }))
+  default     = []
+  description = "List of Dex connector configurations"
+}
+
+variable "argocd_rbac_policy_default" {
+  description = "default role for argocd"
+  type        = string
+  default     = "role:readonly"
+}
+
+variable "argocd_rbac_policy_rules" {
+  description = "Rules for argocd rbac"
+  type        = list(string)
+  default     = []
+}

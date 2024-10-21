@@ -6,3 +6,14 @@ resource "aws_iam_policy" "policies" {
   description = each.value.description
   policy      = each.value.policy
 }
+
+module "iam_iam-assumable-role-with-oidc" {
+  source                        = "terraform-aws-modules/iam/aws//modules/iam-assumable-role-with-oidc"
+  version                       = "~> 5.46.0"
+  for_each                      = { for k, v in local.iam_policies : k => v if v.create_assumable_role == true }
+  create_role                   = true
+  role_name                     = each.value.name
+  provider_url                  = module.eks.cluster_oidc_issuer_url
+  role_policy_arns              = [aws_iam_policy.policies["${each.key}"].arn]
+  oidc_fully_qualified_subjects = ["system:serviceaccount:${each.key}:${each.key}"]
+}

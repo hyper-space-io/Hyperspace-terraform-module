@@ -15,6 +15,7 @@ data "aws_ami" "amazon_linux_2" {
   }
 }
 
+# FPGA pull access for EC2
 data "aws_iam_policy_document" "fpga_pull_access" {
   statement {
     sid = "PullAccessAGFI"
@@ -36,6 +37,27 @@ data "aws_iam_policy_document" "fpga_pull_access" {
   }
 }
 
-data "aws_eks_cluster_auth" "eks" {
-  name = module.eks.cluster_name
+# Cluster Autoscaler
+data "aws_iam_policy_document" "cluster_autoscaler" {
+  statement {
+    sid = "Autoscaling"
+    actions = [
+      "autoscaling:DescribeAutoScalingGroups",
+      "autoscaling:DescribeAutoScalingInstances",
+      "autoscaling:DescribeLaunchConfigurations",
+      "autoscaling:DescribeScalingActivities",
+      "autoscaling:DescribeTags",
+      "ec2:DescribeInstanceTypes",
+      "ec2:DescribeLaunchTemplateVersions",
+      "autoscaling:SetDesiredCapacity",
+      "autoscaling:TerminateInstanceInAutoScalingGroup",
+      "ec2:DescribeImages",
+      "ec2:GetInstanceTypesFromInstanceRequirements",
+      "eks:DescribeNodegroup"
+    ]
+    resources = [
+      "*",
+    ]
+    effect = "Allow"
+  }
 }

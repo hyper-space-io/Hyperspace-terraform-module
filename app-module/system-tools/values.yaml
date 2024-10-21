@@ -1,0 +1,5 @@
+awsRegion:
+clusterName:
+clusterAutoscaler:
+  roleArn:
+  

@@ -27,3 +27,13 @@ output "environment" {
   value       = var.environment
   description = "The deployment environment (e.g., dev, staging, prod) for this infrastructure."
 }
+
+output "iam_roles" {
+  value       = module.iam_iam-assumable-role-with-oidc
+  description = "placeholder"
+}
+
+output "iam_policies" {
+  value       = aws_iam_policy.policies
+  description = "placeholder"
+}

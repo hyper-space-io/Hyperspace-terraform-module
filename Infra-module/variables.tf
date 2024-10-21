@@ -135,3 +135,10 @@ variable "worker_instance_type" {
   }
   description = "The list of allowed instance types for worker nodes."
 }
+
+# Auto-scaling
+variable "enable_cluster_autoscaler" {
+  description = "should we enable and install cluster-autoscaler"
+  type        = bool
+  default     = true
+}
