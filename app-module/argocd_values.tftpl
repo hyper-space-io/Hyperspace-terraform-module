@@ -6,22 +6,22 @@ configs:
     url: https://argocd.${domain}
     dex.config: |
       connectors:
-      %{ for connector in dex_connectors ~}
+      %{~ for connector in dex_connectors }
       - type: ${connector.type}
         id: ${connector.id}
         name: ${connector.name}
         config:
-          %{ for key, value in connector.config ~}
+          %{~ for key, value in connector.config }
           ${key}: ${value}
-          %{ endfor ~}
-      %{ endfor ~}
+          %{~ endfor }
+      %{~ endfor }
 
   rbac:
     policy.default: ${rbac_policy_default}
     policy.csv: |
-      %{ for rule in rbac_policy_rules ~}
+      %{~ for rule in rbac_policy_rules }
       ${rule}
-      %{ endfor ~}
+      %{~ endfor }
 
 %{ if enable_high_availability }
 redis-ha:
