@@ -8,6 +8,7 @@ locals {
     enable_high_availability = var.enable_ha_argocd
     ingress_enabled          = local.eks_exists
     ingress_class            = "nginx-internal"
+    updateTimestamp          = "${timestamp()}"
   })
 }
 
