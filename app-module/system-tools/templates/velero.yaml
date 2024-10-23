@@ -41,6 +41,7 @@ spec:
           useSecret: false
         serviceAccount:
           server:
+            name: "velero"
             annotations:
               eks.amazonaws.com/role-arn: "{{ .Values.velero.roleArn }}"
   destination:
