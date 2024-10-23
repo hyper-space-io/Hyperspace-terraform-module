@@ -33,7 +33,11 @@ resource "helm_release" "system_tools" {
 awsRegion: "${local.aws_region}"
 clusterName: "${local.eks_module.cluster_name}"
 clusterAutoscaler:
-    roleArn: "${local.iam_roles["cluster-autoscaler"].iam_role_arn}"
+  roleArn: "${local.iam_roles["cluster-autoscaler"].iam_role_arn}"
+coredump:
+  bucketArn: "${local.s3_buckets["core-dump-logs"].s3_bucket_arn}"
+  vendor: "rhel7"
+  roleArn: "${local.iam_roles["core-dump"].iam_role_arn}"
 updateTimestamp: "${timestamp()}"
 EOF
   ]

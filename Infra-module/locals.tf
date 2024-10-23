@@ -69,10 +69,17 @@ locals {
       policy      = data.aws_iam_policy_document.fpga_pull_access.json
     }
     cluster-autoscaler = {
-      name                  = "${module.eks.cluster_name}-cluster-autoscaler"
+      name                  = "${local.cluster_name}-cluster-autoscaler"
       path                  = "/"
       description           = "Policy for cluster-autoscaler service"
       policy                = data.aws_iam_policy_document.cluster_autoscaler.json
+      create_assumable_role = true
+    }
+    core-dump = {
+      name = "${local.cluster_name}-core-dump"
+      path = "/"
+      description = "Policy for core-dump service"
+      policy = data.aws_iam_policy_document.core_dump_s3_full_access.json
       create_assumable_role = true
     }
   }

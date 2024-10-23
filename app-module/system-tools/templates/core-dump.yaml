@@ -1,0 +1,35 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: core-dump
+  namespace: argocd
+spec:
+  project: system-tools
+  source:
+    repoURL: https://ibm.github.io/core-dump-handler.git
+    targetRevision: cluster-autoscaler-chart-9.37.0
+    path: charts/cluster-autoscaler
+    helm:
+      values: |
+        daemonset:
+          includeCrioExe: true
+          vendor: {{ .Values.coredump.vendor }}
+          s3BucketName: {{ .Values.coredump.bucketArn }}
+          s3Region: {{ .Values.awsRegion }}
+        serviceAccount:
+          annotations:
+            eks.amazonaws.com/role-arn: {{ .Values.coredump.roleArn }}
+        tolerations:
+        - key: "fpga"
+          operator: "Equal"
+          value: true
+          effect: "NoSchedule"
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: cluster-autoscaler
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

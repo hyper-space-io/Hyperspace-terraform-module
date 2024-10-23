@@ -70,6 +70,14 @@ locals {
           days = 365
       } }]
     }
+    core-dump-logs = {
+      lifecycle_rule = [{
+        id      = "expire-after-one-year"
+        enabled = true
+        expiration = {
+          days = 365
+      } }]
+    }
   }
   s3_buckets = { for name, config in local.s3_config : name => merge(local.s3_default_config, config) }
 }

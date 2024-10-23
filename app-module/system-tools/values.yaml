@@ -2,4 +2,7 @@ awsRegion:
 clusterName:
 clusterAutoscaler:
   roleArn:
-  
+coredump:
+  bucketArn:
+  vendor:
+  roleArn:
