@@ -6,9 +6,9 @@ metadata:
 spec:
   project: system-tools
   source:
-    repoURL: https://ibm.github.io/core-dump-handler.git
-    targetRevision: cluster-autoscaler-chart-9.37.0
-    path: charts/cluster-autoscaler
+    repoURL: https://github.com/IBM/core-dump-handler.git
+    targetRevision: v8.10.0
+    path: charts/core-dump-handler
     helm:
       values: |
         daemonset:
