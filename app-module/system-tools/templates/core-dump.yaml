@@ -17,6 +17,7 @@ spec:
           s3BucketName: {{ .Values.coredump.bucketArn }}
           s3Region: {{ .Values.awsRegion }}
         serviceAccount:
+          name: core-dump
           annotations:
             eks.amazonaws.com/role-arn: {{ .Values.coredump.roleArn }}
         tolerations:
