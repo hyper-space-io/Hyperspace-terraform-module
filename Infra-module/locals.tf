@@ -82,5 +82,12 @@ locals {
       policy = data.aws_iam_policy_document.core_dump_s3_full_access.json
       create_assumable_role = true
     }
+    velero = {
+      name = "${local.cluster_name}-velero"
+      path = "/"
+      description = "Policy for velero service"
+      policy = data.aws_iam_policy_document.velero_s3_full_access.json
+      create_assumable_role = true
+    }
   }
 }

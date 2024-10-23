@@ -75,3 +75,17 @@ data "aws_iam_policy_document" "core_dump_s3_full_access" {
     effect = "Allow"
   }
 }
+
+data "aws_iam_policy_document" "velero_s3_full_access" {
+  statement {
+    sid = "FullAccessS3CoreDump"
+    actions = [
+      "s3:*"
+    ]
+    resources = [
+      "${module.s3_buckets["velero"].s3_bucket_arn}",
+      "${module.s3_buckets["velero"].s3_bucket_arn}/*"
+    ]
+    effect = "Allow"
+  }
+}
