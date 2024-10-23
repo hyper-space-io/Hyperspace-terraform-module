@@ -22,6 +22,7 @@ spec:
           backupStorageLocation:
             - name: "s3"
               provider: "aws"
+              default: true
               bucket: "{{ .Values.velero.bucketID }}"
               accessMode: "ReadWrite"
               config: {
