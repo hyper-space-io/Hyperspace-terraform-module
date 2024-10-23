@@ -6,3 +6,6 @@ coredump:
   bucketArn:
   vendor:
   roleArn:
+velero:
+  bucketID:
+  roleArn: 

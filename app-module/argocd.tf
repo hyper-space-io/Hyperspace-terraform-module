@@ -38,6 +38,9 @@ coredump:
   bucketArn: "${local.s3_buckets["core-dump-logs"].s3_bucket_arn}"
   vendor: "rhel7"
   roleArn: "${local.iam_roles["core-dump"].iam_role_arn}"
+velero:
+  bucketID: "${local.s3_buckets["velero"].s3_bucket_id}"
+  roleArn: "${local.iam_roles["velero"].iam_role_arn}"
 updateTimestamp: "${timestamp()}"
 EOF
   ]
