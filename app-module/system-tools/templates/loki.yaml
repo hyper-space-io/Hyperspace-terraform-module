@@ -40,11 +40,9 @@ spec:
                 region: {{ .Values.awsRegion }}
                 insecure: false
                 sse_encryption: true
-                s3_endpoint: s3.{{ .Values.awsRegion }}.amazonaws.com
 
                 dynamodb:
                   dynamodb_url: "dynamodb://{{ .Values.awsRegion }}"
-                  enable_deletion_protection: true
 
             table_manager:
               retention_deletes_enabled: true
@@ -55,7 +53,6 @@ spec:
               index_tables_provisioning:
                 enable_ondemand_throughput_mode: true
                 enable_inactive_throughput_on_demand_mode: true
-                deletion_protection: true
 
         promtail:
           tolerations:
