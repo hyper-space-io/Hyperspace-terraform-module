@@ -79,6 +79,7 @@ locals {
       } }]
     }
     velero = {}
+    loki = {}
   }
   s3_buckets = { for name, config in local.s3_config : name => merge(local.s3_default_config, config) }
 }

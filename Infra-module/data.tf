@@ -2,6 +2,8 @@ data "aws_availability_zones" "available" {
   state = "available"
 }
 
+data "aws_caller_identity" "current" {}
+
 data "aws_ami" "amazon_linux_2" {
   most_recent = true
   owners      = ["amazon"]
@@ -87,5 +89,71 @@ data "aws_iam_policy_document" "velero_s3_full_access" {
       "${module.s3_buckets["velero"].s3_bucket_arn}/*"
     ]
     effect = "Allow"
+  }
+}
+
+data "aws_iam_policy_document" "loki_s3_dynamodb_full_access" {
+  statement {
+    actions = [
+      "s3:ListBucket",
+      "s3:PutObject",
+      "s3:GetObject"
+    ]
+    effect = "Allow"
+    resources = [
+      "${module.s3_buckets["loki"].s3_bucket_arn}",
+      "${module.s3_buckets["loki"].s3_bucket_arn}/*"
+    ]
+  }
+  statement {
+    actions = [
+      "dynamodb:BatchGetItem",
+      "dynamodb:BatchWriteItem",
+      "dynamodb:DeleteItem",
+      "dynamodb:DescribeTable",
+      "dynamodb:GetItem",
+      "dynamodb:ListTagsOfResource",
+      "dynamodb:PutItem",
+      "dynamodb:Query",
+      "dynamodb:TagResource",
+      "dynamodb:UntagResource",
+      "dynamodb:UpdateItem",
+      "dynamodb:UpdateTable",
+      "dynamodb:CreateTable",
+      "dynamodb:DeleteTable"
+    ]
+    effect = "Allow"
+    resources = [
+      "arn:aws:dynamodb:${var.aws_region}:${data.aws_caller_identity.current.account_id}:table/${module.eks.cluster_name}-loki-index-*"
+    ]
+  }
+  statement {
+    actions = [
+      "dynamodb:ListTables"
+    ]
+    effect    = "Allow"
+    resources = ["*"]
+  }
+  statement {
+    actions = [
+      "application-autoscaling:DescribeScalableTargets",
+      "application-autoscaling:DescribeScalingPolicies",
+      "application-autoscaling:RegisterScalableTarget",
+      "application-autoscaling:DeregisterScalableTarget",
+      "application-autoscaling:PutScalingPolicy",
+      "application-autoscaling:DeleteScalingPolicy"
+    ]
+    effect    = "Allow"
+    resources = ["*"]
+  }
+  statement {
+    actions = [
+      "iam:GetRole",
+      "iam:PassRole"
+    ]
+    effect = "Allow"
+    resources = [
+      "${module.iam_iam-assumable-role-with-oidc["loki"].iam_role_arn}"
+    ]
   }
 }

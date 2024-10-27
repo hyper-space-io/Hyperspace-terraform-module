@@ -15,5 +15,5 @@ module "iam_iam-assumable-role-with-oidc" {
   role_name                     = each.value.name
   provider_url                  = module.eks.cluster_oidc_issuer_url
   role_policy_arns              = [aws_iam_policy.policies["${each.key}"].arn]
-  oidc_fully_qualified_subjects = ["system:serviceaccount:${each.key}:${each.key}"]
+  oidc_fully_qualified_subjects = ["system:serviceaccount:${each.key}:${each.value.sa_namespace}"]
 }
