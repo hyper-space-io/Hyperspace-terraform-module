@@ -9,3 +9,6 @@ coredump:
 velero:
   bucketID:
   roleArn: 
+loki:
+  bucketName:
+  roleArn:

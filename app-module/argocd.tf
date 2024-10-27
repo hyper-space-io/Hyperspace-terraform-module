@@ -41,6 +41,9 @@ coredump:
 velero:
   bucketID: "${local.s3_buckets["velero"].s3_bucket_id}"
   roleArn: "${local.iam_roles["velero"].iam_role_arn}"
+loki:
+  bucketName: "${local.s3_buckets["loki"].s3_bucket_id}"
+  roleArn: "${local.iam_roles["loki"].iam_role_arn}"
 updateTimestamp: "${timestamp()}"
 EOF
   ]

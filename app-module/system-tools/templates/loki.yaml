@@ -1,0 +1,74 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: loki
+  namespace: argocd
+spec:
+  project: system-tools
+  source:
+    repoURL: "https://github.com/grafana/helm-charts.git"
+    targetRevision: loki-stack-2.10.2
+    path: charts/loki-stack
+    helm:
+      values: |
+        loki:
+          serviceAccount:
+            name: loki
+            create: true
+            annotations:
+              eks.amazonaws.com/role-arn: {{ .Values.loki.roleArn }}
+
+          extraArgs:
+            target: all,table-manager
+
+          config:
+            schema_config:
+              configs:
+                - from: "2024-01-01"
+                  store: "aws"
+                  object_store: "s3"
+                  schema: "v11"
+                  index:
+                    prefix: "{{ .Values.clusterName }}-loki-index-"
+                    period: "8904h"
+
+            storage_config:
+              aws:
+                s3: "s3://{{ .Values.awsRegion }}/{{ .Values.loki.bucketName }}"
+                s3forcepathstyle: true
+                bucketnames: {{ .Values.loki.bucketName }}
+                region: {{ .Values.awsRegion }}
+                insecure: false
+                sse_encryption: true
+                s3_endpoint: s3.{{ .Values.awsRegion }}.amazonaws.com
+
+                dynamodb:
+                  dynamodb_url: "dynamodb://{{ .Values.awsRegion }}"
+                  enable_deletion_protection: true
+
+            table_manager:
+              retention_deletes_enabled: true
+              retention_period: "8904h"
+              deletion_protection:
+                enabled: true
+                grace_period: "72h"
+              index_tables_provisioning:
+                enable_ondemand_throughput_mode: true
+                enable_inactive_throughput_on_demand_mode: true
+                deletion_protection: true
+
+        promtail:
+          tolerations:
+          - key: "fpga"
+            operator: "Equal"
+            value: "true"
+            effect: "NoSchedule"
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
