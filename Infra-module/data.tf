@@ -153,7 +153,7 @@ data "aws_iam_policy_document" "loki_s3_dynamodb_full_access" {
     ]
     effect = "Allow"
     resources = [
-      "${module.iam_iam-assumable-role-with-oidc["loki"].iam_role_arn}"
+      "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${local.cluster_name}-loki"
     ]
   }
 }
