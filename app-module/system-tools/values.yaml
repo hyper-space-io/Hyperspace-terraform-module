@@ -1,5 +1,6 @@
 awsRegion:
 clusterName:
+internalDomainName:
 clusterAutoscaler:
   roleArn:
 coredump:
@@ -12,3 +13,5 @@ velero:
 loki:
   bucketName:
   roleArn:
+grafana:
+  ingressClass: 

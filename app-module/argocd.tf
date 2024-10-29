@@ -31,6 +31,7 @@ resource "helm_release" "system_tools" {
   cleanup_on_fail = true
   values = [<<EOF
 awsRegion: "${local.aws_region}"
+internalDomainName: ${local.internal_domain_name}
 clusterName: "${local.eks_module.cluster_name}"
 clusterAutoscaler:
   roleArn: "${local.iam_roles["cluster-autoscaler"].iam_role_arn}"
@@ -44,6 +45,8 @@ velero:
 loki:
   bucketName: "${local.s3_buckets["loki"].s3_bucket_id}"
   roleArn: "${local.iam_roles["loki"].iam_role_arn}"
+grafana:
+  ingressClass: "nginx-internal"
 updateTimestamp: "${timestamp()}"
 EOF
   ]
