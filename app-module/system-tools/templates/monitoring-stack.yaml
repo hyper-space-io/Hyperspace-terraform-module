@@ -27,16 +27,17 @@ spec:
               annotations:
                 cert-manager.io/cluster-issuer: "prod-certmanager"
                 acme.cert-manager.io/http01-edit-in-place: "true"
-                nginx.ingress.kubernetes.io/auth-type: none
+                nginx.ingress.kubernetes.io/auth-type: basic
+                nginx.ingress.kubernetes.io/auth-secret: none
               hosts:
                 - "grafana.{{ .Values.internalDomainName }}"  
               tls:
                 - secretName: "monitoring-tls"
                   hosts:
                     - "grafana.{{ .Values.internalDomainName }}"
-              persistence:
-                enabled: true
-                size: 10Gi
+            persistence:
+              enabled: true
+              size: 10Gi
 
           additionalDataSources:
             - name: "loki"
