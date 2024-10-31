@@ -82,8 +82,9 @@ spec:
       helm:
         values: |
           resources:
-            cpu: "10m"
-            memory: "32Mi"
+            requests:
+              cpu: "10m"
+              memory: "32Mi"
           prometheus:
             url: http://"kube-prometheus-stack-prometheus.monitoring.svc"
 
