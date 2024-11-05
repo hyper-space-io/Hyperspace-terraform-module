@@ -22,33 +22,33 @@ resource "helm_release" "argocd" {
   values           = [local.argocd_values]
 }
 
-resource "helm_release" "system_tools" {
-  name            = "system-tools"
-  chart           = "${path.module}/system-tools"
-  version         = "1.0.1"
-  wait            = true
-  force_update    = true
-  cleanup_on_fail = true
-  values = [<<EOF
-awsRegion: "${local.aws_region}"
-internalDomainName: ${local.internal_domain_name}
-clusterName: "${local.eks_module.cluster_name}"
-clusterAutoscaler:
-  roleArn: "${local.iam_roles["cluster-autoscaler"].iam_role_arn}"
-coredump:
-  bucketArn: "${local.s3_buckets["core-dump-logs"].s3_bucket_arn}"
-  vendor: "rhel7"
-  roleArn: "${local.iam_roles["core-dump"].iam_role_arn}"
-velero:
-  bucketID: "${local.s3_buckets["velero"].s3_bucket_id}"
-  roleArn: "${local.iam_roles["velero"].iam_role_arn}"
-loki:
-  bucketName: "${local.s3_buckets["loki"].s3_bucket_id}"
-  roleArn: "${local.iam_roles["loki"].iam_role_arn}"
-grafana:
-  ingressClass: "nginx-internal"
-updateTimestamp: "${timestamp()}"
-EOF
-  ]
-  depends_on = [helm_release.argocd]
-}
+# resource "helm_release" "system_tools" {
+#   name            = "system-tools"
+#   chart           = "${path.module}/system-tools"
+#   version         = "1.0.1"
+#   wait            = true
+#   force_update    = true
+#   cleanup_on_fail = true
+#   values = [<<EOF
+# awsRegion: "${local.aws_region}"
+# internalDomainName: ${local.internal_domain_name}
+# clusterName: "${local.eks_module.cluster_name}"
+# clusterAutoscaler:
+#   roleArn: "${local.iam_roles["cluster-autoscaler"].iam_role_arn}"
+# coredump:
+#   bucketArn: "${local.s3_buckets["core-dump-logs"].s3_bucket_arn}"
+#   vendor: "rhel7"
+#   roleArn: "${local.iam_roles["core-dump"].iam_role_arn}"
+# velero:
+#   bucketID: "${local.s3_buckets["velero"].s3_bucket_id}"
+#   roleArn: "${local.iam_roles["velero"].iam_role_arn}"
+# loki:
+#   bucketName: "${local.s3_buckets["loki"].s3_bucket_id}"
+#   roleArn: "${local.iam_roles["loki"].iam_role_arn}"
+# grafana:
+#   ingressClass: "nginx-internal"
+# updateTimestamp: "${timestamp()}"
+# EOF
+#   ]
+#   depends_on = [helm_release.argocd]
+# }
