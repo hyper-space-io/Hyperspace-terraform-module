@@ -74,31 +74,31 @@ locals {
       description           = "Policy for cluster-autoscaler service"
       policy                = data.aws_iam_policy_document.cluster_autoscaler.json
       create_assumable_role = true
-      sa_namespace = "cluster-autoscaler"
+      sa_namespace          = "cluster-autoscaler"
     }
     core-dump = {
-      name = "${local.cluster_name}-core-dump"
-      path = "/"
-      description = "Policy for core-dump service"
-      policy = data.aws_iam_policy_document.core_dump_s3_full_access.json
+      name                  = "${local.cluster_name}-core-dump"
+      path                  = "/"
+      description           = "Policy for core-dump service"
+      policy                = data.aws_iam_policy_document.core_dump_s3_full_access.json
       create_assumable_role = true
-      sa_namespace = "core-dump"
+      sa_namespace          = "core-dump"
     }
     velero = {
-      name = "${local.cluster_name}-velero"
-      path = "/"
-      description = "Policy for velero service"
-      policy = data.aws_iam_policy_document.velero_s3_full_access.json
+      name                  = "${local.cluster_name}-velero"
+      path                  = "/"
+      description           = "Policy for velero service"
+      policy                = data.aws_iam_policy_document.velero_s3_full_access.json
       create_assumable_role = true
-      sa_namespace = "velero"
+      sa_namespace          = "velero"
     }
     loki = {
-      name = "${local.cluster_name}-loki"
-      path = "/"
-      description = "Policy for loki service"
-      policy = data.aws_iam_policy_document.loki_s3_dynamodb_full_access.json
+      name                  = "${local.cluster_name}-loki"
+      path                  = "/"
+      description           = "Policy for loki service"
+      policy                = data.aws_iam_policy_document.loki_s3_dynamodb_full_access.json
       create_assumable_role = true
-      sa_namespace = "monitoring"
+      sa_namespace          = "monitoring"
     }
   }
 }
