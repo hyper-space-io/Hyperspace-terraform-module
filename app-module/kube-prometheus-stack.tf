@@ -73,6 +73,10 @@ kubeScheduler:
   enabled: false    
 EOF
   ]
+  set_sensitive {
+    name  = "grafana.adminPassword"
+    value = random_password.grafana_admin_password.result
+  }
 }
 
 resource "helm_release" "prometheus_adapter" {
@@ -91,4 +95,10 @@ prometheus:
 EOF
   ]
   depends_on = [helm_release.kube_prometheus_stack]
+}
+
+resource "random_password" "grafana_admin_password" {
+  length           = 30
+  special          = true
+  override_special = "_%@"
 }
