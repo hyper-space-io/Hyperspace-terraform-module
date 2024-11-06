@@ -38,6 +38,9 @@ loki:
 
         dynamodb:
           dynamodb_url: "dynamodb://${local.aws_region}"
+          index_tables_provisioning:
+            enable_ondemand_throughput_mode: true
+            enable_inactive_throughput_on_demand_mode: true
     
     table_manager:
       retention_deletes_enabled: true
