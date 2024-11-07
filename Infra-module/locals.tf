@@ -100,5 +100,13 @@ locals {
       create_assumable_role = true
       sa_namespace          = "monitoring"
     }
+    secrets-manager = {
+      name                  = "${local.cluster_name}-external-secrets"
+      path                  = "/"
+      description           = "Policy for external-secrets service"
+      policy                = data.aws_iam_policy_document.secrets_manager.json
+      create_assumable_role = true
+      sa_namespace          = "external-secrets"
+    }
   }
 }

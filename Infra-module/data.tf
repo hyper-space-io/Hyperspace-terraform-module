@@ -157,3 +157,19 @@ data "aws_iam_policy_document" "loki_s3_dynamodb_full_access" {
     ]
   }
 }
+
+data "aws_iam_policy_document" "secrets_manager" {
+  statement {
+    sid = "secretsmanager"
+    actions = [
+      "secretsmanager:GetResourcePolicy",
+      "secretsmanager:GetSecretValue",
+      "secretsmanager:DescribeSecret",
+      "secretsmanager:ListSecretVersionIds"
+    ]
+    resources = [
+      "arn:aws:secretsmanager:${var.aws_region}:${data.aws_caller_identity.current.account_id}:secret:*",
+    ]
+    effect = "Allow"
+  }
+}
