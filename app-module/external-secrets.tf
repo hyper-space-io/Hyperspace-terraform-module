@@ -29,5 +29,5 @@ resource "helm_release" "secret_manager_manifests" {
   awsRegion: "${local.aws_region}"
   EOT
   ]
-  depends_on      = [module.eks, helm_release.secrets_manager]
+  depends_on      = [ helm_release.secrets_manager ]
 }
