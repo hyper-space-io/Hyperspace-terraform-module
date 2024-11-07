@@ -100,7 +100,7 @@ locals {
       create_assumable_role = true
       sa_namespace          = "monitoring"
     }
-    secrets-manager = {
+    external-secrets = {
       name                  = "${local.cluster_name}-external-secrets"
       path                  = "/"
       description           = "Policy for external-secrets service"
