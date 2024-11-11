@@ -1,13 +1,45 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: ecr-credentials-sync-immediate
+  name: ecr-credentials-sync-first
   namespace: argocd
   annotations:
     helm.sh/hook: post-install,post-upgrade
     helm.sh/hook-weight: "-5"
-    helm.sh/hook-delete-policy: hook-succeeded, hook-failed
+    helm.sh/hook-delete-policy: hook-succeeded,hook-failed
   labels:
     cronjob-name: ecr-credentials-sync
 spec:
-  template: {{ (lookup "batch/v1" "CronJob" .Release.Namespace "ecr-credentials-sync").spec.jobTemplate.spec.template | toYaml | nindent 4 }}
+  template:
+    spec:
+      restartPolicy: Never
+      serviceAccountName: ecr-credentials-sync
+      volumes:
+        - name: token
+          emptyDir:
+            medium: Memory
+        - name: script
+          configMap:
+            name: ecr-credentials-configmap
+            defaultMode: 0770
+      initContainers:
+        - image: amazon/aws-cli
+          name: get-token
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/sh
+            - -ce
+            - aws ecr get-login-password --region {{ .Values.region }} > /token/ecr-token
+          volumeMounts:
+            - mountPath: /token
+              name: token
+      containers:
+        - name: create-secret
+          image: bitnami/kubectl
+          imagePullPolicy: IfNotPresent
+          command: ["/script/ecr-credentials.sh"]
+          volumeMounts:
+            - name: script
+              mountPath: "/script"
+            - mountPath: /token
+              name: token
