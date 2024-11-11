@@ -1,4 +1,4 @@
-resource "helm_release" "ecr_token" {
+resource "helm_release" "ecr_token_sync" {
   name            = "ecr-credentials-sync"
   chart           = "${path.module}/ecr-credentials-sync"
   wait            = true
