@@ -15,13 +15,9 @@ spec:
       restartPolicy: Never
       serviceAccountName: ecr-credentials-sync
       volumes:
-        - name: token
-          emptyDir:
+        - emptyDir:
             medium: Memory
-        - name: script
-          configMap:
-            name: ecr-credentials-configmap
-            defaultMode: 0770
+          name: token
       initContainers:
         - image: amazon/aws-cli
           name: get-token
@@ -43,3 +39,11 @@ spec:
               mountPath: "/script"
             - mountPath: /token
               name: token
+      volumes:
+        - name: script
+          configMap:
+            name: ecr-credentials-configmap
+            defaultMode: 0770
+        - emptyDir:
+            medium: Memory
+          name: token
