@@ -176,7 +176,7 @@ data "aws_iam_policy_document" "secrets_manager" {
 
 data "aws_iam_policy_document" "kms" {
   statement {
-    sid    = "Enable IAM User Permissions"
+    sid    = "EnableIAMUserPermissions"  # Removed spaces
     effect = "Allow"
 
     actions = [
@@ -200,7 +200,7 @@ data "aws_iam_policy_document" "kms" {
   }
 
   statement {
-    sid    = "Allow use of the key"
+    sid    = "AllowUseOfTheKey"  # Removed spaces
     effect = "Allow"
 
     actions = [
@@ -215,7 +215,7 @@ data "aws_iam_policy_document" "kms" {
   }
 
   statement {
-    sid    = "Allow attachment of persistent resources"
+    sid    = "AllowAttachmentOfPersistentResources"  # Removed spaces
     effect = "Allow"
 
     actions = [
