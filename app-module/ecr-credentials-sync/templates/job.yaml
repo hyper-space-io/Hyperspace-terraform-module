@@ -3,12 +3,6 @@ kind: Job
 metadata:
   name: ecr-credentials-sync-first
   namespace: argocd
-  annotations:
-    helm.sh/hook: post-install,post-upgrade
-    helm.sh/hook-weight: "5"
-    helm.sh/hook-delete-policy: hook-succeeded,hook-failed
-  labels:
-    cronjob-name: ecr-credentials-sync
 spec:
   template:
     spec:

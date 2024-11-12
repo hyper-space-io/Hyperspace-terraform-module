@@ -4,4 +4,5 @@ resource "helm_release" "ecr_token_sync" {
   wait            = true
   force_update    = true
   cleanup_on_fail = true
+  depends_on = [ helm_release.argocd ]
 }
