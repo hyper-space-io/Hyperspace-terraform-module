@@ -35,7 +35,7 @@ locals {
       max_size                 = 20
       desired_size             = 0
       instance_type            = "f1.2xlarge"
-      ami_id                   = "ami-0b4e17a8ddffadd10"
+      ami_id                   = "ami-06f1e85bc700c03df"
       bootstrap_extra_args     = "--kubelet-extra-args '--node-labels=hyperspace.io/type=fpga --register-with-taints=fpga=true:NoSchedule'"
       post_bootstrap_user_data = <<-EOT
       #!/bin/bash -e
@@ -53,6 +53,22 @@ locals {
         "k8s.io/cluster-autoscaler/node-template/taint/fpga"              = "true:NoSchedule"
         "k8s.io/cluster-autoscaler/node-template/resources/hugepages-1Gi" = "100Gi"
       })
+      block_device_mappings = {
+        root = {
+          device_name = "/dev/xvda"
+          ebs = {
+            encrypted   = true
+            kms_key_id = "arn:aws:kms:us-east-1:418316469434:key/90e60d2a-8673-4ed4-9ccb-3988ef9d674d"
+          }
+        }
+        nvme = {
+          device_name = "/dev/nvme0n1"
+          ebs = {
+            encrypted   = true
+            kms_key_id = "arn:aws:kms:us-east-1:418316469434:key/90e60d2a-8673-4ed4-9ccb-3988ef9d674d"
+          }
+        }
+      }
     }
   }
 
@@ -107,6 +123,12 @@ locals {
       policy                = data.aws_iam_policy_document.secrets_manager.json
       create_assumable_role = true
       sa_namespace          = "external-secrets"
+    }
+    kms = {
+      name                  = "${local.cluster_name}-kms"
+      path                  = "/"
+      description           = "Policy for using Hyperspace's KMS key for AMI encryption"
+      policy                = data.aws_iam_policy_document.kms.json
     }
   }
 }
