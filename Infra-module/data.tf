@@ -92,6 +92,20 @@ data "aws_iam_policy_document" "velero_s3_full_access" {
   }
 }
 
+data "aws_iam_policy_document" "ec2_tags_control" {
+  statement {
+    sid = "EC2TagsAccess"
+    actions = [
+      "ec2:DescribeTags",
+      "ec2:CreateTags"
+    ]
+    resources = [
+      "arn:aws:ec2:*:*:instance/*"
+    ]
+    effect = "Allow"
+  }
+}
+
 data "aws_iam_policy_document" "loki_s3_dynamodb_full_access" {
   statement {
     actions = [

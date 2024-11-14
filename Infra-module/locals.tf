@@ -80,6 +80,12 @@ locals {
       description = "Policy for loading AFI in eks"
       policy      = data.aws_iam_policy_document.fpga_pull_access.json
     }
+    ec2_tags = {
+      name        = "${local.cluster_name}-EC2TagsPolicy"
+      path        = "/"
+      description = "Policy for controling EC2 resources tags"
+      policy      = data.aws_iam_policy_document.ec2_tags_control.json
+    }
     cluster-autoscaler = {
       name                  = "${local.cluster_name}-cluster-autoscaler"
       path                  = "/"

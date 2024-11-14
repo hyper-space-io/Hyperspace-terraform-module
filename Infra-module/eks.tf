@@ -108,7 +108,8 @@ module "eks" {
     iam_role_additional_policies = {
       AmazonSSMManagedInstanceCore = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
       AmazonEBSCSIDriverPolicy     = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
-      Additional                   = "${aws_iam_policy.policies["fpga_pull"].arn}"
+      EC2TagsControl               = "${aws_iam_policy.policies["ec2_tags"].arn}"
+      FpgaPull                   = "${aws_iam_policy.policies["fpga_pull"].arn}"
       KMSAccess                    = "${aws_iam_policy.policies["kms"].arn}"
     }
   }
