@@ -217,3 +217,20 @@ module "irsa-ebs-csi" {
 
 
 #############################################################################################################################################
+
+# Create the KMS grant
+resource "aws_kms_grant" "asg_grant" {
+  name              = "asg-cross-account-grant"
+  key_id            = "arn:aws:kms:us-east-1:418316469434:key/90e60d2a-8673-4ed4-9ccb-3988ef9d674d"
+  grantee_principal = "arn:aws:iam::337450623971:role/aws-service-role/autoscaling.amazonaws.com/AWSServiceRoleForAutoScaling"
+  operations = [
+    "Encrypt",
+    "Decrypt",
+    "ReEncryptFrom",
+    "ReEncryptTo",
+    "GenerateDataKey",
+    "GenerateDataKeyWithoutPlaintext",
+    "DescribeKey",
+    "CreateGrant"
+  ]
+}
