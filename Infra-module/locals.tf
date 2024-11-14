@@ -53,22 +53,6 @@ locals {
         "k8s.io/cluster-autoscaler/node-template/taint/fpga"              = "true:NoSchedule"
         "k8s.io/cluster-autoscaler/node-template/resources/hugepages-1Gi" = "100Gi"
       })
-      block_device_mappings = {
-        root = {
-          device_name = "/dev/xvda"
-          ebs = {
-            encrypted   = true
-            kms_key_id = "arn:aws:kms:us-east-1:418316469434:key/90e60d2a-8673-4ed4-9ccb-3988ef9d674d"
-          }
-        }
-        nvme = {
-          device_name = "/dev/nvme0n1"
-          ebs = {
-            encrypted   = true
-            kms_key_id = "arn:aws:kms:us-east-1:418316469434:key/90e60d2a-8673-4ed4-9ccb-3988ef9d674d"
-          }
-        }
-      }
     }
   }
 
