@@ -53,6 +53,18 @@ locals {
         "k8s.io/cluster-autoscaler/node-template/taint/fpga"              = "true:NoSchedule"
         "k8s.io/cluster-autoscaler/node-template/resources/hugepages-1Gi" = "100Gi"
       })
+      block_device_mappings = {
+        root = {
+          device_name = "/dev/xvda"
+          ebs = {
+            encrypted   = true
+            volume_size = 200
+            volume_type = "gp3"
+            iops       = 3000
+            throughput = 125
+          }
+        }
+      }
     }
   }
 
