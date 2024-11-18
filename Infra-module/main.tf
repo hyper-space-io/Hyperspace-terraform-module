@@ -9,7 +9,7 @@ resource "aws_iam_policy" "policies" {
 
 module "iam_iam-assumable-role-with-oidc" {
   source                        = "terraform-aws-modules/iam/aws//modules/iam-assumable-role-with-oidc"
-  version                       = "~> 2.12.2"
+  version                       = "~> 5.48.0"
   for_each                      = { for k, v in local.iam_policies : k => v if lookup(v, "create_assumable_role", false) == true }
   create_role                   = true
   role_name                     = each.value.name
