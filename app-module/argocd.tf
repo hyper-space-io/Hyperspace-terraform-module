@@ -14,21 +14,10 @@ locals {
 resource "helm_release" "argocd" {
   count            = var.enable_argocd ? 1 : 0
   chart            = "argo-cd"
-  version          = "~> 7.2.0"
+  version          = "~> 7.7.3"
   name             = "argocd"
   namespace        = "argocd"
   create_namespace = true
   repository       = "https://argoproj.github.io/argo-helm"
   values           = [local.argocd_values]
 }
-
-# awsRegion: "${local.aws_region}"
-# internalDomainName: ${local.internal_domain_name}
-# clusterName: "${local.eks_module.cluster_name}"
-# coredump:
-#   bucketArn: "${local.s3_buckets["core-dump-logs"].s3_bucket_arn}"
-#   vendor: "rhel7"
-#   roleArn: "${local.iam_roles["core-dump"].iam_role_arn}"
-# velero:
-#   bucketID: "${local.s3_buckets["velero"].s3_bucket_id}"
-#   roleArn: "${local.iam_roles["velero"].iam_role_arn}"

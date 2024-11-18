@@ -1,14 +1,14 @@
 resource "helm_release" "velero" {
   name             = "velero"
   chart            = "velero"
-  version          = "~>7.2.1"
+  version          = "~>8.0.0"
   repository       = "https://vmware-tanzu.github.io/helm-charts"
   namespace        = "velero"
   create_namespace = true
   values = [<<EOF
   initContainers:
   - name: velero-plugin-for-aws
-    image: velero/velero-plugin-for-aws:v1.10.1
+    image: velero/velero-plugin-for-aws:v1.11.0
     imagePullPolicy: IfNotPresent
     volumeMounts:
       - mountPath: /target

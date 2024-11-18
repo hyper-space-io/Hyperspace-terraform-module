@@ -3,7 +3,7 @@ resource "helm_release" "cluster_autoscaler" {
   namespace        = "cluster-autoscaler"
   name             = "cluster-autoscaler"
   create_namespace = true
-  version          = "~> 9.37.0"
+  version          = "~> 9.43.2"
   repository       = "https://kubernetes.github.io/autoscaler"
   values = [<<EOF
 extraArgs:

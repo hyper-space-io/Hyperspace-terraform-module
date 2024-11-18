@@ -30,10 +30,10 @@ output "environment" {
 
 output "iam_roles" {
   value       = module.iam_iam-assumable-role-with-oidc
-  description = "placeholder"
+  description = "The complete set of IAM roles created for OIDC authentication, including role configurations, trust relationships, and attached policies."
 }
 
 output "iam_policies" {
   value       = aws_iam_policy.policies
-  description = "placeholder"
+  description = "The complete set of IAM policies created for the infrastructure, including policy documents, ARNs, and attachment details."
 }

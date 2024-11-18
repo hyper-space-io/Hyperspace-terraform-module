@@ -7,7 +7,7 @@ resource "helm_release" "secrets_manager" {
   name             = local.release_name
   create_namespace = true
   wait             = true
-  version          = "~> 0.10.0"
+  version          = "~> 0.10.5"
   repository       = "https://charts.external-secrets.io/"
   values           =[<<EOF
 serviceAccount:
@@ -16,7 +16,6 @@ serviceAccount:
 installCRDs: true
 EOF
   ]
-  depends_on = [ helm_release.cluster_autoscaler ]
 }
 
 resource "helm_release" "secret_manager_manifests" {

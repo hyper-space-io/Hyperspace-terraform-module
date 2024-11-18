@@ -66,7 +66,7 @@ data "aws_iam_policy_document" "cluster_autoscaler" {
       "ec2:DescribeImages",
       "ec2:GetInstanceTypesFromInstanceRequirements"
     ]
-    resources = ["*"]  # EC2 describe actions require * resources
+    resources = ["*"]
     effect = "Allow"
   }
 
@@ -208,7 +208,7 @@ data "aws_iam_policy_document" "secrets_manager" {
 
 data "aws_iam_policy_document" "kms" {
   statement {
-    sid    = "EnableIAMUserPermissions"  # Removed spaces
+    sid    = "EnableIAMUserPermissions"
     effect = "Allow"
 
     actions = [
@@ -232,7 +232,7 @@ data "aws_iam_policy_document" "kms" {
   }
 
   statement {
-    sid    = "AllowUseOfTheKey"  # Removed spaces
+    sid    = "AllowUseOfTheKey"
     effect = "Allow"
 
     actions = [
@@ -247,7 +247,7 @@ data "aws_iam_policy_document" "kms" {
   }
 
   statement {
-    sid    = "AllowAttachmentOfPersistentResources"  # Removed spaces
+    sid    = "AllowAttachmentOfPersistentResources"
     effect = "Allow"
 
     actions = [

@@ -1,7 +1,7 @@
 resource "helm_release" "core_dump" {
   name             = "core-dump"
   chart            = "core-dump-handler"
-  version          = "~> 8.10.0"
+  version          = "~> 9.0.0"
   repository       = "https://ibm.github.io/core-dump-handler"
   namespace        = "core-dump"
   create_namespace = true
@@ -9,7 +9,7 @@ resource "helm_release" "core_dump" {
   values = [<<EOT
 daemonset:
   includeCrioExe: true
-  vendor: rhel7 # EKS EC2 images have an old libc=2.26 # default
+  vendor: rhel7
   s3BucketName: "${local.s3_buckets["core-dump-logs"].s3_bucket_arn}"
   s3Region: "${local.aws_region}"
 serviceAccount:
