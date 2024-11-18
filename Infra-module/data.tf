@@ -49,16 +49,34 @@ data "aws_iam_policy_document" "cluster_autoscaler" {
       "autoscaling:DescribeLaunchConfigurations",
       "autoscaling:DescribeScalingActivities",
       "autoscaling:DescribeTags",
+      "autoscaling:SetDesiredCapacity",
+      "autoscaling:TerminateInstanceInAutoScalingGroup"
+    ]
+    resources = [
+      "arn:aws:autoscaling:${var.aws_region}:${data.aws_caller_identity.current.account_id}:autoScalingGroup:*:autoScalingGroupName/${module.eks.cluster_name}-*"
+    ]
+    effect = "Allow"
+  }
+
+  statement {
+    sid = "EC2Describe"
+    actions = [
       "ec2:DescribeInstanceTypes",
       "ec2:DescribeLaunchTemplateVersions",
-      "autoscaling:SetDesiredCapacity",
-      "autoscaling:TerminateInstanceInAutoScalingGroup",
       "ec2:DescribeImages",
-      "ec2:GetInstanceTypesFromInstanceRequirements",
+      "ec2:GetInstanceTypesFromInstanceRequirements"
+    ]
+    resources = ["*"]  # EC2 describe actions require * resources
+    effect = "Allow"
+  }
+
+  statement {
+    sid = "EKSDescribe"
+    actions = [
       "eks:DescribeNodegroup"
     ]
     resources = [
-      "*",
+      "arn:aws:eks:${var.aws_region}:${data.aws_caller_identity.current.account_id}:nodegroup/${module.eks.cluster_name}/*"
     ]
     effect = "Allow"
   }
