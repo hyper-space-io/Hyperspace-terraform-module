@@ -1,8 +1,11 @@
+locals {
+  prometheus_release_name = "kube-prometheus-stack"
+}
 resource "helm_release" "kube_prometheus_stack" {
-  name       = "kube-prometheus-stack"
+  name       = local.prometheus_release_name
+  chart      = local.prometheus_release_name
   version    = "~> 65.5.0"
   namespace  = "monitoring"
-  chart      = "kube-prometheus-stack"
   repository = "https://prometheus-community.github.io/helm-charts"
   values = [<<EOF
 global:

@@ -1,9 +1,12 @@
+locals {
+  dump_release_name = "core-dump"
+}
 resource "helm_release" "core_dump" {
-  name             = "core-dump"
-  chart            = "core-dump-handler"
+  name             = local.dump_release_name
+  chart            = "${local.dump_release_name}-handler"
   version          = "~> 9.0.0"
   repository       = "https://ibm.github.io/core-dump-handler"
-  namespace        = "core-dump"
+  namespace        = local.dump_release_name
   create_namespace = true
   cleanup_on_fail  = true
   values = [<<EOT
@@ -13,9 +16,9 @@ daemonset:
   s3BucketName: "${local.s3_buckets["core-dump-logs"].s3_bucket_arn}"
   s3Region: "${local.aws_region}"
 serviceAccount:
-  name: core-dump
+  name: "${local.dump_release_name}"
   annotations:
-    eks.amazonaws.com/role-arn: "${local.iam_roles["core-dump"].iam_role_arn}"
+    eks.amazonaws.com/role-arn: "${local.iam_roles["${local.dump_release_name}"].iam_role_arn}"
 tolerations:
 - key: "fpga"
   operator: "Equal"

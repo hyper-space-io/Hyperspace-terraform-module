@@ -1,7 +1,10 @@
+locals {
+  autoscaler_release_name = "cluster-autoscaler"
+}
 resource "helm_release" "cluster_autoscaler" {
-  chart            = "cluster-autoscaler"
-  namespace        = "cluster-autoscaler"
-  name             = "cluster-autoscaler"
+  chart            = local.autoscaler_release_name
+  namespace        = local.autoscaler_release_name
+  name             = local.autoscaler_release_name
   create_namespace = true
   version          = "~> 9.43.2"
   repository       = "https://kubernetes.github.io/autoscaler"
@@ -18,7 +21,7 @@ rbac:
     create: true
     name: cluster-autoscaler
     annotations:
-      eks.amazonaws.com/role-arn: "${local.iam_roles["cluster-autoscaler"].iam_role_arn}"
+      eks.amazonaws.com/role-arn: "${local.iam_roles["${local.autoscaler_release_name}"].iam_role_arn}"
 EOF
   ]
 }

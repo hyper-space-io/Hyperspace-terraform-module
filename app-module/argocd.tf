@@ -9,14 +9,15 @@ locals {
     ingress_enabled          = local.eks_exists
     ingress_class            = "nginx-internal"
   })
+  argo_release_name = "argo-cd"
 }
 
 resource "helm_release" "argocd" {
   count            = var.enable_argocd ? 1 : 0
-  chart            = "argo-cd"
+  chart            = local.argo_release_name
   version          = "~> 7.7.3"
-  name             = "argocd"
-  namespace        = "argocd"
+  name             = local.argo_release_name
+  namespace        = local.argo_release_name
   create_namespace = true
   repository       = "https://argoproj.github.io/argo-helm"
   values           = [local.argocd_values]
