@@ -12,13 +12,13 @@ locals {
   argo_release_name = "argo-cd"
 }
 
-# resource "helm_release" "argocd" {
-#   count            = var.enable_argocd ? 1 : 0
-#   chart            = local.argo_release_name
-#   version          = "~> 7.7.3"
-#   name             = local.argo_release_name
-#   namespace        = local.argo_release_name
-#   create_namespace = true
-#   repository       = "https://argoproj.github.io/argo-helm"
-#   values           = [local.argocd_values]
-# }
+resource "helm_release" "argocd" {
+  count            = var.enable_argocd ? 1 : 0
+  chart            = local.argo_release_name
+  version          = "~> 7.7.3"
+  name             = local.argo_release_name
+  namespace        = local.argo_release_name
+  create_namespace = true
+  repository       = "https://argoproj.github.io/argo-helm"
+  values           = [local.argocd_values]
+}
