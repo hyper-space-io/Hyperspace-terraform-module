@@ -48,8 +48,7 @@ data "aws_iam_policy_document" "cluster_autoscaler" {
       "autoscaling:TerminateInstanceInAutoScalingGroup"
     ]
     resources = [
-      "arn:aws:autoscaling:${var.aws_region}:${data.aws_caller_identity.current.account_id}:autoScalingGroup:*:autoScalingGroupName/${module.eks.cluster_name}-*",
-      "arn:aws:autoscaling:${var.aws_region}:${data.aws_caller_identity.current.account_id}:autoScalingGroup:*:autoScalingGroupName/eks-*-${module.eks.cluster_name}-*"
+      "arn:aws:autoscaling:${var.aws_region}:${data.aws_caller_identity.current.account_id}:autoScalingGroup:*:autoScalingGroupName/*",
     ]
     effect = "Allow"
   }
