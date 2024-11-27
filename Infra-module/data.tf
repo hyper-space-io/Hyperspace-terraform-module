@@ -265,3 +265,8 @@ data "aws_iam_policy_document" "kms" {
     }
   }
 }
+
+data "aws_ami" "fpga" {
+  owners = ["418316469434"]
+  name_regex = "*1.28*"
+}
