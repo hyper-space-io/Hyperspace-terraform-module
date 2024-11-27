@@ -67,7 +67,7 @@ data "aws_iam_policy_document" "cluster_autoscaler" {
       "ec2:GetInstanceTypesFromInstanceRequirements"
     ]
     resources = ["*"]
-    effect = "Allow"
+    effect    = "Allow"
   }
 
   statement {
@@ -267,6 +267,6 @@ data "aws_iam_policy_document" "kms" {
 }
 
 data "aws_ami" "fpga" {
-  owners = ["418316469434"]
+  owners     = ["418316469434"]
   name_regex = ".*1\\.28.*"
 }

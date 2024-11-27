@@ -9,7 +9,7 @@ resource "helm_release" "secrets_manager" {
   wait             = true
   version          = "~> 0.10.5"
   repository       = "https://charts.external-secrets.io/"
-  values           =[<<EOF
+  values = [<<EOF
 serviceAccount:
   annotations:
     eks.amazonaws.com/role-arn: "${local.iam_roles["${local.external_secrets_release_name}"].iam_role_arn}"
@@ -28,5 +28,5 @@ resource "helm_release" "secret_manager_manifests" {
   awsRegion: "${local.aws_region}"
   EOT
   ]
-  depends_on      = [ helm_release.secrets_manager ]
+  depends_on = [helm_release.secrets_manager]
 }

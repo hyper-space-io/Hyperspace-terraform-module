@@ -109,7 +109,7 @@ module "eks" {
       AmazonSSMManagedInstanceCore = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
       AmazonEBSCSIDriverPolicy     = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
       EC2TagsControl               = "${aws_iam_policy.policies["ec2_tags"].arn}"
-      FpgaPull                   = "${aws_iam_policy.policies["fpga_pull"].arn}"
+      FpgaPull                     = "${aws_iam_policy.policies["fpga_pull"].arn}"
       KMSAccess                    = "${aws_iam_policy.policies["kms"].arn}"
     }
   }
@@ -227,7 +227,7 @@ data "aws_kms_key" "by_alias" {
 # Create the KMS grant
 resource "aws_kms_grant" "asg_grant" {
   name              = "asg-cross-account-grant"
-  key_id            = "${data.aws_kms_key.by_alias.arn}"
+  key_id            = data.aws_kms_key.by_alias.arn
   grantee_principal = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/aws-service-role/autoscaling.amazonaws.com/AWSServiceRoleForAutoScaling"
   operations = [
     "Encrypt",

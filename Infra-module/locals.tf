@@ -60,8 +60,8 @@ locals {
             encrypted   = true
             volume_size = 200
             volume_type = "gp3"
-            iops       = 3000
-            throughput = 125
+            iops        = 3000
+            throughput  = 125
           }
         }
       }
@@ -81,10 +81,11 @@ locals {
       policy      = data.aws_iam_policy_document.fpga_pull_access.json
     }
     ec2_tags = {
-      name        = "${local.cluster_name}-EC2TagsPolicy"
-      path        = "/"
-      description = "Policy for controling EC2 resources tags"
-      policy      = data.aws_iam_policy_document.ec2_tags_control.json
+      name                     = "${local.cluster_name}-EC2TagsPolicy"
+      path                     = "/"
+      description              = "Policy for controling EC2 resources tags"
+      policy                   = data.aws_iam_policy_document.ec2_tags_control.json
+      create_cluster_wide_role = true
     }
     cluster-autoscaler = {
       name                  = "${local.cluster_name}-cluster-autoscaler"
@@ -127,10 +128,10 @@ locals {
       sa_namespace          = "external-secrets"
     }
     kms = {
-      name                  = "${local.cluster_name}-kms"
-      path                  = "/"
-      description           = "Policy for using Hyperspace's KMS key for AMI encryption"
-      policy                = data.aws_iam_policy_document.kms.json
+      name        = "${local.cluster_name}-kms"
+      path        = "/"
+      description = "Policy for using Hyperspace's KMS key for AMI encryption"
+      policy      = data.aws_iam_policy_document.kms.json
     }
   }
 }
