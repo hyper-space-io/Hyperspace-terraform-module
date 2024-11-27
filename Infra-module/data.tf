@@ -42,19 +42,27 @@ data "aws_iam_policy_document" "fpga_pull_access" {
 # Cluster Autoscaler
 data "aws_iam_policy_document" "cluster_autoscaler" {
   statement {
-    sid = "Autoscaling"
+    sid = "AutoscalingWrite"
     actions = [
-      "autoscaling:DescribeAutoScalingGroups",
-      "autoscaling:DescribeAutoScalingInstances",
-      "autoscaling:DescribeLaunchConfigurations",
-      "autoscaling:DescribeScalingActivities",
-      "autoscaling:DescribeTags",
       "autoscaling:SetDesiredCapacity",
       "autoscaling:TerminateInstanceInAutoScalingGroup"
     ]
     resources = [
       "arn:aws:autoscaling:${var.aws_region}:${data.aws_caller_identity.current.account_id}:autoScalingGroup:*:autoScalingGroupName/${module.eks.cluster_name}-*"
     ]
+    effect = "Allow"
+  }
+
+  statement {
+    sid = "AutoscalingRead"
+    actions = [
+      "autoscaling:DescribeAutoScalingGroups",
+      "autoscaling:DescribeAutoScalingInstances", 
+      "autoscaling:DescribeLaunchConfigurations",
+      "autoscaling:DescribeScalingActivities",
+      "autoscaling:DescribeTags"
+    ]
+    resources = ["*"]
     effect = "Allow"
   }
 
@@ -67,7 +75,7 @@ data "aws_iam_policy_document" "cluster_autoscaler" {
       "ec2:GetInstanceTypesFromInstanceRequirements"
     ]
     resources = ["*"]
-    effect    = "Allow"
+    effect = "Allow"
   }
 
   statement {
