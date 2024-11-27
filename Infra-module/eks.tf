@@ -234,9 +234,6 @@ resource "aws_kms_grant" "asg_grant" {
     "Decrypt",
     "ReEncryptFrom",
     "ReEncryptTo",
-    "GenerateDataKey",
-    "GenerateDataKeyWithoutPlaintext",
     "DescribeKey",
-    "CreateGrant"
   ]
 }
