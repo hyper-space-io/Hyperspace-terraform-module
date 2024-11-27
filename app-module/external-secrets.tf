@@ -2,9 +2,9 @@ locals {
   external_secrets_release_name = "external-secrets"
 }
 resource "helm_release" "secrets_manager" {
-  namespace        = local.external_secrets_release_name
-  chart            = local.external_secrets_release_name
-  name             = local.external_secrets_release_name
+  namespace        = "external-secrets"
+  chart            = "external-secrets"
+  name             = "external-secrets"
   create_namespace = true
   wait             = true
   version          = "~> 0.10.5"
@@ -12,7 +12,7 @@ resource "helm_release" "secrets_manager" {
   values           =[<<EOF
 serviceAccount:
   annotations:
-    eks.amazonaws.com/role-arn: "${local.iam_roles["${local.external_secrets_release_name}"].iam_role_arn}"
+    eks.amazonaws.com/role-arn: "${local.iam_roles["external-secrets"].iam_role_arn}"
 installCRDs: true
 EOF
   ]
