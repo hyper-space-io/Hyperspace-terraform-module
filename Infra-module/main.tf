@@ -18,11 +18,13 @@ module "iam_iam-assumable-role-with-oidc" {
   oidc_fully_qualified_subjects = ["system:serviceaccount:${each.value.sa_namespace}:${each.key}"]
 }
 
-module "cluster_wide_irsa" {
+module "boto3_irsa" {
   source    = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
   for_each  = { for k, v in local.iam_policies : k => v if lookup(v, "create_cluster_wide_role", false) == true }
   role_name = each.value.name
-  role_policy_arns = [aws_iam_policy.policies["${each.key}"].arn]
+  role_policy_arns = {
+    policy = aws_iam_policy.policies["${each.key}"].arn
+  }
   assume_role_condition_test = "StringLike"
   oidc_providers = {
     ex = {
