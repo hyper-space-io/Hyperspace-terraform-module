@@ -275,6 +275,6 @@ data "aws_iam_policy_document" "kms" {
 }
 
 data "aws_ami" "fpga" {
-  owners     = ["418316469434"]
+  owners     = ["337450623971"]
   name_regex = ".*1\\.30.*"
 }
