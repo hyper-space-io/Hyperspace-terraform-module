@@ -124,12 +124,12 @@ module "eks" {
 
 
   node_security_group_additional_rules = {
-      egress_auth0 = {
-      description = "Allow egress to Auth0 endpoints"
+    ingress_auth0 = {
+      description = "Allow ingress to Auth0 endpoints"
       protocol    = "tcp"
       from_port   = 443
       to_port     = 443
-      type        = "egress"
+      type        = "ingress"
       cidr_blocks = [
         "174.129.105.183/32",
         "18.116.79.126/32",
