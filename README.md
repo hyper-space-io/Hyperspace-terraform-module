@@ -29,6 +29,7 @@ The module creates a production-ready infrastructure with:
 - Domain name (optional, for Route53 setup)
 
 ## Module Structure 
+```
 .
 ├── Infra-module/
 │ ├── eks.tf # EKS cluster configuration
@@ -45,6 +46,7 @@ The module creates a production-ready infrastructure with:
 ├── Route53.tf # DNS configuration
 ├── variables.tf # Input variables
 └── providers.tf # Provider configuration
+```
 
 
 ### Infrastructure Module Variables
