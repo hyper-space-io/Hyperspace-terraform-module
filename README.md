@@ -2,7 +2,8 @@
 
 ## Overview
 
-This Terraform module provides a complete infrastructure setup for the Hyperspace project, including EKS cluster deployment, networking, security configurations, and various application components. The module is split into two main parts:
+This Terraform module provides a complete infrastructure setup for the Hyperspace project, including EKS cluster deployment, networking, security configurations, and various application components.
+The module is split into two main parts:
 - Infrastructure Module (`Infra-module`)
 - Application Module (`app-module`)
 
@@ -26,7 +27,7 @@ The module creates a production-ready infrastructure with:
 - kubectl installed
 - Helm 3.x
 - AWS account with appropriate permissions
-- Domain name (optional, for Route53 setup)
+- Domain name (for Route53 setup)
 
 ## Module Structure 
 ```
@@ -40,12 +41,12 @@ The module creates a production-ready infrastructure with:
 │ ├── outputs.tf # Output values
 │ └── locals.tf # Local variables
 └── app-module/
-├── argocd.tf # ArgoCD installation
-├── loki.tf # Logging stack
-├── velero.tf # Backup solution
-├── Route53.tf # DNS configuration
-├── variables.tf # Input variables
-└── providers.tf # Provider configuration
+  ├── argocd.tf # ArgoCD installation
+  ├── loki.tf # Logging stack
+  ├── velero.tf # Backup solution
+  ├── Route53.tf # DNS configuration
+  ├── variables.tf # Input variables
+  └── providers.tf # Provider configuration
 ```
 
 
@@ -56,13 +57,20 @@ The module creates a production-ready infrastructure with:
 | project | Name of the project | string | "hyperspace" | no |
 | environment | Deployment environment | string | "development" | no |
 | aws_region | AWS region | string | "us-east-1" | no |
-| worker_nodes_max | Maximum number of worker nodes | number | - | yes |
-| worker_instance_type | List of allowed instance types | list(string) | ["m5n.xlarge"] | no |
 | vpc_cidr | CIDR block for VPC | string | - | yes |
 | availability_zones | List of AZs | list(string) | [] | no |
 | create_vpc_flow_logs | Enable VPC flow logs | bool | false | no |
 | enable_nat_gateway | Enable NAT Gateway | bool | true | no |
-| single_nat_gateway | Use single NAT Gateway | bool | false | no |
+| single_nat_gateway | Use single NAT Gateway OR one per AZ | bool | false | no |
+| num_zones | Number of AZs to use | number | 2 | no |
+| create_vpc_flow_logs | Create VPC flow logs | bool | false | no |
+| flow_logs_retention | Flow logs retention in days | number | 14 | no |
+| flow_log_group_class | Flow logs log group class in CloudWatch | string | "" | no |
+| flow_log_file_format | Flow logs file format | string | "" | no |
+| create_eks | Create EKS cluster | bool | true | no |
+| worker_nodes_max | Maximum number of worker nodes | number | - | yes |
+| worker_instance_type | List of allowed instance types | list(string) | ["m5n.xlarge"] | no |
+
 
 ### Application Module Variables
 
@@ -75,54 +83,6 @@ The module creates a production-ready infrastructure with:
 | enable_ha_argocd | Enable HA for ArgoCD | bool | true | no |
 | create_public_zone | Create public Route53 zone | bool | false | no |
 | enable_cluster_autoscaler | Enable cluster autoscaler | bool | true | no |
-
-## Features
-
-### EKS Cluster
-- Managed node groups with Bottlerocket OS
-- Self-managed node groups for specialized workloads
-- Cluster autoscaling
-- IRSA (IAM Roles for Service Accounts)
-- EBS CSI Driver integration
-- VPC CNI plugin
-- CoreDNS
-- Kube-proxy
-
-### Networking
-- VPC with public and private subnets
-- NAT Gateways
-- VPC Endpoints
-- Internal and external ALB ingress controllers
-- Network policies
-- VPC flow logs (optional)
-
-### Security
-- Network policies
-- Security groups
-- KMS encryption for secrets
-- IAM roles and policies
-- OIDC integration
-- AWS Secrets Manager integration
-- TLS termination
-
-### Monitoring and Logging
-- Prometheus and Grafana
-- Loki for log aggregation
-- OpenTelemetry for observability
-- CloudWatch integration
-- Core dump handling
-
-### Backup and Disaster Recovery
-- Velero for cluster backup
-- S3 buckets for backup storage
-- Cross-region replication support
-- EBS volume snapshots
-
-### GitOps and CI/CD
-- ArgoCD installation
-- External Secrets Operator
-- ECR credentials sync
-- Terraform Cloud Agent
 
 ## Outputs
 
@@ -148,9 +108,7 @@ The application module primarily manages Kubernetes resources and doesn't expose
 - Cluster autoscaling
 - IRSA (IAM Roles for Service Accounts)
 - EBS CSI Driver integration
-- VPC CNI plugin
-- CoreDNS
-- Kube-proxy
+- EKS Managed Addons
 
 ### Networking
 - VPC with public and private subnets
@@ -159,15 +117,13 @@ The application module primarily manages Kubernetes resources and doesn't expose
 - Internal and external ALB ingress controllers
 - Network policies
 - VPC flow logs (optional)
+- Connectivity to Auth0
 
 ### Security
 - Network policies
 - Security groups
-- KMS encryption for secrets
 - IAM roles and policies
 - OIDC integration
-- AWS Secrets Manager integration
-- TLS termination
 
 ### Monitoring and Logging
 - Prometheus and Grafana
@@ -178,15 +134,13 @@ The application module primarily manages Kubernetes resources and doesn't expose
 
 ### Backup and Disaster Recovery
 - Velero for cluster backup
-- S3 buckets for backup storage
-- Cross-region replication support
 - EBS volume snapshots
 
 ### GitOps and CI/CD
 - ArgoCD installation
 - External Secrets Operator
-- ECR credentials sync
-- Terraform Cloud Agent
+- ECR credentials sync to gain access to private hyperspace ECR repositories
+- Terraform Cloud Agent to gain access to private EKS cluster
 
 ## Outputs
 
