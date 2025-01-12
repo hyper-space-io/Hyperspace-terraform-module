@@ -39,8 +39,10 @@ The module creates a production-ready infrastructure with:
 │ ├── tfc_agent.tf # Terraform Cloud agent setup
 │ ├── variables.tf # Input variables
 │ ├── outputs.tf # Output values
-│ └── locals.tf # Local variables
-└── app-module/
+│ ├── locals.tf # Local variables
+│ ├── providers.tf # Provider configuration
+│ └── user_data.sh.tpl # User data for EC2 instances
+├── app-module/
 │ ├── argocd.tf # ArgoCD installation
 │ ├── loki.tf # Logging stack
 │ ├── velero.tf # Backup solution
