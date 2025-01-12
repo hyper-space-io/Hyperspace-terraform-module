@@ -158,3 +158,5 @@ The application module primarily manages Kubernetes resources and doesn't expose
 
 ### Application Module Outputs
 The application module primarily manages Kubernetes resources and doesn't expose specific outputs.
+
+> **Note**: This module is currently under active development and may undergo significant changes. Not all features are fully implemented yet.
