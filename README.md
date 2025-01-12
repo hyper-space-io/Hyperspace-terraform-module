@@ -139,8 +139,7 @@ The application module primarily manages Kubernetes resources and doesn't expose
 - EBS volume snapshots
 
 ### GitOps and CI/CD
-- ArgoCD installation
-- External Secrets Operator
+- ArgoCD installation and SSO integration
 - ECR credentials sync to gain access to private hyperspace ECR repositories
 - Terraform Cloud Agent to gain access to private EKS cluster
 
