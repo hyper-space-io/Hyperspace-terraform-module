@@ -41,12 +41,12 @@ The module creates a production-ready infrastructure with:
 │ ├── outputs.tf # Output values
 │ └── locals.tf # Local variables
 └── app-module/
-  ├── argocd.tf # ArgoCD installation
-  ├── loki.tf # Logging stack
-  ├── velero.tf # Backup solution
-  ├── Route53.tf # DNS configuration
-  ├── variables.tf # Input variables
-  └── providers.tf # Provider configuration
+│ ├── argocd.tf # ArgoCD installation
+│ ├── loki.tf # Logging stack
+│ ├── velero.tf # Backup solution
+│ ├── Route53.tf # DNS configuration
+│ ├── variables.tf # Input variables
+│ └── providers.tf # Provider configuration
 ```
 
 
