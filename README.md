@@ -28,6 +28,7 @@ The module creates a production-ready infrastructure with:
 - Helm 3.x
 - AWS account with appropriate permissions
 - Domain name (for Route53 setup)
+- Terraform cloud account
 
 ## Module Structure 
 ```
@@ -159,3 +160,10 @@ The application module primarily manages Kubernetes resources and doesn't expose
 The application module primarily manages Kubernetes resources and doesn't expose specific outputs.
 
 > **Note**: This module is currently under active development and may undergo significant changes. Not all features are fully implemented yet.
+
+
+# Getting Started
+
+First we need to deploy the Infra-module
+Take the NS records of the hosted zones created and paste them in your main domain hosted zone in Route53
+Now you can deploy the app-module
