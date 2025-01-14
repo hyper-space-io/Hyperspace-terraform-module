@@ -2,11 +2,6 @@ provider "aws" {
   region = var.aws_region
 }
 
-# terraform {
-#   cloud {
-#     organization = "Hyperspace_project"
-#     workspaces {
-#       name = "Infra-module"
-#     }
-#   }
-# }
+provider "tfe" {
+  version = "~>0.62.0"
+}
