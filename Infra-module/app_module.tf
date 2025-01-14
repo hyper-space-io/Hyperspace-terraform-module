@@ -1,6 +1,6 @@
 resource "tfe_workspace" "app" {
   name         = "hyperspace-app-module"
-  organization = data.tfe_organizations.foo.name
+  organization = data.tfe_organizations.foo.names[0]
 }
 
 resource "tfe_agent_pool" "app-agent-pool" {
