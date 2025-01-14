@@ -282,6 +282,6 @@ data "aws_ami" "fpga" {
 data "tfe_organizations" "all" {}
 
 data "tfe_project" "hyperspace" {
-  name = "hyperspace terraform module"
+  name = "hyperspace_terraform_module"
   organization = data.tfe_organizations.all.names[0]
 }
