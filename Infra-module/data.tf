@@ -283,5 +283,5 @@ data "tfe_organizations" "all" {}
 
 data "tfe_project" "hyperspace" {
   name = "hyperspace_terraform_module"
-  organization = data.tfe_organizations.all.names[0]
+  organization = "Hyperspace_project"
 }
