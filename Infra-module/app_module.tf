@@ -6,8 +6,8 @@ resource "tfe_workspace" "app" {
 
 resource "tfe_agent_pool" "app-agent-pool" {
   name         = "hyperspace-app-agent-pool"
-  organization = data.tfe_organizations.foo.names[0]
-  
+  organization = data.tfe_organizations.all.names[0]
+
 }
 
 resource "tfe_agent_pool_allowed_workspaces" "app" {
