@@ -1,5 +1,6 @@
-# Hyperspace Infrastructure Terraform Module
+# Hyperspace Terraform Module
 
+![Hyperspace Architecture](Hyperspace_architecture.png)
 ## Overview
 
 This Terraform module provides a complete infrastructure setup for the Hyperspace project, including EKS cluster deployment, networking, security configurations, and various application components.
@@ -23,10 +24,10 @@ The module creates a production-ready infrastructure with:
 ## Prerequisites
 
 - Terraform >= 1.0.0
-- AWS CLI configured with appropriate credentials
+- AWS CLI configured with admin access
 - kubectl installed
 - Helm 3.x
-- AWS account with appropriate permissions
+- AWS account with admin access
 - Domain name (for Route53 setup)
 - Terraform cloud account
 
@@ -163,7 +164,3 @@ The application module primarily manages Kubernetes resources and doesn't expose
 
 
 # Getting Started
-
-First we need to deploy the Infra-module
-Take the NS records of the hosted zones created and paste them in your main domain hosted zone in Route53
-Now you can deploy the app-module
