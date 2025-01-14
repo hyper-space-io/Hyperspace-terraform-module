@@ -279,4 +279,9 @@ data "aws_ami" "fpga" {
   name_regex = "eks-1\\.31-fpga-prod"
 }
 
-data "tfe_organizations" "foo" {}
+data "tfe_organizations" "all" {}
+
+data "tfe_project" "hyperspace" {
+  name = "Hyperspace_project"
+  organization = data.tfe_organizations.foo.names[0]
+}
