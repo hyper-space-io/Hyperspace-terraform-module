@@ -39,6 +39,6 @@ output "iam_policies" {
 }
 
 output "tfe_organizations" {
-  value       = data.tfe_organizations.foo
+  value       = data.tfe_organizations.all
   description = "The complete set of TFE organizations created for the infrastructure, including organization configurations, trust relationships, and attached policies."
 }

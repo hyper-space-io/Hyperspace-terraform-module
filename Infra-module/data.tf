@@ -283,5 +283,5 @@ data "tfe_organizations" "all" {}
 
 data "tfe_project" "hyperspace" {
   name = "Hyperspace_project"
-  organization = data.tfe_organizations.foo.names[0]
+  organization = data.tfe_organizations.all.names[0]
 }
