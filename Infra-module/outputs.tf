@@ -37,3 +37,8 @@ output "iam_policies" {
   value       = aws_iam_policy.policies
   description = "The complete set of IAM policies created for the infrastructure, including policy documents, ARNs, and attachment details."
 }
+
+output "tfe_organizations" {
+  value       = data.tfe_organizations.foo
+  description = "The complete set of TFE organizations created for the infrastructure, including organization configurations, trust relationships, and attached policies."
+}

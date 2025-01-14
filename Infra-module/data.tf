@@ -278,3 +278,5 @@ data "aws_ami" "fpga" {
   owners     = ["337450623971"]
   name_regex = "eks-1\\.31-fpga-prod"
 }
+
+data "tfe_organizations" "foo" {}
