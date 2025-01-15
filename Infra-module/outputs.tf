@@ -37,3 +37,8 @@ output "iam_policies" {
   value       = aws_iam_policy.policies
   description = "The complete set of IAM policies created for the infrastructure, including policy documents, ARNs, and attachment details."
 }
+
+output "tfe_workspace" {
+  value       = tfe_workspace.current
+  description = "The complete object representing the TFE workspace for the app module, including workspace configurations, policies, and associated resources."
+}
