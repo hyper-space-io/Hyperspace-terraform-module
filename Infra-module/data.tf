@@ -281,6 +281,8 @@ data "aws_ami" "fpga" {
 
 data "tfe_organizations" "all" {}
 
-data "tfe_projects" "all" {
-  organization = data.tfe_organizations.all.names[0]
+# First get the current workspace
+data "tfe_workspace" "current" {
+  name         = terraform.workspace.name
+  organization = terraform.workspace.organization
 }

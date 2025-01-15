@@ -1,7 +1,14 @@
-provider "aws" {
-  region = var.aws_region
+terraform {
+  required_providers {
+    tfe = {
+      source  = "hashicorp/tfe"
+    }
+    aws = {
+      source = "hashicorp/aws"
+    }
+  }
 }
 
-provider "tfe" {
-  version = "~>0.62.0"
-}
+provider "aws" {region = var.aws_region}
+
+provider "tfe" {}
