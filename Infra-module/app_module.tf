@@ -2,12 +2,12 @@ resource "tfe_workspace" "app" {
   name         = "hyperspace-app-module"
   organization = data.tfe_organizations.all.names[0]
   project_id   = data.tfe_workspace.current.project_id
-#   vcs_repo{
-#     identifier = "hyper-space-io/Hyperspace-terraform-module"
-#     branch = "setup-cluster-tools"
-#     # oauth_token_id  = data.tfe_oauth_client.client.oauth_token_id
-#   }
-#   working_directory = "app-module"
+  vcs_repo {
+    identifier = "hyper-space-io/Hyperspace-terraform-module"
+    branch = "setup-cluster-tools"
+    github_app_installation_id = data.tfe_workspace.current.vcs_repo[0].github_app_installation_id
+  }
+  working_directory = "app-module"
 }
 
 resource "tfe_agent_pool" "app-agent-pool" {
