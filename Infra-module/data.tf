@@ -283,6 +283,6 @@ data "tfe_organizations" "all" {}
 
 # First get the current workspace
 data "tfe_workspace" "current" {
-  name         = terraform.workspace.name
-  organization = terraform.workspace.organization
+  name         = terraform.workspace
+  organization = data.tfe_organizations.all.names[0]
 }
