@@ -39,6 +39,6 @@ output "iam_policies" {
 }
 
 output "tfe_workspace" {
-  value       = tfe_workspace.current
+  value       = data.tfe_workspace.current
   description = "The complete object representing the TFE workspace for the app module, including workspace configurations, policies, and associated resources."
 }
