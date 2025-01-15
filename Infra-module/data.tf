@@ -286,3 +286,8 @@ data "tfe_workspace" "current" {
   name         = terraform.workspace
   organization = data.tfe_organizations.all.names[0]
 }
+
+data "tfe_oauth_client" "client" {
+  oauth_client_id = data.tfe_workspace.current.vcs_repo[0].oauth_client_id
+  organization    = data.tfe_organizations.all.names[0]
+}

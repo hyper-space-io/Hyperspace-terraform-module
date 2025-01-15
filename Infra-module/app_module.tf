@@ -5,6 +5,7 @@ resource "tfe_workspace" "app" {
   vcs_repo{
     identifier = "hyper-space-io/Hyperspace-terraform-module"
     branch = "setup-cluster-tools"
+    oauth_token_id  = data.tfe_oauth_client.client.oauth_token_id
   }
   working_directory = "app-module"
 }
