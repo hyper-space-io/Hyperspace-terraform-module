@@ -145,25 +145,30 @@ variable "enable_cluster_autoscaler" {
 
 # APP MODULE
 variable "create_public_zone" {
+  description = "Whether to create the public Route 53 zone"
   type        = bool
-  default     = true
-  description = "should we create a public zone"
-}
-
-variable "dex_connectors" {
-  type        = list(string)
-  default     = []
-  description = "the dex connectors to use"
-}
-
-variable "domain_name" {
-  type        = string
-  default     = ""
-  description = "the domain name to use"
+  default     = false
 }
 
 variable "enable_ha_argocd" {
+  description = "should we install argocd in ha mode"
   type        = bool
-  default     = false
-  description = "should we enable ha argocd"
+  default     = true
+}
+
+variable "dex_connectors" {
+  type = list(object({
+    type   = string
+    id     = string
+    name   = string
+    config = map(string)
+  }))
+  default     = []
+  description = "List of Dex connector configurations"
+}
+
+variable "domain_name" {
+  description = "The main domain name to use to create sub-domains"
+  type        = string
+  default     = ""
 }
