@@ -1,7 +1,7 @@
 locals {
   app_module_variables = {
     create_public_zone = {value = var.create_public_zone}
-    dex_connectors = {value = var.dex_connectors, hcl = true}
+    dex_connectors = {value = jsonencode(var.dex_connectors)}
     domain_name = {value = var.domain_name}
     enable_ha_argocd = {value = var.enable_ha_argocd}
     infra_workspace_name = {value = terraform.workspace, hcl = true}
