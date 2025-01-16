@@ -20,4 +20,5 @@ resource "helm_release" "argocd" {
   create_namespace = true
   repository       = "https://argoproj.github.io/argo-helm"
   values           = [local.argocd_values]
+  cleanup_on_fail = true
 }
