@@ -49,8 +49,3 @@ resource "tfe_agent_token" "app-agent-token" {
   agent_pool_id = tfe_agent_pool.app-agent-pool.id
   description   = "app-agent-token"
 }
-
-resource "tfe_workspace_settings" "Infra-settings" {
-  workspace_id = data.tfe_workspace.current.id
-  remote_state_consumer_ids = [tfe_workspace.app.id]
-}
