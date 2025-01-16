@@ -1,3 +1,13 @@
+locals {
+  app_module_variables = {
+    create_public_zone = var.create_public_zone
+    dex_connectors = var.dex_connectors
+    domain_name = var.domain_name
+    enable_ha_argocd = var.enable_ha_argocd
+    infra_workspace_name = terraform.workspace
+    organization = data.tfe_organizations.all.names[0]
+  }
+}
 resource "tfe_workspace" "app" {
   name         = "hyperspace-app-module"
   organization = data.tfe_organizations.all.names[0]
@@ -14,6 +24,15 @@ resource "tfe_workspace_settings" "app-settings" {
   workspace_id   = tfe_workspace.app.id
   agent_pool_id  = tfe_agent_pool_allowed_workspaces.app.agent_pool_id
   execution_mode = "agent"
+}
+
+resource "tfe_variable" "app-variables" {
+  for_each = local.app_module_variables
+  key = each.key
+  value = each.value
+  category = "terraform"
+  description = "app-module-variable"
+  workspace_id = tfe_workspace.app.id
 }
 
 resource "tfe_agent_pool" "app-agent-pool" {

@@ -142,3 +142,28 @@ variable "enable_cluster_autoscaler" {
   type        = bool
   default     = true
 }
+
+# APP MODULE
+variable "create_public_zone" {
+  type        = bool
+  default     = true
+  description = "should we create a public zone"
+}
+
+variable "dex_connectors" {
+  type        = list(string)
+  default     = []
+  description = "the dex connectors to use"
+}
+
+variable "domain_name" {
+  type        = string
+  default     = ""
+  description = "the domain name to use"
+}
+
+variable "enable_ha_argocd" {
+  type        = bool
+  default     = false
+  description = "should we enable ha argocd"
+}
