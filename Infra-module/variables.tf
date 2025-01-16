@@ -153,7 +153,7 @@ variable "create_public_zone" {
 variable "enable_ha_argocd" {
   description = "should we install argocd in ha mode"
   type        = bool
-  default     = true
+  default     = false
 }
 
 variable "dex_connectors" {
