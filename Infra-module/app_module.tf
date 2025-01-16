@@ -29,7 +29,7 @@ resource "tfe_workspace_settings" "app-settings" {
 resource "tfe_variable" "app-variables" {
   for_each = local.app_module_variables
   key = each.key
-  value = each.value.value
+  value = "${each.value.value}"
   hcl = try(each.value.hcl, false)
   category = "terraform"
   description = "app-module-variable"
