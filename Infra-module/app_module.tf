@@ -1,11 +1,11 @@
 locals {
   app_module_variables = {
-    create_public_zone = var.create_public_zone
-    dex_connectors = var.dex_connectors
-    domain_name = var.domain_name
-    enable_ha_argocd = var.enable_ha_argocd
-    infra_workspace_name = terraform.workspace
-    organization = data.tfe_organizations.all.names[0]
+    create_public_zone = {value = var.create_public_zone}
+    dex_connectors = {value = var.dex_connectors, hcl = true}
+    domain_name = {value = var.domain_name}
+    enable_ha_argocd = {value = var.enable_ha_argocd}
+    infra_workspace_name = {value = terraform.workspace, hcl = true}
+    organization = {value = data.tfe_organizations.all.names[0], hcl = true}
   }
 }
 resource "tfe_workspace" "app" {
@@ -29,7 +29,8 @@ resource "tfe_workspace_settings" "app-settings" {
 resource "tfe_variable" "app-variables" {
   for_each = local.app_module_variables
   key = each.key
-  value = each.value
+  value = each.value.value
+  hcl = try(each.value.hcl, false)
   category = "terraform"
   description = "app-module-variable"
   workspace_id = tfe_workspace.app.id
