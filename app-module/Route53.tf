@@ -16,7 +16,7 @@ locals {
       comment     = "Private hosted zone for ${local.internal_domain_name}"
       vpc = [
         {
-          vpc_id = var.vpc_id
+          vpc_id = local.vpc_module.vpc_id
         }
       ]
       tags = merge(local.tags, {
