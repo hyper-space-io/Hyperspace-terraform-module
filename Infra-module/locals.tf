@@ -80,7 +80,6 @@ locals {
       )
     }
   ]...)
-  precomputed_self_managed_node_groups = { after_apply = local.self_managed_node_groups_local , empty = {}}
 
   # self_managed_node_groups = { after_apply = local.self_managed_node_groups_local }
   # precomputed_self_managed_node_groups = var.create_eks ? local.self_managed_node_groups["after_apply"] : {}
