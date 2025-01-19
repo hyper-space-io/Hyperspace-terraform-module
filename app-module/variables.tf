@@ -138,12 +138,6 @@ variable "s3_buckets" {
   description = "The S3 buckets to use for the resources"
 }
 
-variable "iam_roles" {
-  type        = string
-  default     = ""
-  description = "The IAM roles to use for the resources"
-}
-
 variable "iam_policies" {
   type        = string
   default     = ""

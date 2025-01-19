@@ -14,11 +14,10 @@ locals {
     availability_zones = jsonencode(local.availability_zones)
     aws_region = var.aws_region
     data_node_ami_id = data.aws_ami.fpga.id
-    tags = jsonencode(var.tags)
+    tags = jsonencode(local.tags)
     vpc_module = jsonencode(module.vpc)
     s3_buckets = jsonencode(module.s3_buckets)  
-    iam_roles = jsonencode(module.iam_roles)
-    iam_policies = jsonencode(module.iam_policies)
+    iam_policies = jsonencode(aws_iam_policy.iam_policies)
   }
 }
 resource "tfe_workspace" "app" {
