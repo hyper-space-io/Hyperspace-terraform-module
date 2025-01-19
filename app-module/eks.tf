@@ -112,9 +112,9 @@ module "eks" {
     iam_role_additional_policies = {
       AmazonSSMManagedInstanceCore = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
       AmazonEBSCSIDriverPolicy     = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
-      EC2TagsControl               = "${aws_iam_policy.policies["ec2_tags"].arn}"
-      FpgaPull                     = "${aws_iam_policy.policies["fpga_pull"].arn}"
-      KMSAccess                    = "${aws_iam_policy.policies["kms"].arn}"
+      EC2TagsControl               = "${local.iam_policies["ec2_tags"].arn}"
+      FpgaPull                     = "${local.iam_policies["fpga_pull"].arn}"
+      KMSAccess                    = "${local.iam_policies["kms"].arn}"
     }
   }
   
@@ -279,7 +279,7 @@ module "iam_iam-assumable-role-with-oidc" {
   create_role                   = true
   role_name                     = each.value.name
   provider_url                  = module.eks.cluster_oidc_issuer_url
-  role_policy_arns              = [aws_iam_policy.policies["${each.key}"].arn]
+  role_policy_arns              = [local.iam_policies["${each.key}"].arn]
   oidc_fully_qualified_subjects = ["system:serviceaccount:${each.value.sa_namespace}:${each.key}"]
 }
 
@@ -288,7 +288,7 @@ module "boto3_irsa" {
   for_each  = { for k, v in local.iam_policies : k => v if lookup(v, "create_cluster_wide_role", false) == true }
   role_name = each.value.name
   role_policy_arns = {
-    policy = aws_iam_policy.policies["${each.key}"].arn
+    policy = local.iam_policies["${each.key}"].arn
   }
   assume_role_condition_test = "StringLike"
   oidc_providers = {
@@ -297,5 +297,5 @@ module "boto3_irsa" {
       namespace_service_accounts = ["*:*"]
     }
   }
-  depends_on = [module.eks, aws_iam_policy.policies]
+  depends_on = [module.eks]
 }
