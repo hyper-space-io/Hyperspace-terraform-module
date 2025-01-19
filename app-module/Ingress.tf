@@ -117,7 +117,7 @@ controller:
           topologyKey: "kubernetes.io/hostname"
   EOF
   ]
-  depends_on = [module.eks_blueprints_addons, module.acm]
+  depends_on = [module.eks_blueprints_addons, module.acm, module.eks]
 }
 
 
@@ -181,7 +181,7 @@ resource "kubernetes_ingress_v1" "nginx_ingress" {
       }
     }
   }
-  depends_on = [helm_release.nginx-ingress]
+  depends_on = [helm_release.nginx-ingress, module.eks]
 }
 
 resource "time_sleep" "wait_for_internal_ingress" {

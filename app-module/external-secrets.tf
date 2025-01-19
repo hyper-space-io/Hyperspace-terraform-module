@@ -16,6 +16,7 @@ serviceAccount:
 installCRDs: true
 EOF
   ]
+  depends_on = [module.eks]
 }
 
 resource "helm_release" "secret_manager_manifests" {
@@ -28,5 +29,5 @@ resource "helm_release" "secret_manager_manifests" {
   awsRegion: "${local.aws_region}"
   EOT
   ]
-  depends_on = [helm_release.secrets_manager]
+  depends_on = [helm_release.secrets_manager, module.eks]
 }

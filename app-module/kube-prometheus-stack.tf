@@ -80,6 +80,7 @@ EOF
     name  = "grafana.adminPassword"
     value = random_password.grafana_admin_password.result
   }
+  depends_on = [module.eks]
 }
 
 resource "helm_release" "prometheus_adapter" {
@@ -97,7 +98,7 @@ prometheus:
   url: http://"kube-prometheus-stack-prometheus.monitoring.svc"
 EOF
   ]
-  depends_on = [helm_release.kube_prometheus_stack]
+  depends_on = [helm_release.kube_prometheus_stack, module.eks]
 }
 
 resource "random_password" "grafana_admin_password" {
