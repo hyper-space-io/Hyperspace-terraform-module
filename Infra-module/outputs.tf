@@ -3,6 +3,11 @@ output "aws_region" {
   description = "The AWS region where the VPC and all associated resources are deployed."
 }
 
+output "eks_cluster" {
+  value       = module.eks
+  description = "The complete object representing the EKS cluster, including configuration details and metadata about the cluster."
+}
+
 output "vpc" {
   value       = module.vpc
   description = "The complete object representing the VPC, including all associated subnets, route tables, and other VPC resources."
