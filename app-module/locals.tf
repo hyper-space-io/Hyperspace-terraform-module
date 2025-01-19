@@ -1,7 +1,8 @@
 locals {
   tags                        = jsondecode(var.tags)
   vpc_module                  = jsondecode(var.vpc_module)
-  s3_buckets                  = jsondecode(var.s3_buckets)
+  s3_bucket_names             = jsondecode(var.s3_bucket_names)
+  s3_bucket_arns             = jsondecode(var.s3_bucket_arns)
   iam_policies                = jsondecode(var.iam_policies)
   internal_ingress_class_name = "nginx-internal"
   availability_zones          = jsondecode(var.availability_zones)

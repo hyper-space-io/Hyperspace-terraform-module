@@ -18,7 +18,7 @@ resource "helm_release" "velero" {
       - name: "s3"
         default: true
         provider: "aws"
-        bucket: "${local.s3_buckets["velero"].s3_bucket_id}"
+        bucket: "${local.s3_bucket_names["velero"]}"
         accessMode: "ReadWrite"
         config: {
           region: "${var.aws_region}"

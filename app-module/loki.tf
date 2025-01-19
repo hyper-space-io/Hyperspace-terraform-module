@@ -29,9 +29,9 @@ loki:
 
     storage_config:
       aws:
-        s3: "s3://${var.aws_region}/${local.s3_buckets["loki"].s3_bucket_id}"
+        s3: "s3://${var.aws_region}/${local.s3_bucket_names["loki"]}"
         s3forcepathstyle: true
-        bucketnames: "${local.s3_buckets["loki"].s3_bucket_id}"
+        bucketnames: "${local.s3_bucket_names["loki"]}"
         region: "${var.aws_region}"
         insecure: false
         sse_encryption: true

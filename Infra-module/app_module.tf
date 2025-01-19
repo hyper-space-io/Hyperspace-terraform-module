@@ -16,7 +16,8 @@ locals {
     data_node_ami_id = data.aws_ami.fpga.id
     tags = jsonencode(local.tags)
     vpc_module = jsonencode(module.vpc)
-    s3_buckets = jsonencode(module.s3_buckets)  
+    s3_buckets_arns = jsonencode({for k, v in module.s3_buckets : k => v.s3_bucket_arn})  
+    s3_buckets_names = jsonencode({for k, v in module.s3_buckets : k => v.s3_bucket_id})
     iam_policies = jsonencode(aws_iam_policy.iam_policies)
   }
 }

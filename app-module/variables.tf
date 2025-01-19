@@ -132,7 +132,13 @@ variable "vpc_module" {
   description = "The VPC module to use for the resources"
 }
 
-variable "s3_buckets" {
+variable "s3_bucket_names" {
+  type        = string
+  default     = ""
+  description = "The S3 buckets to use for the resources"
+}
+
+variable "s3_bucket_arns" {
   type        = string
   default     = ""
   description = "The S3 buckets to use for the resources"
