@@ -89,7 +89,7 @@ module "eks" {
   ############################
 
   # Sperating the self managed nodegroups to az's ( 1 AZ : 1 ASG )
-  self_managed_node_groups = { for k, v in local.local.precomputed_self_managed_node_groups[var.create_eks ? "after_apply" : "empty"] : k => v } 
+  self_managed_node_groups = { for k, v in local.precomputed_self_managed_node_groups[var.create_eks ? "after_apply" : "empty"] : k => v } 
 
   self_managed_node_group_defaults = {
     update_launch_template_default_version = true
