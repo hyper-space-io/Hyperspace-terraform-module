@@ -110,6 +110,12 @@ variable "create_eks" {
   description = "Should we create the eks cluster?"
 }
 
+variable "tfc_agent_token" {
+  type        = string
+  sensitive   = true
+  description = "The token to use in the user_data script"
+}
+
 variable "worker_nodes_max" {
   type    = number
   default = 10
