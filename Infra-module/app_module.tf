@@ -10,7 +10,7 @@ locals {
     environment = var.environment
     create_eks = var.create_eks
     worker_nodes_max = var.worker_nodes_max
-    worker_instance_type = jsonencode(var.worker_instance_type)
+    worker_instance_type = var.worker_instance_type
     availability_zones = jsonencode(local.availability_zones)
     aws_region = var.aws_region
     vpc_cidr = var.vpc_cidr

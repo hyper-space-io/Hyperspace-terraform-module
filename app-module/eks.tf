@@ -47,7 +47,7 @@ module "eks" {
       min_size       = 1
       max_size       = var.worker_nodes_max
       desired_size   = 1
-      instance_types = jsondecode(var.worker_instance_type)
+      instance_types = var.worker_instance_type
       capacity_type  = "ON_DEMAND"
       labels         = { Environment = "${var.environment}" }
       tags           = merge(local.tags, { nodegroup = "workers", Name = "${local.cluster_name}-eks-medium" })
