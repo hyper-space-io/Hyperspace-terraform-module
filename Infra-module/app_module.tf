@@ -6,15 +6,6 @@ locals {
     enable_ha_argocd = var.enable_ha_argocd
     infra_workspace_name = terraform.workspace
     organization = data.tfe_organizations.all.names[0]
-    project = var.project
-    environment = var.environment
-    create_eks = var.create_eks
-    worker_nodes_max = var.worker_nodes_max
-    worker_instance_type = var.worker_instance_type
-    availability_zones = local.availability_zones
-    aws_region = var.aws_region
-    vpc_cidr = var.vpc_cidr
-    data_node_ami_id = data.aws_ami.fpga.id
   }
 }
 resource "tfe_workspace" "app" {
