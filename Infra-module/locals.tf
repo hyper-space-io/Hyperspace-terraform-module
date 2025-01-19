@@ -2,7 +2,6 @@ locals {
   #####################
   #      GENERAL      #
   #####################
-  ami = {ami_id = "${data.aws_ami.fpga.image_id}", empty = ""}
   tags = merge(var.tags, {
     project     = "hyperspace"
     environment = "${var.environment}"
@@ -36,7 +35,7 @@ locals {
       max_size                 = 20
       desired_size             = 0
       instance_type            = "f1.2xlarge"
-      ami_id                   = "${local.ami[var.create_eks ? "ami_id" : "empty"]}"
+      ami_id                   = "${data.aws_ami.fpga.image_id}"
       bootstrap_extra_args     = "--kubelet-extra-args '--node-labels=hyperspace.io/type=fpga --register-with-taints=fpga=true:NoSchedule'"
       post_bootstrap_user_data = <<-EOT
       #!/bin/bash -e
@@ -68,6 +67,21 @@ locals {
       }
     }
   }
+
+  self_managed_node_groups_local = merge([
+    for subnet in slice(module.vpc.private_subnets, 0, length(local.availability_zones)) : {
+      for pool_name, pool_values in local.additional_self_managed_node_pools :
+      "${var.environment}-${subnet}-${pool_name}" => merge(
+        pool_values,
+        {
+          name       = pool_name,
+          subnet_ids = [subnet]
+        }
+      )
+    }
+  ]...)
+
+  self_managed_node_groups = { after_apply = local.self_managed_node_groups_local }
 
   ##################
   #  IAM POLICIES  #
