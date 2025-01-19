@@ -11,7 +11,7 @@ locals {
     create_eks = var.create_eks
     worker_nodes_max = var.worker_nodes_max
     worker_instance_type = var.worker_instance_type
-    availability_zones = local.availability_zones
+    availability_zones = jsonencode(local.availability_zones)
     aws_region = var.aws_region
     vpc_cidr = var.vpc_cidr
     data_node_ami_id = data.aws_ami.fpga.id
