@@ -15,6 +15,7 @@ locals {
     aws_region = var.aws_region
     vpc_cidr = var.vpc_cidr
     data_node_ami_id = data.aws_ami.fpga.id
+    tags = jsonencode(var.tags)
   }
 }
 resource "tfe_workspace" "app" {

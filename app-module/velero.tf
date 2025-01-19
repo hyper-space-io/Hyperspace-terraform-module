@@ -21,13 +21,13 @@ resource "helm_release" "velero" {
         bucket: "${local.s3_buckets["velero"].s3_bucket_id}"
         accessMode: "ReadWrite"
         config: {
-          region: "${local.aws_region}"
+          region: "${var.aws_region}"
         }
     volumeSnapshotLocation:
       - name: "aws"
         provider: "aws"
         config: {
-          region: "${local.aws_region}"
+          region: "${var.aws_region}"
         }
   podAnnotations: {
    eks.amazonaws.com/role-arn: "${local.iam_roles["velero"].iam_role_arn}"

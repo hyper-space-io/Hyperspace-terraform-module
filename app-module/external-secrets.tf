@@ -26,7 +26,7 @@ resource "helm_release" "secret_manager_manifests" {
   force_update    = true
   cleanup_on_fail = true
   values = [<<EOT
-  awsRegion: "${local.aws_region}"
+  awsRegion: "${var.aws_region}"
   EOT
   ]
   depends_on = [helm_release.secrets_manager, module.eks]

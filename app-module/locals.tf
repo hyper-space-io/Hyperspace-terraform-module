@@ -1,8 +1,5 @@
 locals {
-  tags                        = data.terraform_remote_state.infra.outputs.tags
-  aws_region                  = data.terraform_remote_state.infra.outputs.aws_region
-  environment                 = data.terraform_remote_state.infra.outputs.environment
-  eks_module                  = module.eks
+  tags                        = jsondecode(var.tags)
   vpc_module                  = data.terraform_remote_state.infra.outputs.vpc
   s3_buckets                  = data.terraform_remote_state.infra.outputs.s3_buckets
   iam_roles                   = data.terraform_remote_state.infra.outputs.iam_roles
@@ -11,7 +8,7 @@ locals {
   availability_zones          = jsondecode(var.availability_zones)
   alb_values                  = <<EOT
   vpcId: ${local.vpc_module.vpc_id}
-  region: ${local.aws_region}
+  region: ${var.aws_region}
   EOT
   cluster_name = "${var.project}-${var.environment}"
 

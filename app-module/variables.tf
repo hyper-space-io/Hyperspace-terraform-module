@@ -129,3 +129,9 @@ variable "data_node_ami_id" {
   default     = ""
   description = "The AMI ID to use for the data nodes"
 }
+
+variable "tags" {
+  type        = string
+  default     = ""
+  description = "List of tags to assign to resources created in this module"
+}

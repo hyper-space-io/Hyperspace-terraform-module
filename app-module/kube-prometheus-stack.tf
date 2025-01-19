@@ -15,7 +15,7 @@ global:
 
 commonLabels:
 
-  environment: "${local.environment}"
+  environment: "${var.environment}"
 
 grafana:
 

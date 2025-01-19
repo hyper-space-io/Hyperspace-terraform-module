@@ -30,5 +30,5 @@ data "kubernetes_ingress_v1" "internal_ingress" {
 }
 
 data "aws_eks_cluster_auth" "eks" {
-  name = local.eks_module.cluster_name
+  name = local.cluster_name
 }

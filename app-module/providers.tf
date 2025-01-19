@@ -1,19 +1,19 @@
 provider "kubernetes" {
-  host                   = local.eks_module.cluster_endpoint
-  cluster_ca_certificate = base64decode(local.eks_module.cluster_certificate_authority_data)
+  host                   = module.eks.cluster_endpoint
+  cluster_ca_certificate = base64decode(module.eks.cluster_certificate_authority_data)
   token                  = data.aws_eks_cluster_auth.eks.token
 }
 
 provider "helm" {
   kubernetes {
-    host                   = local.eks_module.cluster_endpoint
-    cluster_ca_certificate = base64decode(local.eks_module.cluster_certificate_authority_data)
+    host                   = module.eks.cluster_endpoint
+    cluster_ca_certificate = base64decode(module.eks.cluster_certificate_authority_data)
     token                  = data.aws_eks_cluster_auth.eks.token
   }
 }
 
 provider "aws" {
-  region = local.aws_region
+  region = var.aws_region
 }
 
 terraform {

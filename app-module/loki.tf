@@ -24,20 +24,20 @@ loki:
           object_store: "s3"
           schema: "v11"
           index:
-            prefix: "${local.eks_module.cluster_name}-loki-index-"
+            prefix: "${local.cluster_name}-loki-index-"
             period: "8904h"
 
     storage_config:
       aws:
-        s3: "s3://${local.aws_region}/${local.s3_buckets["loki"].s3_bucket_id}"
+        s3: "s3://${var.aws_region}/${local.s3_buckets["loki"].s3_bucket_id}"
         s3forcepathstyle: true
         bucketnames: "${local.s3_buckets["loki"].s3_bucket_id}"
-        region: "${local.aws_region}"
+        region: "${var.aws_region}"
         insecure: false
         sse_encryption: true
 
         dynamodb:
-          dynamodb_url: "dynamodb://${local.aws_region}"
+          dynamodb_url: "dynamodb://${var.aws_region}"
     
     table_manager:
       retention_deletes_enabled: true

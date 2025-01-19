@@ -12,9 +12,9 @@ resource "helm_release" "cluster_autoscaler" {
 extraArgs:
   scale-down-delay-after-add: 30s
   scale-down-unneeded-time: 10m
-awsRegion: "${local.aws_region}"
+awsRegion: "${var.aws_region}"
 autoDiscovery:
-  clusterName: "${local.eks_module.cluster_name}"
+  clusterName: "${local.cluster_name}"
 rbac:
   create: true
   serviceAccount:

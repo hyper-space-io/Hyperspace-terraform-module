@@ -14,7 +14,7 @@ daemonset:
   includeCrioExe: true
   vendor: rhel7
   s3BucketName: "${local.s3_buckets["core-dump-logs"].s3_bucket_arn}"
-  s3Region: "${local.aws_region}"
+  s3Region: "${var.aws_region}"
 serviceAccount:
   name: "${local.dump_release_name}"
   annotations:
