@@ -2,7 +2,6 @@ locals {
   #####################
   #      GENERAL      #
   #####################
-  ami = {id = "${data.aws_ami.fpga.image_id}"}
   tags = merge(var.tags, {
     project     = "hyperspace"
     environment = "${var.environment}"
@@ -36,7 +35,7 @@ locals {
       max_size                 = 20
       desired_size             = 0
       instance_type            = "f1.2xlarge"
-      ami_id                   = "${local.ami.id}"
+      ami_id                   = "${data.aws_ami.fpga.image_id}"
       bootstrap_extra_args     = "--kubelet-extra-args '--node-labels=hyperspace.io/type=fpga --register-with-taints=fpga=true:NoSchedule'"
       post_bootstrap_user_data = <<-EOT
       #!/bin/bash -e
