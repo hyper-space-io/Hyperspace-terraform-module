@@ -12,7 +12,7 @@ resource "helm_release" "secrets_manager" {
   values = [<<EOF
 serviceAccount:
   annotations:
-    eks.amazonaws.com/role-arn: "${local.iam_roles["${local.external_secrets_release_name}"].iam_role_arn}"
+    eks.amazonaws.com/role-arn: "${module.iam_iam-assumable-role-with-oidc["${local.external_secrets_release_name}"].iam_role_arn}"
 installCRDs: true
 EOF
   ]

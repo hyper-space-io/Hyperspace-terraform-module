@@ -30,7 +30,7 @@ resource "helm_release" "velero" {
           region: "${var.aws_region}"
         }
   podAnnotations: {
-   eks.amazonaws.com/role-arn: "${local.iam_roles["velero"].iam_role_arn}"
+   eks.amazonaws.com/role-arn: "${module.iam_iam-assumable-role-with-oidc["velero"].iam_role_arn}"
   }
   defaultBackupStorageLocation: "s3"
   credentials:
@@ -38,7 +38,7 @@ resource "helm_release" "velero" {
   serviceAccount:
     server:
       annotations:
-        eks.amazonaws.com/role-arn: "${local.iam_roles["velero"].iam_role_arn}"
+        eks.amazonaws.com/role-arn: "${module.iam_iam-assumable-role-with-oidc["velero"].iam_role_arn}"
   EOF
   ]
   depends_on = [module.eks]

@@ -11,7 +11,7 @@ loki:
     name: loki
     create: true
     annotations:
-      eks.amazonaws.com/role-arn: "${local.iam_roles["loki"].iam_role_arn}"
+      eks.amazonaws.com/role-arn: "${module.iam_iam-assumable-role-with-oidc["loki"].iam_role_arn}"
 
   extraArgs:
     target: all,table-manager

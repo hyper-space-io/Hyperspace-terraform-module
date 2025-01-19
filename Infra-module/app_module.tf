@@ -16,6 +16,13 @@ locals {
     vpc_cidr = var.vpc_cidr
     data_node_ami_id = data.aws_ami.fpga.id
     tags = jsonencode(var.tags)
+    vpc_id = module.vpc.vpc_id
+    private_subnets = jsonencode(module.vpc.private_subnets)
+    public_subnets = jsonencode(module.vpc.public_subnets)
+    ipv6_cidr_block = module.vpc.ipv6_cidr_block
+    s3_buckets = jsonencode(module.s3_buckets)
+    iam_roles = jsonencode(module.iam_roles)
+    iam_policies = jsonencode(module.iam_policies)
   }
 }
 resource "tfe_workspace" "app" {

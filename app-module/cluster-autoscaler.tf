@@ -21,7 +21,7 @@ rbac:
     create: true
     name: cluster-autoscaler
     annotations:
-      eks.amazonaws.com/role-arn: "${local.iam_roles["${local.autoscaler_release_name}"].iam_role_arn}"
+      eks.amazonaws.com/role-arn: "${module.iam_iam-assumable-role-with-oidc["${local.autoscaler_release_name}"].iam_role_arn}"
 EOF
   ]
   depends_on = [module.eks]

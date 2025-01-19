@@ -1,9 +1,9 @@
 locals {
   tags                        = jsondecode(var.tags)
-  vpc_module                  = data.terraform_remote_state.infra.outputs.vpc
-  s3_buckets                  = data.terraform_remote_state.infra.outputs.s3_buckets
-  iam_roles                   = data.terraform_remote_state.infra.outputs.iam_roles
-  iam_policies                = data.terraform_remote_state.infra.outputs.iam_policies
+  vpc_module                  = jsondecode(var.vpc_module)
+  s3_buckets                  = jsondecode(var.s3_buckets)
+  iam_roles                   = jsondecode(var.iam_roles)
+  iam_policies                = jsondecode(var.iam_policies)
   internal_ingress_class_name = "nginx-internal"
   availability_zones          = jsondecode(var.availability_zones)
   alb_values                  = <<EOT

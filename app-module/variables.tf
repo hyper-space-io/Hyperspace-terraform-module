@@ -135,3 +135,27 @@ variable "tags" {
   default     = ""
   description = "List of tags to assign to resources created in this module"
 }
+
+variable "vpc_module" {
+  type        = string
+  default     = ""
+  description = "The VPC module to use for the resources"
+}
+
+variable "s3_buckets" {
+  type        = string
+  default     = ""
+  description = "The S3 buckets to use for the resources"
+}
+
+variable "iam_roles" {
+  type        = string
+  default     = ""
+  description = "The IAM roles to use for the resources"
+}
+
+variable "iam_policies" {
+  type        = string
+  default     = ""
+  description = "The IAM policies to use for the resources"
+}
