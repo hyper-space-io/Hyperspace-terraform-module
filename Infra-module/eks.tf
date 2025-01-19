@@ -192,7 +192,7 @@ module "eks" {
   #    DEPENDENCIES     #
   #######################
 
-  depends_on = [module.vpc , data.aws_ami.fpga, local.availability_zones ]
+  depends_on = [module.vpc]
 
 }
 
