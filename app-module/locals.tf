@@ -1,11 +1,11 @@
 locals {
-  tags                        = jsondecode(var.tags)
-  vpc_module                  = jsondecode(var.vpc_module)
-  s3_buckets                  = jsondecode(var.s3_buckets)
-  iam_roles                   = jsondecode(var.iam_roles)
-  iam_policies                = jsondecode(var.iam_policies)
+  tags                        = base64decode(var.tags)
+  vpc_module                  = base64decode(var.vpc_module)
+  s3_buckets                  = base64decode(var.s3_buckets)
+  iam_roles                   = base64decode(var.iam_roles)
+  iam_policies                = base64decode(var.iam_policies)
   internal_ingress_class_name = "nginx-internal"
-  availability_zones          = jsondecode(var.availability_zones)
+  availability_zones          = base64decode(var.availability_zones)
   alb_values                  = <<EOT
   vpcId: ${local.vpc_module.vpc_id}
   region: ${var.aws_region}
