@@ -1,5 +1,5 @@
 locals {
-  tags                        = base64decode(var.tags)
+  tags                        = jsondecode(var.tags)
   vpc_module                  = base64decode(var.vpc_module)
   s3_buckets                  = base64decode(var.s3_buckets)
   iam_roles                   = base64decode(var.iam_roles)

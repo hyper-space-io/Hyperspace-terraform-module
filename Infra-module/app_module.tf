@@ -14,7 +14,7 @@ locals {
     availability_zones = jsonencode(local.availability_zones)
     aws_region = var.aws_region
     data_node_ami_id = data.aws_ami.fpga.id
-    tags = base64encode(var.tags)
+    tags = jsonencode(var.tags)
     vpc_module = base64encode(module.vpc)
     s3_buckets = base64encode(module.s3_buckets)  
     iam_roles = base64encode(module.iam_roles)
