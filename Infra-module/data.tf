@@ -84,7 +84,7 @@ data "aws_iam_policy_document" "cluster_autoscaler" {
       "eks:DescribeNodegroup"
     ]
     resources = [
-      "arn:aws:eks:${var.aws_region}:${data.aws_caller_identity.current.account_id}:nodegroup/${module.eks.cluster_name}/*"
+      "arn:aws:eks:${var.aws_region}:${data.aws_caller_identity.current.account_id}:nodegroup/${local.cluster_name}/*"
     ]
     effect = "Allow"
   }
@@ -164,7 +164,7 @@ data "aws_iam_policy_document" "loki_s3_dynamodb_full_access" {
     ]
     effect = "Allow"
     resources = [
-      "arn:aws:dynamodb:${var.aws_region}:${data.aws_caller_identity.current.account_id}:table/${module.eks.cluster_name}-loki-index-*"
+      "arn:aws:dynamodb:${var.aws_region}:${data.aws_caller_identity.current.account_id}:table/${local.cluster_name}-loki-index-*"
     ]
   }
   statement {
