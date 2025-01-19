@@ -114,16 +114,6 @@ variable "aws_region" {
   description = "This is used to define where resources are created and used"
 }
 
-variable "vpc_cidr" {
-  type    = string
-  default = "10.10.100.0/16"
-  validation {
-    condition     = can(regex("^([0-9]{1,3}\\.){3}[0-9]{1,3}/(\\d{1,2})$", var.vpc_cidr))
-    error_message = "The VPC CIDR must be a valid CIDR block in the format X.X.X.X/XX."
-  }
-  description = "CIDR block for the VPC (e.g., 10.10.100.0/16) - defines the IP range for resources within the VPC."
-}
-
 variable "data_node_ami_id" {
   type        = string
   default     = ""
