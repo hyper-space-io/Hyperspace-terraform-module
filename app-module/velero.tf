@@ -41,5 +41,4 @@ resource "helm_release" "velero" {
         eks.amazonaws.com/role-arn: "${local.iam_roles["velero"].iam_role_arn}"
   EOF
   ]
-  depends_on = [module.eks]
 }

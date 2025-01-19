@@ -26,5 +26,4 @@ tolerations:
   effect: "NoSchedule"
 EOT
   ]
-  depends_on = [module.eks]
 }

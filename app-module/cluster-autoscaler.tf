@@ -24,5 +24,4 @@ rbac:
       eks.amazonaws.com/role-arn: "${local.iam_roles["${local.autoscaler_release_name}"].iam_role_arn}"
 EOF
   ]
-  depends_on = [module.eks]
 }

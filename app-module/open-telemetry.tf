@@ -40,5 +40,4 @@ image:
 useGOMEMLIMIT: true
 EOT
   ]
-  depends_on = [module.eks]
 }

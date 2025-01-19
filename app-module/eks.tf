@@ -94,7 +94,7 @@ module "eks" {
 
   # Sperating the self managed nodegroups to az's ( 1 AZ : 1 ASG )
   self_managed_node_groups = merge([
-    for subnet in slice(local.vpc_module.private_subnets, 0, length(local.availability_zones)) : {
+    for subnet in slice(local.vpc_module.private_subnets, 0, length(var.availability_zones)) : {
       for pool_name, pool_values in local.additional_self_managed_node_pools :
       "${var.environment}-${subnet}-${pool_name}" => merge(
         pool_values,
@@ -201,6 +201,14 @@ module "eks" {
 
 
   ##################################################################################
+
+
+  #######################
+  #    DEPENDENCIES     #
+  #######################
+
+  depends_on = [data.aws_ami.fpga, var.availability_zones ]
+
 }
 
 

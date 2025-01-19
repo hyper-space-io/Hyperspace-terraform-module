@@ -54,5 +54,4 @@ promtail:
     effect: "NoSchedule"
 EOF
   ]
-  depends_on = [module.eks]
 }

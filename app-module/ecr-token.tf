@@ -5,5 +5,5 @@ resource "helm_release" "ecr_token" {
   wait            = true
   force_update    = true
   cleanup_on_fail = true
-  depends_on      = [helm_release.argocd, module.eks]
+  depends_on      = [helm_release.argocd]
 }
