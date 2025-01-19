@@ -89,7 +89,18 @@ module "eks" {
   ############################
 
   # Sperating the self managed nodegroups to az's ( 1 AZ : 1 ASG )
-  self_managed_node_groups = local.self_managed_node_groups["after_apply"]
+  self_managed_node_groups = merge([
+    for subnet in slice(module.vpc.private_subnets, 0, length(local.availability_zones)) : {
+      for pool_name, pool_values in local.additional_self_managed_node_pools :
+      "${var.environment}-${subnet}-${pool_name}" => merge(
+        pool_values,
+        {
+          name       = pool_name,
+          subnet_ids = [subnet]
+        }
+      )
+    }
+  ]...)
 
   self_managed_node_group_defaults = {
     update_launch_template_default_version = true
@@ -102,7 +113,6 @@ module "eks" {
       KMSAccess                    = "${aws_iam_policy.policies["kms"].arn}"
     }
   }
-  
 
 
   ##################################################################################
