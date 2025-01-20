@@ -18,7 +18,7 @@ locals {
     vpc_module = jsonencode(module.vpc)
     s3_buckets_arns = jsonencode({for k, v in module.s3_buckets : k => v.s3_bucket_arn})  
     s3_buckets_names = jsonencode({for k, v in module.s3_buckets : k => v.s3_bucket_id})
-    iam_policies = jsonencode(aws_iam_policy.iam_policies)
+    iam_policies = jsonencode({for k, v in aws_iam_policy.policies : k => v})
   }
 }
 resource "tfe_workspace" "app" {
