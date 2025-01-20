@@ -57,13 +57,13 @@ data "aws_iam_policy_document" "cluster_autoscaler" {
     sid = "AutoscalingRead"
     actions = [
       "autoscaling:DescribeAutoScalingGroups",
-      "autoscaling:DescribeAutoScalingInstances", 
+      "autoscaling:DescribeAutoScalingInstances",
       "autoscaling:DescribeLaunchConfigurations",
       "autoscaling:DescribeScalingActivities",
       "autoscaling:DescribeTags"
     ]
     resources = ["*"]
-    effect = "Allow"
+    effect    = "Allow"
   }
 
   statement {
@@ -75,7 +75,7 @@ data "aws_iam_policy_document" "cluster_autoscaler" {
       "ec2:GetInstanceTypesFromInstanceRequirements"
     ]
     resources = ["*"]
-    effect = "Allow"
+    effect    = "Allow"
   }
 
   statement {

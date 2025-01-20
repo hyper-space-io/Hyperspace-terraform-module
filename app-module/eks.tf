@@ -117,7 +117,7 @@ module "eks" {
       KMSAccess                    = "${local.iam_policies["kms"].arn}"
     }
   }
-  
+
 
 
   ##################################################################################
@@ -144,7 +144,7 @@ module "eks" {
       from_port        = 0
       to_port          = 0
       type             = "ingress"
-      cidr_blocks      = [local.vpc_module.vpc_cidr]
+      cidr_blocks      = [local.vpc_module.vpc_cidr_block]
       ipv6_cidr_blocks = length(local.vpc_module.vpc_ipv6_cidr_block) > 0 ? [local.vpc_module.vpc_ipv6_cidr_block] : []
     }
 
@@ -154,7 +154,7 @@ module "eks" {
       from_port        = 0
       to_port          = 0
       type             = "egress"
-      cidr_blocks      = [local.vpc_module.vpc_cidr]
+      cidr_blocks      = [local.vpc_module.vpc_cidr_block]
       ipv6_cidr_blocks = length(local.vpc_module.vpc_ipv6_cidr_block) > 0 ? [local.vpc_module.vpc_ipv6_cidr_block] : []
     }
 
@@ -175,7 +175,7 @@ module "eks" {
       from_port        = 0
       to_port          = 0
       type             = "ingress"
-      cidr_blocks      = [local.vpc_module.vpc_cidr]
+      cidr_blocks      = [local.vpc_module.vpc_cidr_block]
       ipv6_cidr_blocks = length(local.vpc_module.vpc_ipv6_cidr_block) > 0 ? [local.vpc_module.vpc_ipv6_cidr_block] : []
     }
   }

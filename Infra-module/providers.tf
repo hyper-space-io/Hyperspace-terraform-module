@@ -1,7 +1,7 @@
 terraform {
   required_providers {
     tfe = {
-      source  = "hashicorp/tfe"
+      source = "hashicorp/tfe"
     }
     aws = {
       source = "hashicorp/aws"
@@ -9,6 +9,6 @@ terraform {
   }
 }
 
-provider "aws" {region = var.aws_region}
+provider "aws" { region = var.aws_region }
 
 provider "tfe" {}

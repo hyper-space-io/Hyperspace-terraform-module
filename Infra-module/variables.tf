@@ -151,7 +151,7 @@ variable "enable_ha_argocd" {
 }
 
 variable "dex_connectors" {
-  type = string
+  type        = string
   default     = ""
   description = "List of Dex connector configurations"
 }
