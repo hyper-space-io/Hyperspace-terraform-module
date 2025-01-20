@@ -138,6 +138,12 @@ variable "s3_bucket_names" {
   description = "The S3 buckets to use for the resources"
 }
 
+variable "s3_buckets_arns" {
+  type        = string
+  default     = ""
+  description = "The S3 buckets to use for the resources"
+}
+
 variable "iam_policies" {
   type        = string
   default     = ""
