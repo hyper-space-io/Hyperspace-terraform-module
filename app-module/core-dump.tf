@@ -26,5 +26,5 @@ tolerations:
   effect: "NoSchedule"
 EOT
   ]
-  depends_on = [module.eks]
+  depends_on = [module.eks, module.iam_iam-assumable-role-with-oidc]
 }

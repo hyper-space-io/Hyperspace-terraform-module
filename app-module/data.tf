@@ -11,6 +11,7 @@ data "terraform_remote_state" "infra" {
 
 data "kubernetes_storage_class" "name" {
   metadata { name = "gp2" }
+  depends_on = [module.eks]
 }
 
 data "kubernetes_ingress_v1" "external_ingress" {
@@ -31,4 +32,5 @@ data "kubernetes_ingress_v1" "internal_ingress" {
 
 data "aws_eks_cluster_auth" "eks" {
   name = local.cluster_name
+  depends_on = [module.eks]
 }

@@ -29,5 +29,5 @@ resource "helm_release" "secret_manager_manifests" {
   awsRegion: "${var.aws_region}"
   EOT
   ]
-  depends_on = [helm_release.secrets_manager, module.eks]
+  depends_on = [helm_release.secrets_manager, module.eks, module.iam_iam-assumable-role-with-oidc]
 }

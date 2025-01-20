@@ -24,5 +24,5 @@ rbac:
       eks.amazonaws.com/role-arn: "${module.iam_iam-assumable-role-with-oidc["${local.autoscaler_release_name}"].iam_role_arn}"
 EOF
   ]
-  depends_on = [module.eks]
+  depends_on = [module.eks, module.iam_iam-assumable-role-with-oidc]
 }

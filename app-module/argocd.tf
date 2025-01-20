@@ -21,5 +21,5 @@ resource "helm_release" "argocd" {
   repository       = "https://argoproj.github.io/argo-helm"
   values           = [local.argocd_values]
   cleanup_on_fail  = true
-  depends_on       = [module.eks]
+  depends_on       = [module.eks, module.iam_iam-assumable-role-with-oidc]
 }
