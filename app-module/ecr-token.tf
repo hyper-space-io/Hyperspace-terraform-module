@@ -1,4 +1,5 @@
 resource "helm_release" "ecr_token" {
+  count           = 0
   name            = "ecr-credentials-sync"
   chart           = "${path.module}/ecr-credentials-sync"
   namespace       = "argocd"

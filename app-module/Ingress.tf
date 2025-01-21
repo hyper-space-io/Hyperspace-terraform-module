@@ -122,7 +122,7 @@ controller:
 
 
 resource "kubernetes_ingress_v1" "nginx_ingress" {
-  for_each = local.eks_exists ? local.combined_ingress_config : {}
+  for_each = var.create_eks ? local.combined_ingress_config : {}
   metadata {
     name      = "${each.key}-ingress"
     namespace = "ingress"
