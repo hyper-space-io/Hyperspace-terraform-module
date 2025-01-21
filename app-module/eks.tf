@@ -231,7 +231,6 @@ module "eks_blueprints_addons" {
   oidc_provider_arn                   = module.eks.oidc_provider_arn
   enable_aws_load_balancer_controller = module.eks.cluster_arn != ""
   aws_load_balancer_controller        = { values = [local.alb_values], wait = true }
-  depends_on                          = [module.eks]
 }
 
 # Remove non encrypted default storage class
