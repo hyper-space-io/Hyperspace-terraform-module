@@ -4,6 +4,7 @@ locals {
   s3_bucket_names             = jsondecode(var.s3_buckets_names)
   s3_bucket_arns              = jsondecode(var.s3_buckets_arns)
   iam_policies                = jsondecode(var.iam_policies)
+  local_iam_policies          = jsondecode(var.local_iam_policies)
   internal_ingress_class_name = "nginx-internal"
   availability_zones          = jsondecode(var.availability_zones)
   alb_values                  = <<EOT

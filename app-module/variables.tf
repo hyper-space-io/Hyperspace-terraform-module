@@ -149,3 +149,9 @@ variable "iam_policies" {
   default     = ""
   description = "The IAM policies to use for the resources"
 }
+
+variable "local_iam_policies" {
+  type        = string
+  default     = ""
+  description = "The IAM policies to use for the resources"
+}

@@ -272,7 +272,7 @@ resource "kubernetes_storage_class" "ebs_sc_gp3" {
 module "iam_iam-assumable-role-with-oidc" {
   source                        = "terraform-aws-modules/iam/aws//modules/iam-assumable-role-with-oidc"
   version                       = "~> 5.48.0"
-  for_each                      = { for k, v in local.iam_policies : k => v if lookup(v, "create_assumable_role", false) == true }
+  for_each                      = { for k, v in local.local_iam_policies : k => v if lookup(v, "create_assumable_role", false) == true }
   create_role                   = true
   role_name                     = each.value.name
   provider_url                  = module.eks.cluster_oidc_issuer_url
@@ -282,7 +282,7 @@ module "iam_iam-assumable-role-with-oidc" {
 
 module "boto3_irsa" {
   source    = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
-  for_each  = { for k, v in local.iam_policies : k => v if lookup(v, "create_cluster_wide_role", false) == true }
+  for_each  = { for k, v in local.local_iam_policies : k => v if lookup(v, "create_cluster_wide_role", false) == true }
   role_name = each.value.name
   role_policy_arns = {
     policy = local.iam_policies["${each.key}"].arn
