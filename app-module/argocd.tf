@@ -4,7 +4,7 @@ resource "helm_release" "argocd" {
   namespace        = "argocd"
   name             = "argocd"
   version          = "7.7.11"
-  depends_on       = [helm_release.nginx-ingress, aws_instance.vpn_client]
+  depends_on       = [helm_release.nginx-ingress]
   create_namespace = true
   cleanup_on_fail  = true
   repository       = "https://argoproj.github.io/argo-helm"
