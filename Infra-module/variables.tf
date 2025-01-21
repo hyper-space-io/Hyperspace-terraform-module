@@ -151,12 +151,7 @@ variable "enable_ha_argocd" {
 }
 
 variable "dex_connectors" {
-  type = list(object({
-    type   = string
-    id     = string
-    name   = string
-    config = map(any)
-  }))
+  type = list(any)
   default     = []
   description = "List of Dex connector configurations"
 }
