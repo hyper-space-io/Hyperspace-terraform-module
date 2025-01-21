@@ -296,3 +296,7 @@ module "boto3_irsa" {
   }
   depends_on = [module.eks]
 }
+
+output "iam_policies" {
+  value = local.iam_policies
+}
