@@ -6,6 +6,7 @@ resource "helm_release" "velero" {
   repository       = "https://vmware-tanzu.github.io/helm-charts"
   namespace        = "velero"
   create_namespace = true
+  cleanup_on_fail = true
   values = [<<EOF
   initContainers:
   - name: velero-plugin-for-aws

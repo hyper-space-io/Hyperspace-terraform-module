@@ -2,6 +2,8 @@ resource "helm_release" "loki" {
   count      = var.create_eks ? 1 : 0
   name       = "loki"
   namespace  = "monitoring"
+  create_namespace = true
+  cleanup_on_fail = true
   repository = "https://grafana.github.io/helm-charts"
   chart      = "loki-stack"
   version    = "~> 2.10.2"

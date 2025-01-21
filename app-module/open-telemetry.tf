@@ -6,6 +6,7 @@ resource "helm_release" "opentelemetry-collector" {
   chart            = "opentelemetry-collector"
   namespace        = "opentelemetry"
   create_namespace = true
+  cleanup_on_fail = true
   wait             = true
   values = [<<EOT
 mode: "deployment"
