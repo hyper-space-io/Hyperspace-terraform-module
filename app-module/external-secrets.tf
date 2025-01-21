@@ -2,6 +2,7 @@ locals {
   external_secrets_release_name = "external-secrets"
 }
 resource "helm_release" "secrets_manager" {
+  count            = 0
   namespace        = local.external_secrets_release_name
   chart            = local.external_secrets_release_name
   name             = local.external_secrets_release_name

@@ -1,13 +1,67 @@
 locals {
-  argocd_values = templatefile("${path.module}/argocd_values.tftpl", {
-    dex_enabled              = length(var.dex_connectors) > 0
-    domain                   = local.internal_domain_name
-    dex_connectors           = jsondecode(var.dex_connectors)
-    rbac_policy_default      = var.argocd_rbac_policy_default
-    rbac_policy_rules        = var.argocd_rbac_policy_rules
-    enable_high_availability = var.enable_ha_argocd
-    ingress_enabled          = local.eks_exists
-    ingress_class            = "nginx-internal"
+  dex_config = length(var.dex_connectors) > 0 ? {
+    connectors = [
+      for connector in jsondecode(var.dex_connectors) : {
+        type = connector.type
+        id   = connector.id
+        name = connector.name
+        config = {
+          for key, value in connector.config :
+          key => key == "orgs" ? [
+            for org in split(",", value) : trim(org, " ")
+          ] : value
+        }
+      }
+    ]
+  } : {}
+
+  argocd_values = yamlencode({
+    dex = {
+      enabled = length(var.dex_connectors) > 0
+    }
+    configs = {
+      cm = {
+        url = "https://argocd.${local.internal_domain_name}"
+        "dex.config" = yamlencode(local.dex_config)
+      }
+      rbac = {
+        "policy.default" = var.argocd_rbac_policy_default
+        "policy.csv"     = try(join("\n", var.argocd_rbac_policy_rules), "")
+      }
+    }
+    "redis-ha" = var.enable_ha_argocd ? {
+      enabled = true
+    } : null
+    controller = var.enable_ha_argocd ? {
+      replicas = 1
+    } : null
+    server = merge({
+      extraArgs = ["--insecure"]
+      ingress = {
+        enabled           = local.eks_exists
+        ingressClassName = "nginx-internal"
+        hostname         = "argocd.${local.internal_domain_name}"
+        https            = false
+      }
+    }, var.enable_ha_argocd ? {
+      autoscaling = {
+        enabled     = true
+        minReplicas = 2
+      }
+    } : {
+      autoscaling = {
+        enabled = false
+      }
+    })
+    repoServer = var.enable_ha_argocd ? {
+      autoscaling = {
+        enabled     = true
+        minReplicas = 2
+      }
+    } : null
+    applicationSet = var.enable_ha_argocd ? {
+      replicas = 2
+    } : null
   })
 }
 

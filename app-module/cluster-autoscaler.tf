@@ -2,6 +2,7 @@ locals {
   autoscaler_release_name = "cluster-autoscaler"
 }
 resource "helm_release" "cluster_autoscaler" {
+  count            = 0
   chart            = local.autoscaler_release_name
   namespace        = local.autoscaler_release_name
   name             = local.autoscaler_release_name

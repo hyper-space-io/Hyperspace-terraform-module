@@ -1,4 +1,5 @@
 resource "helm_release" "velero" {
+  count            = 0
   name             = "velero"
   chart            = "velero"
   version          = "~>8.0.0"

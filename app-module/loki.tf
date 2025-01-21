@@ -1,4 +1,5 @@
 resource "helm_release" "loki" {
+  count            = 0
   name       = "loki"
   namespace  = "monitoring"
   repository = "https://grafana.github.io/helm-charts"
