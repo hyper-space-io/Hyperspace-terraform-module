@@ -24,7 +24,7 @@ locals {
 }
 
 resource "helm_release" "nginx-ingress" {
-  for_each         = local.eks_exists ? local.combined_ingress_config : {}
+  for_each         = var.create_eks ? local.combined_ingress_config : {}
   name             = "ingress-nginx-${each.key}"
   chart            = "ingress-nginx"
   version          = "~> 4.11.2"
