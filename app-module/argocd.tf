@@ -33,10 +33,7 @@ resource "helm_release" "argocd" {
                 type = connector.type
                 id   = connector.id
                 name = connector.name
-                config = {
-                  for key, value in connector.config :
-                  key => key == "orgs" ? tostring(split(",", value)) : value
-                }
+                config = connector.config
               }
             ]
           })
