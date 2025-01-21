@@ -51,6 +51,7 @@ locals {
     } : {
       autoscaling = {
         enabled = false
+        minReplicas = 1
       }
     })
     repoServer = var.enable_ha_argocd ? {
