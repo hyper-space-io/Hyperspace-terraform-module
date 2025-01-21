@@ -2,7 +2,7 @@ locals {
   dump_release_name = "core-dump"
 }
 resource "helm_release" "core_dump" {
-  count            = 0
+  count            = var.create_eks ? 1 : 0
   name             = local.dump_release_name
   chart            = "${local.dump_release_name}-handler"
   version          = "~> 9.0.0"
@@ -27,5 +27,5 @@ tolerations:
   effect: "NoSchedule"
 EOT
   ]
-  depends_on = [module.eks, module.iam_iam-assumable-role-with-oidc]
+  depends_on = [module.eks]
 }

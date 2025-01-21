@@ -1,4 +1,5 @@
 resource "helm_release" "opentelemetry-collector" {
+  count            = var.create_eks ? 1 : 0
   name             = "opentelemetry-collector"
   repository       = "https://open-telemetry.github.io/opentelemetry-helm-charts"
   version          = "0.96.0"

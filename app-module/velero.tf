@@ -1,5 +1,5 @@
 resource "helm_release" "velero" {
-  count            = 0
+  count            = var.create_eks ? 1 : 0
   name             = "velero"
   chart            = "velero"
   version          = "~>8.0.0"

@@ -1,5 +1,5 @@
 resource "helm_release" "loki" {
-  count            = 0
+  count      = var.create_eks ? 1 : 0
   name       = "loki"
   namespace  = "monitoring"
   repository = "https://grafana.github.io/helm-charts"

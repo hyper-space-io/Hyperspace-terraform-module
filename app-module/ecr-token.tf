@@ -6,5 +6,5 @@ resource "helm_release" "ecr_token" {
   wait            = true
   force_update    = true
   cleanup_on_fail = true
-  depends_on      = [ module.eks]
+  depends_on      = [module.eks]
 }

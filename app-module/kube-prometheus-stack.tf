@@ -2,6 +2,7 @@ locals {
   prometheus_release_name = "kube-prometheus-stack"
 }
 resource "helm_release" "kube_prometheus_stack" {
+  count            = var.create_eks ? 1 : 0
   name       = local.prometheus_release_name
   chart      = local.prometheus_release_name
   version    = "~> 65.5.0"

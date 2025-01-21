@@ -2,7 +2,7 @@ locals {
   external_secrets_release_name = "external-secrets"
 }
 resource "helm_release" "secrets_manager" {
-  count            = 0
+  count            = var.create_eks ? 1 : 0
   namespace        = local.external_secrets_release_name
   chart            = local.external_secrets_release_name
   name             = local.external_secrets_release_name
@@ -30,5 +30,5 @@ resource "helm_release" "secret_manager_manifests" {
   awsRegion: "${var.aws_region}"
   EOT
   ]
-  depends_on = [helm_release.secrets_manager, module.eks, module.iam_iam-assumable-role-with-oidc]
+  depends_on = [helm_release.secrets_manager, module.eks]
 }

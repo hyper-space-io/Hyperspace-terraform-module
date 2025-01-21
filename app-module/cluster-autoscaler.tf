@@ -2,7 +2,7 @@ locals {
   autoscaler_release_name = "cluster-autoscaler"
 }
 resource "helm_release" "cluster_autoscaler" {
-  count            = 0
+  count            = var.create_eks ? 1 : 0
   chart            = local.autoscaler_release_name
   namespace        = local.autoscaler_release_name
   name             = local.autoscaler_release_name
@@ -25,5 +25,5 @@ rbac:
       eks.amazonaws.com/role-arn: "${module.iam_iam-assumable-role-with-oidc["${local.autoscaler_release_name}"].iam_role_arn}"
 EOF
   ]
-  depends_on = [module.eks, module.iam_iam-assumable-role-with-oidc]
+  depends_on = [module.eks]
 }
