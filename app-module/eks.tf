@@ -1,7 +1,3 @@
-locals {
-  eks_exists = module.eks.cluster_arn != "" ? true : false
-}
-
 ########################
 #         EKS          #
 ########################
@@ -226,15 +222,16 @@ module "irsa-ebs-csi" {
 #############################################################################################################################################
 
 module "eks_blueprints_addons" {
+  count                               = var.create_eks ? 1 : 0
   source                              = "aws-ia/eks-blueprints-addons/aws"
   version                             = "1.16.3"
-  count                               = local.eks_exists ? 1 : 0
   cluster_name                        = local.cluster_name
   cluster_endpoint                    = module.eks.cluster_endpoint
   cluster_version                     = module.eks.cluster_version
   oidc_provider_arn                   = module.eks.oidc_provider_arn
   enable_aws_load_balancer_controller = module.eks.cluster_arn != ""
   aws_load_balancer_controller        = { values = [local.alb_values], wait = true }
+  depends_on                          = [module.eks]
 }
 
 # Remove non encrypted default storage class
