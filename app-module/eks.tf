@@ -222,8 +222,7 @@ module "irsa-ebs-csi" {
 #############################################################################################################################################
 
 module "eks_blueprints_addons" {
-  # count                               = var.create_eks ? 1 : 0
-  count                               = 0
+  count                               = var.create_eks ? 1 : 0
   source                              = "aws-ia/eks-blueprints-addons/aws"
   version                             = "1.16.3"
   cluster_name                        = local.cluster_name
