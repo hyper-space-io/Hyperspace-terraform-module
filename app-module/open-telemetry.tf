@@ -42,5 +42,5 @@ image:
 useGOMEMLIMIT: true
 EOT
   ]
-  depends_on = [module.eks, provider.helm]
+  depends_on = [module.eks]
 }

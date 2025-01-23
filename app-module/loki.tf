@@ -57,5 +57,5 @@ promtail:
     effect: "NoSchedule"
 EOF
   ]
-  depends_on = [module.eks, module.iam_iam-assumable-role-with-oidc, provider.helm]
+  depends_on = [module.eks, module.iam_iam-assumable-role-with-oidc]
 }

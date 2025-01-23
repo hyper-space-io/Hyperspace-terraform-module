@@ -43,5 +43,5 @@ resource "helm_release" "velero" {
         eks.amazonaws.com/role-arn: "${module.iam_iam-assumable-role-with-oidc["velero"].iam_role_arn}"
   EOF
   ]
-  depends_on = [module.eks, module.iam_iam-assumable-role-with-oidc, provider.helm]
+  depends_on = [module.eks, module.iam_iam-assumable-role-with-oidc]
 }
