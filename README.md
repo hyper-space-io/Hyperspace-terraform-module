@@ -164,3 +164,54 @@ The application module primarily manages Kubernetes resources and doesn't expose
 
 
 # Getting Started
+
+- Create a new workspace in Terraform Cloud
+- Name it according to your infrastructure needs (e.g., "hyperspace-infra-module")
+
+- Create a new Terraform configuration and use the module as follows:
+
+```hcl
+module "hyperspace" {
+  source = "github.com/hyper-space-io/Hyperspace-terraform-module/Infra-module?ref=setup-cluster-tools"
+  
+  # Required variables
+  domain_name         = "your-domain.com"
+  environment         = "development"
+  vpc_cidr            = "10.0.0.0/16"
+  worker_nodes_max    = 10
+  
+  # Optional variables with defaults
+  project               = "hyperspace"
+  aws_region            = "us-east-1"
+  create_public_zone    = true
+  enable_ha_argocd      = true
+  worker_instance_type  = ["m5n.xlarge"]
+  
+  # Additional configurations
+  flow_log_group_class = "INFREQUENT_ACCESS"
+  dex_connectors       = [] # Add your authentication connectors here
+}
+```
+
+## Important Notes
+
+1. **ACM Certificate Validation**: During the first deployment, the process will pause for ACM certificate validation. You will need to:
+   - Get the ACM validation records from the AWS Console
+   - Add these CNAME records to your domain's DNS settings
+   - Wait for the certificates to be validated (typically 5-30 minutes)
+   - The deployment will automatically continue once validation is complete
+
+2. **Access Your Infrastructure**: After successful deployment, you can access:
+   - ArgoCD: `https://argocd.internal-<environment>.<your-domain>`
+   - Grafana: `https://grafana.internal-<environment>.<your-domain>`
+
+3. **Initial ArgoCD Password**: Retrieve it using:
+   ```bash
+   kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
+   ```
+
+4. **Terraform Cloud Agent**: The Terraform Cloud Agent is deployed to the VPC created by the infrastructure module and is used to manage the app-module.
+
+5. **Terraform cloud token**: In order to manage the app-module from the Infra-module, you need to add the Terraform cloud token to the Infra-module, add a variable called `TFE_TOKEN` and set it to your Terraform cloud token generated from the Terraform Cloud UI in: settings -> API tokens.
+
+For detailed configuration options, refer to the module variables documentation above.
