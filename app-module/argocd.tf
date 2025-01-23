@@ -4,7 +4,7 @@ resource "helm_release" "argocd" {
   namespace        = "argocd"
   name             = "argocd"
   version          = "7.7.11"
-  depends_on       = [helm_release.nginx-ingress]
+  depends_on       = [helm_release.nginx-ingress, provider.helm]
   create_namespace = true
   cleanup_on_fail  = true
   repository       = "https://argoproj.github.io/argo-helm"
@@ -74,6 +74,7 @@ resource "helm_release" "argocd" {
       }
     })
   ]
+  
 }
 
 # locals {

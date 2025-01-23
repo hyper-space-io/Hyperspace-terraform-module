@@ -83,7 +83,7 @@ EOF
     name  = "grafana.adminPassword"
     value = random_password.grafana_admin_password.result
   }
-  depends_on = [module.eks, time_sleep.wait_for_internal_ingress]
+  depends_on = [module.eks, time_sleep.wait_for_internal_ingress, provider.helm]
 }
 
 resource "helm_release" "prometheus_adapter" {
@@ -101,7 +101,7 @@ prometheus:
   url: http://"kube-prometheus-stack-prometheus.monitoring.svc"
 EOF
   ]
-  depends_on = [helm_release.kube_prometheus_stack, module.eks]
+  depends_on = [helm_release.kube_prometheus_stack, module.eks, provider.helm]
 }
 
 resource "random_password" "grafana_admin_password" {
