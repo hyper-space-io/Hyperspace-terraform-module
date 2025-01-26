@@ -41,6 +41,25 @@ else
     sudo systemctl enable --now docker || { log "Failed to enable and start Docker."; exit 1; }
 fi
 
+# Install AWS CLI v2
+sudo rm -rf /usr/local/aws-cli/
+sudo rm -f /usr/local/bin/aws
+sudo rm -f /usr/local/bin/aws_completer
+sudo rm -f /bin/aws
+sudo yum remove awscli -y
+
+log "Installing AWS CLI v2..."
+if ! retry curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"; then
+    log "Failed to download AWS CLI v2. Exiting."
+    exit 1
+fi
+unzip awscliv2.zip || { log "Failed to unzip AWS CLI package."; exit 1; }
+sudo ./aws/install --bin-dir /bin || { log "Failed to install AWS CLI."; exit 1; }
+
+# Cleanup
+log "Cleaning up..."
+rm -rf awscliv2.zip aws || log "Warning: Cleanup of AWS CLI installation files failed."
+
 # Create and run Terraform Cloud Agent start script
 log "Setting up Terraform Cloud Agent..."
 cat << 'EOF' > /var/lib/cloud/scripts/per-boot/tfc-agent-start.sh
@@ -49,22 +68,17 @@ sudo docker run -d \
     --name=terraform-agent \
     --restart=unless-stopped \
     -e TFC_AGENT_TOKEN=${tfc_agent_token} \
-    hashicorp/tfc-agent:latest || echo "Failed to start Terraform Cloud Agent container."
+    hashicorp/tfc-agent:latest -v /usr/local/aws-cli:/usr/local/aws-cli:ro \
+    -v /bin/aws:/bin/aws:ro || echo "Failed to start Terraform Cloud Agent container."
 EOF
+sudo docker exec -u root terraform-agent sh -c "apt-get install -y unzip curl && \
+    curl 'https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip' -o awscliv2.zip && \
+    unzip awscliv2.zip && \
+    ./aws/install && \
+    rm -rf aws awscliv2.zip"
 chmod +x /var/lib/cloud/scripts/per-boot/tfc-agent-start.sh || { log "Failed to make tfc-agent-start.sh executable."; exit 1; }
 /var/lib/cloud/scripts/per-boot/tfc-agent-start.sh
 
-# Install AWS CLI v2
-log "Installing AWS CLI v2..."
-if ! retry curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"; then
-    log "Failed to download AWS CLI v2. Exiting."
-    exit 1
-fi
-unzip awscliv2.zip || { log "Failed to unzip AWS CLI package."; exit 1; }
-sudo ./aws/install || { log "Failed to install AWS CLI."; exit 1; }
 
-# Cleanup
-log "Cleaning up..."
-rm -rf awscliv2.zip aws || log "Warning: Cleanup of AWS CLI installation files failed."
 
 log "EC2 setup script completed"
