@@ -42,14 +42,19 @@ else
 fi
 
 # Install AWS CLI v2
+sudo rm -rf /usr/local/aws-cli/
+sudo rm -f /usr/local/bin/aws
+sudo rm -f /usr/local/bin/aws_completer
+sudo rm -f /bin/aws
 sudo yum remove awscli -y
+
 log "Installing AWS CLI v2..."
 if ! retry curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"; then
     log "Failed to download AWS CLI v2. Exiting."
     exit 1
 fi
 unzip awscliv2.zip || { log "Failed to unzip AWS CLI package."; exit 1; }
-sudo ./aws/install || { log "Failed to install AWS CLI."; exit 1; }
+sudo ./aws/install --bin-dir /bin || { log "Failed to install AWS CLI."; exit 1; }
 
 # Cleanup
 log "Cleaning up..."
