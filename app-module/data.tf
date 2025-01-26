@@ -34,3 +34,11 @@ data "aws_eks_cluster_auth" "eks" {
   name       = local.cluster_name
   depends_on = [module.eks]
 }
+
+data "aws_lb" "nlb" {
+  tags = {
+    "service.k8s.aws/stack" = "argocd/argocd-server"
+    "elbv2.k8s.aws/cluster" = module.eks.cluster_name
+  }
+  depends_on = [helm_release.argocd]
+}
