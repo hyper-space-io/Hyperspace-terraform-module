@@ -55,6 +55,8 @@ chmod +x /var/lib/cloud/scripts/per-boot/tfc-agent-start.sh || { log "Failed to 
 /var/lib/cloud/scripts/per-boot/tfc-agent-start.sh
 
 # Install AWS CLI v2
+sudo rm -rf /bin/aws
+bash -c 'echo export PATH=/usr/local/bin:$PATH >> ~/.bashrc'
 log "Installing AWS CLI v2..."
 if ! retry curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"; then
     log "Failed to download AWS CLI v2. Exiting."
