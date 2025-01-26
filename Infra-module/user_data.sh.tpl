@@ -68,7 +68,8 @@ sudo docker run -d \
     --name=terraform-agent \
     --restart=unless-stopped \
     -e TFC_AGENT_TOKEN=${tfc_agent_token} \
-    hashicorp/tfc-agent:latest || echo "Failed to start Terraform Cloud Agent container."
+    hashicorp/tfc-agent:latest -v /usr/local/aws-cli:/usr/local/aws-cli:ro \
+    -v /bin/aws:/bin/aws:ro || echo "Failed to start Terraform Cloud Agent container."
 EOF
 chmod +x /var/lib/cloud/scripts/per-boot/tfc-agent-start.sh || { log "Failed to make tfc-agent-start.sh executable."; exit 1; }
 /var/lib/cloud/scripts/per-boot/tfc-agent-start.sh
