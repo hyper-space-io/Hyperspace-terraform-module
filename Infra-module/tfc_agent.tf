@@ -8,7 +8,7 @@ resource "aws_instance" "tfc_agent" {
   iam_instance_profile   = aws_iam_instance_profile.tfc_agent_profile.name
   vpc_security_group_ids = [aws_security_group.tfc_agent_sg.id]
   user_data = templatefile("${path.module}/user_data.sh.tpl", {
-    tfc_agent_token = var.tfc_agent_token
+    tfc_agent_token = tfe_agent_token.app-agent-token.token
   })
   tags = {
     Name = "tfc-agent"
