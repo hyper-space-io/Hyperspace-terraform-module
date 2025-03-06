@@ -55,7 +55,21 @@ resource "aws_iam_role_policy" "tfc_agent_iam_policy" {
           "iam:GetRole",
           "iam:ListRoles",
           "sts:AssumeRole",
-          "ec2:DescribeImages"
+          "ec2:DescribeImages",
+          "iam:CreatePolicy",
+          "iam:CreateRole",
+          "iam:DeletePolicy",
+          "iam:GetPolicy",
+          "iam:ListPolicies",
+          "iam:PassRole",
+          "iam:PutRolePolicy",
+          "ec2:RevokeSecurityGroupEgress",
+          "ec2:RevokeSecurityGroupIngress",
+          "ec2:AuthorizeSecurityGroupEgress",
+          "ec2:AuthorizeSecurityGroupIngress",
+          "ec2:DescribeSecurityGroups",
+          "ec2:DescribeSecurityGroupReferences",
+          "ec2:DescribeInstances"
         ]
         Resource = "*"
       }
