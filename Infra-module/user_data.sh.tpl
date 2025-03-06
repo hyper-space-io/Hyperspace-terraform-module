@@ -64,32 +64,26 @@ rm -rf awscliv2.zip aws || log "Warning: Cleanup of AWS CLI installation files f
 log "Setting up Terraform Cloud Agent..."
 cat << 'EOF' > /var/lib/cloud/scripts/per-boot/tfc-agent-start.sh
 #!/bin/bash
-
-# Stop and remove existing container if it exists
-docker stop terraform-agent 2>/dev/null || true
-docker rm terraform-agent 2>/dev/null || true
-
-# Run the container with proper volume mounts
 sudo docker run -d \
     --name=terraform-agent \
     --restart=unless-stopped \
     -e TFC_AGENT_TOKEN=${tfc_agent_token} \
-    -e TFC_AGENT_NAME=terraform-agent \
+    hashicorp/tfc-agent:latest \
     -v /usr/local/aws-cli:/usr/local/aws-cli:ro \
-    -v /bin/aws:/bin/aws:ro \
-    hashicorp/tfc-agent:latest
+    -v /bin/aws:/bin/aws:ro || echo "Failed to start Terraform Cloud Agent container."
+EOF
 
-# Install AWS CLI in the container
-sudo docker exec -u root terraform-agent sh -c "apt-get update && apt-get install -y unzip curl && \
+sudo docker exec -u root terraform-agent sh -c "apt-get install -y unzip curl && \
     curl 'https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip' -o awscliv2.zip && \
     unzip awscliv2.zip && \
     ./aws/install && \
     rm -rf aws awscliv2.zip"
 
-sudo docker exec -u root terraform-agent sh -c "aws --version" > /tmp/script.log
-EOF
+sudo docker exec -u root terraform-agent sh -c "aws --version" > ~/ssm-user/script.log
 
 chmod +x /var/lib/cloud/scripts/per-boot/tfc-agent-start.sh || { log "Failed to make tfc-agent-start.sh executable."; exit 1; }
 /var/lib/cloud/scripts/per-boot/tfc-agent-start.sh
+
+
 
 log "EC2 setup script completed"
