@@ -2,7 +2,7 @@
 variable "organization" {
   description = "Terraform Cloud organization name"
   type        = string
-  default     = "Hyperspace-test"
+  default     = "Hyperspace_project"
 }
 
 variable "infra_workspace_name" {
