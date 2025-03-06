@@ -71,6 +71,7 @@ resource "aws_iam_role_policy" "tfc_agent_iam_policy" {
           "ec2:AuthorizeSecurityGroupIngress",
           "ec2:DescribeSecurityGroups",
           "ec2:DescribeSecurityGroupReferences",
+          "ec2:DescribeSecurityGroupRules",
           "ec2:DescribeInstances",
           "acm:RequestCertificate",
           "acm:DescribeCertificate",
