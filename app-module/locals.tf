@@ -12,13 +12,6 @@ locals {
   region: ${var.aws_region}
   EOT
 
-
-  #################
-  ##### ACM #######
-  #################
-
-  internal_domain_name = var.domain_name != "" ? "tfe.internal.${var.environment}.${var.domain_name}" : ""
-
   #################
   ##### EKS #######
   #################
