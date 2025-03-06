@@ -89,7 +89,18 @@ resource "aws_iam_role_policy" "tfc_agent_iam_policy" {
           "acm:AddTagsToCertificate",
           "acm:ListPolicyVersions",
           "acm:ListTagsForCertificate",
-          "kms:TagResource"
+          "kms:TagResource",
+          "kms:CreateKey",
+          "kms:DescribeKey",
+          "kms:DeleteKey",
+          "kms:ScheduleKeyDeletion",
+          "iam:TagInstanceProfile",
+          "route53:CreateHostedZone",
+          "route53:ChangeResourceRecordSets",
+          "route53:ListHostedZones",
+          "route53:ListResourceRecordSets",
+          "route53:GetChange",
+          "route53:GetHostedZone"
         ]
         Resource = "*"
       }
