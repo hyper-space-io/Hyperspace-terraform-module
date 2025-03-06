@@ -11,6 +11,17 @@ locals {
   vpcId: ${local.vpc_module.vpc_id}
   region: ${var.aws_region}
   EOT
+
+
+  #################
+  ##### ACM #######
+  #################
+
+  internal_domain_name = var.domain_name != "" ? "tfe.internal.${var.environment}.${var.domain_name}" : ""
+
+  #################
+  ##### EKS #######
+  #################
   cluster_name                = "${var.project}-${var.environment}"
 
   default_node_pool_tags = {
@@ -61,8 +72,11 @@ locals {
     }
   }
 
-  # Auth0
-  auth0_ingress_cidr_blocks = { us = [
+  #################
+  ##### Auth0 #####
+  #################
+  auth0_ingress_cidr_blocks = { 
+    us = [
     "174.129.105.183/32",
     "18.116.79.126/32",
     "18.117.64.128/32",
