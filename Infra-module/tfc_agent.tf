@@ -55,9 +55,7 @@ resource "aws_iam_role_policy" "tfc_agent_iam_policy" {
           "iam:GetRole",
           "iam:ListRoles"
         ]
-        Resource = [
-          "${aws_iam_role.tfc_agent_role.arn}" # Allow the role to get info about itself
-        ]
+        Resource = "*"
       }
     ]
   })
