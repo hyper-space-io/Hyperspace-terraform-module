@@ -63,13 +63,19 @@ resource "aws_iam_role_policy" "tfc_agent_iam_policy" {
           "iam:ListPolicies",
           "iam:PassRole",
           "iam:PutRolePolicy",
+          "iam:GetPolicyVersion",
+          "iam:TagRole",
           "ec2:RevokeSecurityGroupEgress",
           "ec2:RevokeSecurityGroupIngress",
           "ec2:AuthorizeSecurityGroupEgress",
           "ec2:AuthorizeSecurityGroupIngress",
           "ec2:DescribeSecurityGroups",
           "ec2:DescribeSecurityGroupReferences",
-          "ec2:DescribeInstances"
+          "ec2:DescribeInstances",
+          "acm:RequestCertificate",
+          "acm:DescribeCertificate",
+          "acm:DeleteCertificate",
+          "acm:ListCertificates"
         ]
         Resource = "*"
       }
