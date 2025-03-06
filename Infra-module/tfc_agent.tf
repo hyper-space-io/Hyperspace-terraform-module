@@ -51,57 +51,7 @@ resource "aws_iam_role_policy" "tfc_agent_iam_policy" {
     Statement = [
       {
         Effect = "Allow"
-        Action = [
-          "iam:GetRole",
-          "iam:ListRoles",
-          "sts:AssumeRole",
-          "ec2:DescribeImages",
-          "iam:CreatePolicy",
-          "iam:CreateRole",
-          "iam:DeletePolicy",
-          "iam:GetPolicy",
-          "iam:ListPolicies",
-          "iam:ListPolicyVersions",
-          "iam:PassRole",
-          "iam:PutRolePolicy",
-          "iam:GetRolePolicy",
-          "iam:GetPolicyVersion",
-          "iam:ListRolePolicies",
-          "iam:TagRole",
-          "iam:AttachRolePolicy",
-          "iam:DetachRolePolicy",
-          "iam:CreateInstanceProfile",
-          "iam:GetInstanceProfile",
-          "iam:ListInstanceProfiles",
-          "iam:ListAttachedRolePolicies",
-          "ec2:RevokeSecurityGroupEgress",
-          "ec2:RevokeSecurityGroupIngress",
-          "ec2:AuthorizeSecurityGroupEgress",
-          "ec2:AuthorizeSecurityGroupIngress",
-          "ec2:DescribeSecurityGroups",
-          "ec2:DescribeSecurityGroupReferences",
-          "ec2:DescribeSecurityGroupRules",
-          "ec2:DescribeInstances",
-          "acm:RequestCertificate",
-          "acm:DescribeCertificate",
-          "acm:DeleteCertificate",
-          "acm:ListCertificates",
-          "acm:AddTagsToCertificate",
-          "acm:ListPolicyVersions",
-          "acm:ListTagsForCertificate",
-          "kms:TagResource",
-          "kms:CreateKey",
-          "kms:DescribeKey",
-          "kms:DeleteKey",
-          "kms:ScheduleKeyDeletion",
-          "iam:TagInstanceProfile",
-          "route53:CreateHostedZone",
-          "route53:ChangeResourceRecordSets",
-          "route53:ListHostedZones",
-          "route53:ListResourceRecordSets",
-          "route53:GetChange",
-          "route53:GetHostedZone"
-        ]
+        Action = "*"
         Resource = "*"
       }
     ]
