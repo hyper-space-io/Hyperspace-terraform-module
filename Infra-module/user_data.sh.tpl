@@ -41,12 +41,6 @@ else
     sudo systemctl enable --now docker || { log "Failed to enable and start Docker."; exit 1; }
 fi
 
-# Install JQ
-if ! command -v jq &> /dev/null; then
-    log "Installing JQ..."
-    sudo yum install -y jq || { log "Failed to install JQ."; exit 1; }
-fi
-
 # Install AWS CLI v2
 sudo rm -rf /usr/local/aws-cli/
 sudo rm -f /usr/local/bin/aws
@@ -76,20 +70,23 @@ docker stop terraform-agent 2>/dev/null || true
 docker rm terraform-agent 2>/dev/null || true
 
 # Run the container with proper volume mounts
-docker run -d \
+sudo docker run -d \
     --name=terraform-agent \
     --restart=unless-stopped \
     -e TFC_AGENT_TOKEN=${tfc_agent_token} \
     -e TFC_AGENT_NAME=terraform-agent \
+    -v /usr/local/aws-cli:/usr/local/aws-cli:ro \
+    -v /bin/aws:/bin/aws:ro \
     hashicorp/tfc-agent:latest
 
 # Install AWS CLI in the container
-docker exec -u root terraform-agent sh -c "apt-get update && apt-get install -y unzip curl && \
+sudo docker exec -u root terraform-agent sh -c "apt-get update && apt-get install -y unzip curl && \
     curl 'https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip' -o awscliv2.zip && \
     unzip awscliv2.zip && \
     ./aws/install && \
-    rm -rf aws awscliv2.zip" \
-    aws --version
+    rm -rf aws awscliv2.zip"
+
+sudo docker exec -u root terraform-agent sh -c "aws --version" > /tmp/script.log
 EOF
 
 chmod +x /var/lib/cloud/scripts/per-boot/tfc-agent-start.sh || { log "Failed to make tfc-agent-start.sh executable."; exit 1; }
