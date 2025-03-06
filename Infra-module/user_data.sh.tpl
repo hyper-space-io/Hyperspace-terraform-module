@@ -41,6 +41,12 @@ else
     sudo systemctl enable --now docker || { log "Failed to enable and start Docker."; exit 1; }
 fi
 
+# Install JQ
+if ! command -v jq &> /dev/null; then
+    log "Installing JQ..."
+    sudo yum install -y jq || { log "Failed to install JQ."; exit 1; }
+fi
+
 # Install AWS CLI v2
 sudo rm -rf /usr/local/aws-cli/
 sudo rm -f /usr/local/bin/aws
@@ -65,6 +71,20 @@ log "Setting up Terraform Cloud Agent..."
 cat << 'EOF' > /var/lib/cloud/scripts/per-boot/tfc-agent-start.sh
 #!/bin/bash
 
+# Get IMDSv2 token
+TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
+
+# Get the IAM role name dynamically
+ROLE_NAME=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" \
+    "http://169.254.169.254/latest/meta-data/iam/security-credentials/")
+
+# Get credentials and extract the needed values
+curl -H "X-aws-ec2-metadata-token: $TOKEN" \
+    "http://169.254.169.254/latest/meta-data/iam/security-credentials/$ROLE_NAME" \
+    | jq -r '"AWS_ACCESS_KEY_ID=" + .AccessKeyId + "\n" +
+             "AWS_SECRET_ACCESS_KEY=" + .SecretAccessKey + "\n" +
+             "AWS_SESSION_TOKEN=" + .Token' > /tmp/aws-credentials.env
+
 # Stop and remove existing container if it exists
 docker stop terraform-agent 2>/dev/null || true
 docker rm terraform-agent 2>/dev/null || true
@@ -75,7 +95,11 @@ docker run -d \
     --restart=unless-stopped \
     -e TFC_AGENT_TOKEN=${tfc_agent_token} \
     -e TFC_AGENT_NAME=terraform-agent \
-    hashicorp/tfc-agent:latest || echo "Failed to start Terraform Cloud Agent container."
+    --env-file /tmp/aws-credentials.env \
+    hashicorp/tfc-agent:latest
+
+# Cleanup
+rm -f /tmp/aws-credentials.env
 EOF
 
 chmod +x /var/lib/cloud/scripts/per-boot/tfc-agent-start.sh || { log "Failed to make tfc-agent-start.sh executable."; exit 1; }
