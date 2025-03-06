@@ -25,7 +25,6 @@ resource "aws_instance" "tfc_agent" {
   }
 }
 
-
 resource "aws_iam_role" "tfc_agent_role" {
   name = "tfc-agent-role"
 
@@ -43,13 +42,35 @@ resource "aws_iam_role" "tfc_agent_role" {
   })
 }
 
+resource "aws_iam_role_policy" "tfc_agent_iam_policy" {
+  name = "tfc-agent-iam-policy"
+  role = aws_iam_role.tfc_agent_role.name
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "iam:GetRole",
+          "iam:ListRoles"
+        ]
+        Resource = [
+          "${aws_iam_role.tfc_agent_role.arn}" # Allow the role to get info about itself
+        ]
+      }
+    ]
+  })
+}
+
 resource "aws_iam_role_policy_attachment" "tfc_agent_policies" {
   for_each = toset([
     "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy",
     "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy",
     "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy",
     "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM",
-    "arn:aws:iam::aws:policy/AmazonSSMFullAccess"
+    "arn:aws:iam::aws:policy/AmazonSSMFullAccess",
+    "${aws_iam_role_policy.tfc_agent_iam_policy.arn}"
   ])
   policy_arn = each.value
   role       = aws_iam_role.tfc_agent_role.name
