@@ -54,7 +54,8 @@ resource "aws_iam_role_policy" "tfc_agent_iam_policy" {
         Action = [
           "iam:GetRole",
           "iam:ListRoles",
-          "sts:AssumeRole"
+          "sts:AssumeRole",
+          "ec2:DescribeImages"
         ]
         Resource = "*"
       }
@@ -68,7 +69,7 @@ resource "aws_iam_role_policy_attachment" "tfc_agent_policies" {
     "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy",
     "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy",
     "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM",
-    "arn:aws:iam::aws:policy/AmazonSSMFullAccess"
+    "arn:aws:iam::aws:policy/AmazonSSMFullAccess",
 ])
   policy_arn = each.value
   role       = aws_iam_role.tfc_agent_role.name
