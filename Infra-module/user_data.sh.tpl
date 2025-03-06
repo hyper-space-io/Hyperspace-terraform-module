@@ -74,6 +74,7 @@ docker run -d \
     --name=terraform-agent \
     --restart=unless-stopped \
     -e TFC_AGENT_TOKEN=${tfc_agent_token} \
+    -e TFC_AGENT_NAME=terraform-agent \
     hashicorp/tfc-agent:latest || echo "Failed to start Terraform Cloud Agent container."
 EOF
 

@@ -2,11 +2,13 @@
 variable "organization" {
   description = "Terraform Cloud organization name"
   type        = string
+  default     = "Hyperspace-test"
 }
 
 variable "infra_workspace_name" {
   description = "Terraform Cloud workspace name where infrastructure is defined"
   type        = string
+  default     = "Hyperspace-test"
 }
 
 # Routing
