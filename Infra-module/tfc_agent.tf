@@ -90,12 +90,6 @@ resource "aws_iam_role_policy" "tfc_agent_iam_policy" {
           "arn:aws:iam::${data.aws_caller_identity.current.account_id}:policy/*",
           "arn:aws:iam::${data.aws_caller_identity.current.account_id}:instance-profile/*"
         ]
-        Condition = {
-          "ForAnyValue:StringLike": {
-            "aws:ResourceTag/environment" : "${var.environment}",
-            "aws:ResourceTag/project" : "${var.project}"
-          }
-        }
       },
       {
         Effect = "Allow"
@@ -117,11 +111,6 @@ resource "aws_iam_role_policy" "tfc_agent_iam_policy" {
           "ec2:AuthorizeSecurityGroupIngress"
         ]
         Resource = "arn:aws:ec2:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:security-group/*"
-        Condition = {
-          "ForAnyValue:StringLike": {
-            "aws:ResourceTag/Name" : "*${var.environment}*${var.project}-*"
-          }
-        }
       },
       {
         Effect = "Allow"
@@ -135,7 +124,7 @@ resource "aws_iam_role_policy" "tfc_agent_iam_policy" {
         ]
         Resource = "arn:aws:acm:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:certificate/*"
         Condition = {
-          "ForAnyValue:StringLike": {
+          "ForAnyValue:StringLike" : {
             "aws:ResourceTag/environment" : "${var.environment}",
             "aws:ResourceTag/project" : "${var.project}"
           }
@@ -144,18 +133,24 @@ resource "aws_iam_role_policy" "tfc_agent_iam_policy" {
       {
         Effect = "Allow"
         Action = [
-          "kms:TagResource",
           "kms:CreateKey",
+          "kms:ListKeys",
+          "kms:ListAliases"
+        ]
+        Resource = "*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "kms:TagResource",
           "kms:DescribeKey",
           "kms:DeleteKey",
           "kms:ScheduleKeyDeletion",
-          "kms:CreateAlias",
-          "kms:ListAliases",
-          "kms:ListKeys"
+          "kms:CreateAlias"
         ]
         Resource = "arn:aws:kms:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:key/*"
         Condition = {
-          "ForAnyValue:StringLike": {
+          "ForAnyValue:StringLike" : {
             "aws:ResourceTag/environment" : "${var.environment}",
             "aws:ResourceTag/project" : "${var.project}"
           }
@@ -168,18 +163,15 @@ resource "aws_iam_role_policy" "tfc_agent_iam_policy" {
           "route53:ListResourceRecordSets",
           "route53:GetChange",
           "route53:GetHostedZone",
-          "route53:ListHostedZonesByName"
-        ]
-        Resource = "arn:aws:route53:::hostedzone/${data.aws_caller_identity.current.account_id}/*"
-      },
-      {
-        Effect = "Allow"
-        Action = [
+          "route53:ListHostedZonesByName",
           "route53:CreateHostedZone",
           "route53:ChangeResourceRecordSets",
           "route53:ChangeTagsForResource"
         ]
-        Resource = "arn:aws:route53:::hostedzone/${data.aws_caller_identity.current.account_id}/*"
+        Resource = [
+          "arn:aws:route53:::hostedzone/*",
+          "arn:aws:route53:::change/*"
+        ]
       },
       {
         Effect = "Allow"
@@ -193,7 +185,7 @@ resource "aws_iam_role_policy" "tfc_agent_iam_policy" {
         ]
         Resource = "arn:aws:eks:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:cluster/*"
         Condition = {
-          "ForAnyValue:StringLike": {
+          "ForAnyValue:StringLike" : {
             "aws:ResourceTag/environment" : "${var.environment}",
             "aws:ResourceTag/project" : "${var.project}"
           }
