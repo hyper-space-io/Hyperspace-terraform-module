@@ -69,6 +69,7 @@ resource "aws_iam_role_policy" "tfc_agent_iam_policy" {
           "iam:ListUsers",
           "iam:CreateOpenIDConnectProvider",
           "iam:TagOpenIDConnectProvider",
+          "iam:GetOpenIDConnectProvider",
           "iam:DeleteOpenIDConnectProvider",
           "ec2:DescribeImages",
           "ec2:DescribeInstances",
@@ -184,6 +185,8 @@ resource "aws_iam_role_policy" "tfc_agent_iam_policy" {
           "eks:DeleteCluster",
           "eks:CreateAccessEntry",
           "eks:DeleteAccessEntry",
+          "eks:DescribeAccessEntry",
+          "eks:ListAccessEntries",
           "eks:UpdateClusterConfig",
           "eks:UpdateClusterVersion",
           "eks:CreateNodegroup",
@@ -202,7 +205,7 @@ resource "aws_iam_role_policy" "tfc_agent_iam_policy" {
         ]
         Resource = [
           "arn:aws:eks:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:cluster/*",
-          "arn:aws:autoscaling:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:autoScalingGroup/*:autoScalingGroupName/*",
+          "arn:aws:autoscaling:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:autoScalingGroup:*:autoScalingGroupName/*",
           "arn:aws:eks:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:access-entry/*"
         ]
         Condition = {
