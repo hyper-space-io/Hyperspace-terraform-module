@@ -60,12 +60,30 @@ resource "aws_iam_role_policy" "tfc_agent_iam_policy" {
           "iam:ListPolicyVersions",
           "iam:ListRolePolicies",
           "iam:ListInstanceProfiles",
+          "iam:ListInstanceProfilesForRole",
           "iam:GetInstanceProfile",
           "iam:ListAttachedRolePolicies",
           "iam:ListUserPolicies",
           "iam:GetUserPolicy",
           "iam:GetUser",
-          "iam:ListUsers"
+          "iam:ListUsers",
+          "ec2:DescribeImages",
+          "ec2:DescribeInstances",
+          "ec2:DescribeSecurityGroups",
+          "ec2:DescribeSecurityGroupReferences",
+          "ec2:DescribeSecurityGroupRules",
+          "kms:CreateKey",
+          "kms:CreateAlias",
+          "kms:ListKeys",
+          "kms:ListAliases",
+          "route53:ListHostedZones",
+          "route53:ListResourceRecordSets",
+          "route53:GetChange",
+          "route53:GetHostedZone",
+          "route53:ListHostedZonesByName",
+          "route53:CreateHostedZone",
+          "route53:ChangeResourceRecordSets",
+          "route53:ChangeTagsForResource"
         ]
         Resource = "*"
       },
@@ -90,17 +108,6 @@ resource "aws_iam_role_policy" "tfc_agent_iam_policy" {
           "arn:aws:iam::${data.aws_caller_identity.current.account_id}:policy/*",
           "arn:aws:iam::${data.aws_caller_identity.current.account_id}:instance-profile/*"
         ]
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "ec2:DescribeImages",
-          "ec2:DescribeInstances",
-          "ec2:DescribeSecurityGroups",
-          "ec2:DescribeSecurityGroupReferences",
-          "ec2:DescribeSecurityGroupRules"
-        ]
-        Resource = "*"
       },
       {
         Effect = "Allow"
@@ -133,16 +140,6 @@ resource "aws_iam_role_policy" "tfc_agent_iam_policy" {
       {
         Effect = "Allow"
         Action = [
-          "kms:CreateKey",
-          "kms:CreateAlias",
-          "kms:ListKeys",
-          "kms:ListAliases"
-        ]
-        Resource = "*"
-      },
-      {
-        Effect = "Allow"
-        Action = [
           "kms:TagResource",
           "kms:DescribeKey",
           "kms:DeleteKey",
@@ -155,20 +152,6 @@ resource "aws_iam_role_policy" "tfc_agent_iam_policy" {
             "aws:ResourceTag/project" : "${var.project}"
           }
         }
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "route53:ListHostedZones",
-          "route53:ListResourceRecordSets",
-          "route53:GetChange",
-          "route53:GetHostedZone",
-          "route53:ListHostedZonesByName",
-          "route53:CreateHostedZone",
-          "route53:ChangeResourceRecordSets",
-          "route53:ChangeTagsForResource"
-        ]
-        Resource = "*"
       },
       {
         Effect = "Allow"
