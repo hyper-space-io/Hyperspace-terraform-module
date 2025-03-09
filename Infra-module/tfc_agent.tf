@@ -19,7 +19,7 @@ resource "aws_instance" "tfc_agent" {
   }
   metadata_options {
     http_tokens                 = "required"
-    http_put_response_hop_limit = 2
+    http_put_response_hop_limit = 2 # Enables Containers on EC2 to access instance metadata
     instance_metadata_tags      = "enabled"
   }
 }
@@ -86,10 +86,16 @@ resource "aws_iam_role_policy" "tfc_agent_iam_policy" {
           "iam:TagInstanceProfile"
         ]
         Resource = [
-          "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/*${var.environment}*${var.project}*",
-          "arn:aws:iam::${data.aws_caller_identity.current.account_id}:policy/*${var.environment}*${var.project}*",
-          "arn:aws:iam::${data.aws_caller_identity.current.account_id}:instance-profile/*${var.environment}*${var.project}*"
+          "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/*",
+          "arn:aws:iam::${data.aws_caller_identity.current.account_id}:policy/*",
+          "arn:aws:iam::${data.aws_caller_identity.current.account_id}:instance-profile/*"
         ]
+        Condition = {
+          "ForAnyValue:StringLike": {
+            "aws:ResourceTag/environment" : "${var.environment}",
+            "aws:ResourceTag/project" : "${var.project}"
+          }
+        }
       },
       {
         Effect = "Allow"
@@ -174,12 +180,6 @@ resource "aws_iam_role_policy" "tfc_agent_iam_policy" {
           "route53:ChangeTagsForResource"
         ]
         Resource = "arn:aws:route53:::hostedzone/${data.aws_caller_identity.current.account_id}/*"
-        Condition = {
-          "ForAnyValue:StringLike": {
-            "aws:ResourceTag/environment" : "${var.environment}",
-            "aws:ResourceTag/project" : "${var.project}"
-          }
-        }
       },
       {
         Effect = "Allow"
@@ -191,7 +191,13 @@ resource "aws_iam_role_policy" "tfc_agent_iam_policy" {
           "eks:UpdateClusterVersion",
           "eks:DescribeUpdate"
         ]
-        Resource = "arn:aws:eks:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:cluster/${var.environment}-${var.project}-*"
+        Resource = "arn:aws:eks:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:cluster/*"
+        Condition = {
+          "ForAnyValue:StringLike": {
+            "aws:ResourceTag/environment" : "${var.environment}",
+            "aws:ResourceTag/project" : "${var.project}"
+          }
+        }
       }
     ]
   })
