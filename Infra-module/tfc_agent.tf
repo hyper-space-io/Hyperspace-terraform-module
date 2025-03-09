@@ -201,6 +201,7 @@ resource "aws_iam_role_policy" "tfc_agent_iam_policy" {
           "eks:DescribeUpdate",
           "eks:AssociateAccessPolicy",
           "eks:DisassociateAccessPolicy",
+          "eks:ListAssociatedAccessPolicies",
           "autoscaling:CreateAutoScalingGroup",
           "autoscaling:DeleteAutoScalingGroup",
           "autoscaling:DescribeAutoScalingGroups",
@@ -214,7 +215,8 @@ resource "aws_iam_role_policy" "tfc_agent_iam_policy" {
         Resource = [
           "arn:aws:eks:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:cluster/*",
           "arn:aws:autoscaling:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:autoScalingGroup:*:autoScalingGroupName/*",
-          "arn:aws:eks:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:access-entry/*"
+          "arn:aws:eks:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:access-entry/*",
+          "arn:aws:eks:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:nodegroup/*"
         ]
         Condition = {
           "ForAnyValue:StringLike" : {
