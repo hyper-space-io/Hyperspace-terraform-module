@@ -102,7 +102,13 @@ resource "aws_iam_role_policy" "tfc_agent_iam_policy" {
           "eks:DescribeAddonConfiguration",
           "eks:DescribeAddon",
           "eks:ListAddons",
-          "eks:GetAddon"
+          "eks:GetAddon",
+          "ec2:RunInstances",
+          "ec2:CreateTags",
+          "ec2:DeleteTags",
+          "ec2:DescribeTags",
+          "ec2:DescribeInstanceTypes",
+          "ec2:DescribeInstanceTypeOfferings"
         ]
         Resource = "*"
       },
@@ -192,6 +198,9 @@ resource "aws_iam_role_policy" "tfc_agent_iam_policy" {
           "eks:CreateNodegroup",
           "eks:DeleteNodegroup",
           "eks:DescribeNodegroup",
+          "eks:DescribeUpdate",
+          "eks:AssociateAccessPolicy",
+          "eks:DisassociateAccessPolicy",
           "autoscaling:CreateAutoScalingGroup",
           "autoscaling:DeleteAutoScalingGroup",
           "autoscaling:DescribeAutoScalingGroups",
@@ -200,8 +209,7 @@ resource "aws_iam_role_policy" "tfc_agent_iam_policy" {
           "autoscaling:DescribeScalingActivities",
           "autoscaling:UpdateAutoScalingGroup",
           "autoscaling:SetDesiredCapacity",
-          "autoscaling:TerminateInstanceInAutoScalingGroup",
-          "eks:DescribeUpdate"
+          "autoscaling:TerminateInstanceInAutoScalingGroup"
         ]
         Resource = [
           "arn:aws:eks:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:cluster/*",
