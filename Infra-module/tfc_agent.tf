@@ -134,6 +134,7 @@ resource "aws_iam_role_policy" "tfc_agent_iam_policy" {
         Effect = "Allow"
         Action = [
           "kms:CreateKey",
+          "kms:CreateAlias",
           "kms:ListKeys",
           "kms:ListAliases"
         ]
@@ -145,8 +146,7 @@ resource "aws_iam_role_policy" "tfc_agent_iam_policy" {
           "kms:TagResource",
           "kms:DescribeKey",
           "kms:DeleteKey",
-          "kms:ScheduleKeyDeletion",
-          "kms:CreateAlias"
+          "kms:ScheduleKeyDeletion"
         ]
         Resource = "arn:aws:kms:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:key/*"
         Condition = {
@@ -168,15 +168,13 @@ resource "aws_iam_role_policy" "tfc_agent_iam_policy" {
           "route53:ChangeResourceRecordSets",
           "route53:ChangeTagsForResource"
         ]
-        Resource = [
-          "arn:aws:route53:::hostedzone/*",
-          "arn:aws:route53:::change/*"
-        ]
+        Resource = "*"
       },
       {
         Effect = "Allow"
         Action = [
           "eks:CreateCluster",
+          "eks:TagResource",
           "eks:DescribeCluster",
           "eks:DeleteCluster",
           "eks:UpdateClusterConfig",
