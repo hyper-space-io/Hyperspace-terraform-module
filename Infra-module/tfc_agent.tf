@@ -67,11 +67,17 @@ resource "aws_iam_role_policy" "tfc_agent_iam_policy" {
           "iam:GetUserPolicy",
           "iam:GetUser",
           "iam:ListUsers",
+          "iam:CreateOpenIDConnectProvider",
           "ec2:DescribeImages",
           "ec2:DescribeInstances",
           "ec2:DescribeSecurityGroups",
           "ec2:DescribeSecurityGroupReferences",
           "ec2:DescribeSecurityGroupRules",
+          "ec2:CreateLaunchTemplate",
+          "ec2:DescribeLaunchTemplates",
+          "ec2:DeleteLaunchTemplate",
+          "ec2:DescribeLaunchTemplateVersions",
+          "ec2:DeleteLaunchTemplateVersions",
           "kms:CreateKey",
           "kms:CreateAlias",
           "kms:ListKeys",
@@ -83,6 +89,7 @@ resource "aws_iam_role_policy" "tfc_agent_iam_policy" {
           "route53:ListHostedZonesByName",
           "route53:CreateHostedZone",
           "route53:ChangeResourceRecordSets",
+          "route53:ListTagsForResource",
           "route53:ChangeTagsForResource"
         ]
         Resource = "*"
@@ -164,9 +171,17 @@ resource "aws_iam_role_policy" "tfc_agent_iam_policy" {
           "eks:TagResource",
           "eks:DescribeCluster",
           "eks:DeleteCluster",
+          "eks:CreateAccessEntry",
           "eks:UpdateClusterConfig",
           "eks:UpdateClusterVersion",
-          "eks:DescribeUpdate"
+          "eks:DescribeAddonVersions",
+          "eks:DescribeUpdate",
+          "eks:DescribeAddonConfiguration",
+          "eks:DescribeAddon",
+          "eks:ListAddons",
+          "eks:CreateAddon",
+          "eks:DeleteAddon",
+          "eks:UpdateAddon"
         ]
         Resource = "arn:aws:eks:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:cluster/*"
         Condition = {

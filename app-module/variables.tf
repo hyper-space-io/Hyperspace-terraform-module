@@ -1,17 +1,26 @@
-# variables.tf
+variable "project" {
+  type        = string
+  default     = "hyperspace"
+  description = "Name of the project - this is used to generate names for resources"
+}
+
+variable "environment" {
+  type        = string
+  default     = "development"
+  description = "The environment we are creating - used to generate names for resource"
+}
+
 variable "organization" {
   description = "Terraform Cloud organization name"
   type        = string
-  default     = "Hyperspace_project"
 }
 
 variable "infra_workspace_name" {
   description = "Terraform Cloud workspace name where infrastructure is defined"
   type        = string
-  default     = "Hyperspace-test"
 }
 
-# Routing
+# Route53
 variable "domain_name" {
   description = "The main domain name to use to create sub-domains"
   type        = string
@@ -22,13 +31,6 @@ variable "create_public_zone" {
   description = "Whether to create the public Route 53 zone"
   type        = bool
   default     = false
-}
-
-# Auto-scaling
-variable "enable_cluster_autoscaler" {
-  description = "should we enable and install cluster-autoscaler"
-  type        = bool
-  default     = true
 }
 
 # ArgoCD
@@ -62,22 +64,23 @@ variable "argocd_rbac_policy_rules" {
   default     = []
 }
 
-variable "project" {
-  type        = string
-  default     = "hyperspace"
-  description = "Name of the project - this is used to generate names for resources"
-}
-
-variable "environment" {
-  type        = string
-  default     = "development"
-  description = "The environment we are creating - used to generate names for resource"
-}
-
+# EKS
 variable "create_eks" {
   type        = bool
   default     = true
   description = "Should we create the eks cluster?"
+}
+
+variable "cluster_version" {
+  type        = string
+  default     = "1.31"
+  description = "The version of the EKS cluster"
+}
+
+variable "enable_cluster_autoscaler" {
+  description = "should we enable and install cluster-autoscaler"
+  type        = bool
+  default     = true
 }
 
 variable "worker_nodes_max" {
