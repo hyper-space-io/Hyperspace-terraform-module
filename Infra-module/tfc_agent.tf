@@ -68,6 +68,8 @@ resource "aws_iam_role_policy" "tfc_agent_iam_policy" {
           "iam:GetUser",
           "iam:ListUsers",
           "iam:CreateOpenIDConnectProvider",
+          "iam:TagOpenIDConnectProvider",
+          "iam:DeleteOpenIDConnectProvider",
           "ec2:DescribeImages",
           "ec2:DescribeInstances",
           "ec2:DescribeSecurityGroups",
@@ -83,6 +85,7 @@ resource "aws_iam_role_policy" "tfc_agent_iam_policy" {
           "kms:ListKeys",
           "kms:ListAliases",
           "route53:ListHostedZones",
+          "route53:DeleteHostedZone",
           "route53:ListResourceRecordSets",
           "route53:GetChange",
           "route53:GetHostedZone",
@@ -180,11 +183,28 @@ resource "aws_iam_role_policy" "tfc_agent_iam_policy" {
           "eks:DescribeCluster",
           "eks:DeleteCluster",
           "eks:CreateAccessEntry",
+          "eks:DeleteAccessEntry",
           "eks:UpdateClusterConfig",
           "eks:UpdateClusterVersion",
+          "eks:CreateNodegroup",
+          "eks:DeleteNodegroup",
+          "eks:DescribeNodegroup",
+          "autoscaling:CreateAutoScalingGroup",
+          "autoscaling:DeleteAutoScalingGroup",
+          "autoscaling:DescribeAutoScalingGroups",
+          "autoscaling:DescribeAutoScalingInstances",
+          "autoscaling:DescribeLaunchConfigurations",
+          "autoscaling:DescribeScalingActivities",
+          "autoscaling:UpdateAutoScalingGroup",
+          "autoscaling:SetDesiredCapacity",
+          "autoscaling:TerminateInstanceInAutoScalingGroup",
           "eks:DescribeUpdate"
         ]
-        Resource = "arn:aws:eks:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:cluster/*"
+        Resource = [
+          "arn:aws:eks:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:cluster/*",
+          "arn:aws:autoscaling:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:autoScalingGroup/*:autoScalingGroupName/*",
+          "arn:aws:eks:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:access-entry/*"
+        ]
         Condition = {
           "ForAnyValue:StringLike" : {
             "aws:ResourceTag/environment" : "${var.environment}",
