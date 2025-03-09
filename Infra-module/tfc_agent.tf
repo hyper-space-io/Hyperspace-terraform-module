@@ -81,6 +81,12 @@ resource "aws_iam_role_policy" "tfc_agent_iam_policy" {
           "ec2:DeleteLaunchTemplate",
           "ec2:DescribeLaunchTemplateVersions",
           "ec2:DeleteLaunchTemplateVersions",
+          "ec2:RunInstances",
+          "ec2:CreateTags",
+          "ec2:DeleteTags",
+          "ec2:DescribeTags",
+          "ec2:DescribeInstanceTypes",
+          "ec2:DescribeInstanceTypeOfferings",
           "kms:CreateKey",
           "kms:CreateAlias",
           "kms:ListKeys",
@@ -103,12 +109,7 @@ resource "aws_iam_role_policy" "tfc_agent_iam_policy" {
           "eks:DescribeAddon",
           "eks:ListAddons",
           "eks:GetAddon",
-          "ec2:RunInstances",
-          "ec2:CreateTags",
-          "ec2:DeleteTags",
-          "ec2:DescribeTags",
-          "ec2:DescribeInstanceTypes",
-          "ec2:DescribeInstanceTypeOfferings"
+          "autoscaling:DescribeScalingActivities"
         ]
         Resource = "*"
       },
@@ -207,7 +208,6 @@ resource "aws_iam_role_policy" "tfc_agent_iam_policy" {
           "autoscaling:DescribeAutoScalingGroups",
           "autoscaling:DescribeAutoScalingInstances",
           "autoscaling:DescribeLaunchConfigurations",
-          "autoscaling:DescribeScalingActivities",
           "autoscaling:UpdateAutoScalingGroup",
           "autoscaling:SetDesiredCapacity",
           "autoscaling:TerminateInstanceInAutoScalingGroup"
