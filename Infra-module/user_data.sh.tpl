@@ -60,6 +60,19 @@ sudo ./aws/install --bin-dir /bin || { log "Failed to install AWS CLI."; exit 1;
 log "Cleaning up..."
 rm -rf awscliv2.zip aws || log "Warning: Cleanup of AWS CLI installation files failed."
 
+# Install Kubectl
+cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
+[kubernetes]
+name=Kubernetes
+baseurl=https://pkgs.k8s.io/core:/stable:/v1.32/rpm/
+enabled=1
+gpgcheck=1
+gpgkey=https://pkgs.k8s.io/core:/stable:/v1.32/rpm/repodata/repomd.xml.key
+EOF
+
+sudo yum install -y kubectl || { log "Failed to install Kubectl."; exit 1; }
+echo 'alias k=kubectl' >> ~/.bashrc || true
+
 # Create and run Terraform Cloud Agent start script
 log "Setting up Terraform Cloud Agent..."
 cat << 'EOF' > /var/lib/cloud/scripts/per-boot/tfc-agent-start.sh
@@ -69,12 +82,14 @@ cat << 'EOF' > /var/lib/cloud/scripts/per-boot/tfc-agent-start.sh
 sudo docker stop terraform-agent 2>/dev/null || true
 sudo docker rm terraform-agent 2>/dev/null || true
 
+# Run the Terraform Cloud Agent container
 sudo docker run -d \
     --name=terraform-agent \
     --restart=unless-stopped \
     -e TFC_AGENT_TOKEN=${tfc_agent_token} \
     hashicorp/tfc-agent:latest || echo "Failed to start Terraform Cloud Agent container."
 
+# Wait for 30 seconds to ensure the container is running
 sleep 30
 
 # Install AWS CLI in container
@@ -88,7 +103,5 @@ EOF
 
 chmod +x /var/lib/cloud/scripts/per-boot/tfc-agent-start.sh || { log "Failed to make tfc-agent-start.sh executable."; exit 1; }
 /var/lib/cloud/scripts/per-boot/tfc-agent-start.sh
-
-
 
 log "EC2 setup script completed"

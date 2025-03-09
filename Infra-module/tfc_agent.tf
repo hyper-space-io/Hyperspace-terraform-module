@@ -1,4 +1,3 @@
-# TFC AGENT
 resource "aws_instance" "tfc_agent" {
   ebs_optimized          = true
   monitoring             = true
@@ -19,9 +18,9 @@ resource "aws_instance" "tfc_agent" {
     delete_on_termination = true
   }
   metadata_options {
-    http_tokens = "required"
+    http_tokens                 = "required"
     http_put_response_hop_limit = 2
-    instance_metadata_tags = "enabled"
+    instance_metadata_tags      = "enabled"
   }
 }
 
@@ -51,8 +50,148 @@ resource "aws_iam_role_policy" "tfc_agent_iam_policy" {
     Statement = [
       {
         Effect = "Allow"
-        Action = "*"
+        Action = [
+          "iam:GetRole",
+          "iam:ListRoles",
+          "iam:GetPolicy",
+          "iam:GetRolePolicy",
+          "iam:GetPolicyVersion",
+          "iam:ListPolicies",
+          "iam:ListPolicyVersions",
+          "iam:ListRolePolicies",
+          "iam:ListInstanceProfiles",
+          "iam:GetInstanceProfile",
+          "iam:ListAttachedRolePolicies",
+          "iam:ListUserPolicies",
+          "iam:GetUserPolicy",
+          "iam:GetUser",
+          "iam:ListUsers"
+        ]
         Resource = "*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "iam:CreatePolicy",
+          "iam:CreateRole",
+          "iam:DeletePolicy",
+          "iam:PassRole",
+          "iam:PutRolePolicy",
+          "iam:TagRole",
+          "iam:TagPolicy",
+          "iam:AttachRolePolicy",
+          "iam:DetachRolePolicy",
+          "iam:CreateInstanceProfile",
+          "iam:AddRoleToInstanceProfile",
+          "iam:TagInstanceProfile"
+        ]
+        Resource = [
+          "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/*${var.environment}*${var.project}*",
+          "arn:aws:iam::${data.aws_caller_identity.current.account_id}:policy/*${var.environment}*${var.project}*",
+          "arn:aws:iam::${data.aws_caller_identity.current.account_id}:instance-profile/*${var.environment}*${var.project}*"
+        ]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "ec2:DescribeImages",
+          "ec2:DescribeInstances",
+          "ec2:DescribeSecurityGroups",
+          "ec2:DescribeSecurityGroupReferences",
+          "ec2:DescribeSecurityGroupRules"
+        ]
+        Resource = "*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "ec2:RevokeSecurityGroupEgress",
+          "ec2:RevokeSecurityGroupIngress",
+          "ec2:AuthorizeSecurityGroupEgress",
+          "ec2:AuthorizeSecurityGroupIngress"
+        ]
+        Resource = "arn:aws:ec2:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:security-group/*"
+        Condition = {
+          ForAnyValue:StringLike = {
+            "aws:ResourceTag/Name" : "*${var.environment}*${var.project}-*"
+          }
+        }
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "acm:RequestCertificate",
+          "acm:DescribeCertificate",
+          "acm:DeleteCertificate",
+          "acm:ListCertificates",
+          "acm:AddTagsToCertificate",
+          "acm:ListTagsForCertificate"
+        ]
+        Resource = "arn:aws:acm:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:certificate/*"
+        Condition = {
+          ForAnyValue:StringLike = {
+            "aws:RequestTag/environment" : "${var.environment}",
+            "aws:RequestTag/project" : "${var.project}"
+          }
+        }
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "kms:TagResource",
+          "kms:CreateKey",
+          "kms:DescribeKey",
+          "kms:DeleteKey",
+          "kms:ScheduleKeyDeletion",
+          "kms:CreateAlias",
+          "kms:ListAliases",
+          "kms:ListKeys"
+        ]
+        Resource = "arn:aws:kms:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:key/*"
+        Condition = {
+          ForAnyValue:StringLike = {
+            "aws:RequestTag/environment" : "${var.environment}",
+            "aws:RequestTag/project" : "${var.project}"
+          }
+        }
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "route53:ListHostedZones",
+          "route53:ListResourceRecordSets",
+          "route53:GetChange",
+          "route53:GetHostedZone",
+          "route53:ListHostedZonesByName"
+        ]
+        Resource = "arn:aws:route53:::hostedzone/${data.aws_caller_identity.current.account_id}/*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "route53:CreateHostedZone",
+          "route53:ChangeResourceRecordSets",
+          "route53:ChangeTagsForResource"
+        ]
+        Resource = "arn:aws:route53:::hostedzone/${data.aws_caller_identity.current.account_id}/*"
+        Condition = {
+          ForAnyValue:StringLike = {
+            "aws:RequestTag/environment" : "${var.environment}",
+            "aws:RequestTag/project" : "${var.project}"
+          }
+        }
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "eks:CreateCluster",
+          "eks:DescribeCluster",
+          "eks:DeleteCluster",
+          "eks:UpdateClusterConfig",
+          "eks:UpdateClusterVersion",
+          "eks:DescribeUpdate"
+        ]
+        Resource = "arn:aws:eks:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:cluster/${var.environment}-${var.project}-*"
       }
     ]
   })
@@ -65,7 +204,7 @@ resource "aws_iam_role_policy_attachment" "tfc_agent_policies" {
     "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy",
     "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM",
     "arn:aws:iam::aws:policy/AmazonSSMFullAccess"
-])
+  ])
   policy_arn = each.value
   role       = aws_iam_role.tfc_agent_role.name
 }
