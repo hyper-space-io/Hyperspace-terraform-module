@@ -97,7 +97,8 @@ resource "aws_iam_role_policy" "tfc_agent_iam_policy" {
           "eks:UpdateAddon",
           "eks:DescribeAddonConfiguration",
           "eks:DescribeAddon",
-          "eks:ListAddons"
+          "eks:ListAddons",
+          "eks:GetAddon"
         ]
         Resource = "*"
       },
