@@ -90,7 +90,14 @@ resource "aws_iam_role_policy" "tfc_agent_iam_policy" {
           "route53:CreateHostedZone",
           "route53:ChangeResourceRecordSets",
           "route53:ListTagsForResource",
-          "route53:ChangeTagsForResource"
+          "route53:ChangeTagsForResource",
+          "eks:DescribeAddonVersions",
+          "eks:CreateAddon", 
+          "eks:DeleteAddon",
+          "eks:UpdateAddon",
+          "eks:DescribeAddonConfiguration",
+          "eks:DescribeAddon",
+          "eks:ListAddons"
         ]
         Resource = "*"
       },
@@ -174,14 +181,7 @@ resource "aws_iam_role_policy" "tfc_agent_iam_policy" {
           "eks:CreateAccessEntry",
           "eks:UpdateClusterConfig",
           "eks:UpdateClusterVersion",
-          "eks:DescribeAddonVersions",
-          "eks:DescribeUpdate",
-          "eks:DescribeAddonConfiguration",
-          "eks:DescribeAddon",
-          "eks:ListAddons",
-          "eks:CreateAddon",
-          "eks:DeleteAddon",
-          "eks:UpdateAddon"
+          "eks:DescribeUpdate"
         ]
         Resource = "arn:aws:eks:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:cluster/*"
         Condition = {
