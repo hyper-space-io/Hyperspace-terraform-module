@@ -32,20 +32,6 @@ variable "aws_region" {
 }
 
 ########################
-######## TFE ###########
-########################
-
-variable "TFE_TOKEN" {
-  type        = string
-  description = "The token for the TFE organization"
-}
-
-variable "tfc_agent_token" {
-  type        = string
-  description = "The token for the TFC agent"
-}
-
-########################
 # VPC
 ########################
 
