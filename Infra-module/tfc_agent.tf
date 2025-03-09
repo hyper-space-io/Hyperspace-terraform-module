@@ -116,6 +116,12 @@ resource "aws_iam_role_policy" "tfc_agent_iam_policy" {
           "elasticloadbalancing:DescribeRules",
           "elasticloadbalancing:DescribeListeners",
           "elasticloadbalancing:DescribeSSLPolicies",
+          "ec2:CreateVpcEndpointServiceConfiguration",
+          "ec2:DescribeVpcEndpointServiceConfigurations",
+          "ec2:DeleteVpcEndpointServiceConfigurations",
+          "ec2:DescribeVpcEndpointServicePermissions",
+          "ec2:ModifyVpcEndpointServicePermissions",
+          "ec2:DescribeVpcEndpointServiceConfigurations",
           "autoscaling:DescribeScalingActivities"
         ]
         Resource = "*"
