@@ -38,11 +38,6 @@ resource "tfe_workspace_settings" "app-settings" {
   workspace_id   = tfe_workspace.app.id
   agent_pool_id  = tfe_agent_pool_allowed_workspaces.app.agent_pool_id
   execution_mode = "agent"
-
-  depends_on = [ 
-    tfe_variable.app-variables, 
-    tfe_agent_pool_allowed_workspaces.app
-  ]
 }
 
 resource "tfe_variable" "app-variables" {
