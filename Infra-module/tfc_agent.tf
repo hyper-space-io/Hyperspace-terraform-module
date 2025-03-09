@@ -130,8 +130,8 @@ resource "aws_iam_role_policy" "tfc_agent_iam_policy" {
         Resource = "arn:aws:acm:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:certificate/*"
         Condition = {
           "ForAnyValue:StringLike": {
-            "aws:RequestTag/environment" : "${var.environment}",
-            "aws:RequestTag/project" : "${var.project}"
+            "aws:ResourceTag/environment" : "${var.environment}",
+            "aws:ResourceTag/project" : "${var.project}"
           }
         }
       },
@@ -150,8 +150,8 @@ resource "aws_iam_role_policy" "tfc_agent_iam_policy" {
         Resource = "arn:aws:kms:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:key/*"
         Condition = {
           "ForAnyValue:StringLike": {
-            "aws:RequestTag/environment" : "${var.environment}",
-            "aws:RequestTag/project" : "${var.project}"
+            "aws:ResourceTag/environment" : "${var.environment}",
+            "aws:ResourceTag/project" : "${var.project}"
           }
         }
       },
@@ -176,8 +176,8 @@ resource "aws_iam_role_policy" "tfc_agent_iam_policy" {
         Resource = "arn:aws:route53:::hostedzone/${data.aws_caller_identity.current.account_id}/*"
         Condition = {
           "ForAnyValue:StringLike": {
-            "aws:RequestTag/environment" : "${var.environment}",
-            "aws:RequestTag/project" : "${var.project}"
+            "aws:ResourceTag/environment" : "${var.environment}",
+            "aws:ResourceTag/project" : "${var.project}"
           }
         }
       },
