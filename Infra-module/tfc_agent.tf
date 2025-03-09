@@ -109,6 +109,13 @@ resource "aws_iam_role_policy" "tfc_agent_iam_policy" {
           "eks:DescribeAddon",
           "eks:ListAddons",
           "eks:GetAddon",
+          "elasticloadbalancing:DescribeTags",
+          "elasticloadbalancing:DescribeLoadBalancers",
+          "elasticloadbalancing:DescribeTargetGroups",
+          "elasticloadbalancing:DescribeTargetHealth",
+          "elasticloadbalancing:DescribeRules",
+          "elasticloadbalancing:DescribeListeners",
+          "elasticloadbalancing:DescribeSSLPolicies",
           "autoscaling:DescribeScalingActivities"
         ]
         Resource = "*"
@@ -218,25 +225,6 @@ resource "aws_iam_role_policy" "tfc_agent_iam_policy" {
           "arn:aws:eks:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:access-entry/*",
           "arn:aws:eks:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:nodegroup/*"
         ]
-        Condition = {
-          "ForAnyValue:StringLike" : {
-            "aws:ResourceTag/environment" : "${var.environment}",
-            "aws:ResourceTag/project" : "${var.project}"
-          }
-        }
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "elasticloadbalancing:DescribeTags",
-          "elasticloadbalancing:DescribeLoadBalancers",
-          "elasticloadbalancing:DescribeTargetGroups",
-          "elasticloadbalancing:DescribeTargetHealth",
-          "elasticloadbalancing:DescribeRules",
-          "elasticloadbalancing:DescribeListeners",
-          "elasticloadbalancing:DescribeSSLPolicies"
-        ]
-        Resource = "arn:aws:elasticloadbalancing:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:*"
         Condition = {
           "ForAnyValue:StringLike" : {
             "aws:ResourceTag/environment" : "${var.environment}",
