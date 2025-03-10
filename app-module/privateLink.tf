@@ -24,7 +24,8 @@ resource "aws_vpc_endpoint_service" "argocd_server" {
   private_dns_name           = "argocd.${local.internal_domain_name}"
 
   lifecycle {
-    create_before_destroy = true
+    create_before_destroy = false
+    replace_triggered_by = [private_dns_name, network_load_balancer_arns]
   }
 
   tags = merge(local.tags, {
