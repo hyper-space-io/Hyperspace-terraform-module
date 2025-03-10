@@ -1,3 +1,7 @@
+###############################
+########## Global #############
+###############################
+
 variable "project" {
   type        = string
   default     = "hyperspace"
@@ -20,7 +24,26 @@ variable "infra_workspace_name" {
   type        = string
 }
 
-# Route53
+variable "aws_region" {
+  type    = string
+  default = "us-east-1"
+  validation {
+    condition     = contains(["us-east-1", "us-west-1", "eu-west-1", "eu-central-1"], var.aws_region)
+    error_message = "Hyperspace currently does not support this region, valid values: [us-east-1, us-west-1, eu-west-1, eu-central-1]."
+  }
+  description = "This is used to define where resources are created and used"
+}
+
+variable "tags" {
+  type        = string
+  default     = ""
+  description = "List of tags to assign to resources created in this module"
+}
+
+###############################
+######### Route53 #############
+###############################
+
 variable "domain_name" {
   description = "The main domain name to use to create sub-domains"
   type        = string
@@ -33,38 +56,10 @@ variable "create_public_zone" {
   default     = false
 }
 
-# ArgoCD
-variable "enable_argocd" {
-  description = "should we enable and install argocd"
-  type        = bool
-  default     = true
-}
+###############################
+############ EKS ##############
+###############################
 
-variable "enable_ha_argocd" {
-  description = "should we install argocd in ha mode"
-  type        = bool
-  default     = true
-}
-
-variable "dex_connectors" {
-  type        = string
-  default     = ""
-  description = "List of Dex connector configurations"
-}
-
-variable "argocd_rbac_policy_default" {
-  description = "default role for argocd"
-  type        = string
-  default     = "role:readonly"
-}
-
-variable "argocd_rbac_policy_rules" {
-  description = "Rules for argocd rbac"
-  type        = list(string)
-  default     = []
-}
-
-# EKS
 variable "create_eks" {
   type        = bool
   default     = true
@@ -103,39 +98,65 @@ variable "worker_instance_type" {
   description = "The list of allowed instance types for worker nodes."
 }
 
-variable "availability_zones" {
-  type        = string
-  default     = ""
-  description = "List of availability zones to deploy the resources. Leave empty to automatically select based on the region and the variable num_zones."
-}
-
-variable "aws_region" {
-  type    = string
-  default = "us-east-1"
-  validation {
-    condition     = contains(["us-east-1", "us-west-1", "eu-west-1", "eu-central-1"], var.aws_region)
-    error_message = "Hyperspace currently does not support this region, valid values: [us-east-1, us-west-1, eu-west-1, eu-central-1]."
-  }
-  description = "This is used to define where resources are created and used"
-}
-
 variable "data_node_ami_id" {
   type        = string
   default     = ""
   description = "The AMI ID to use for the data nodes"
 }
 
-variable "tags" {
+###############################
+########## ArgoCD #############
+###############################
+
+variable "enable_argocd" {
+  description = "should we enable and install argocd"
+  type        = bool
+  default     = true
+}
+
+variable "enable_ha_argocd" {
+  description = "should we install argocd in ha mode"
+  type        = bool
+  default     = true
+}
+
+variable "dex_connectors" {
   type        = string
   default     = ""
-  description = "List of tags to assign to resources created in this module"
+  description = "List of Dex connector configurations"
 }
+
+variable "argocd_rbac_policy_default" {
+  description = "default role for argocd"
+  type        = string
+  default     = "role:readonly"
+}
+
+variable "argocd_rbac_policy_rules" {
+  description = "Rules for argocd rbac"
+  type        = list(string)
+  default     = []
+}
+
+###############################
+########### VPC ###############
+###############################
 
 variable "vpc_module" {
   type        = string
   default     = ""
   description = "The VPC module to use for the resources"
 }
+
+variable "availability_zones" {
+  type        = string
+  default     = ""
+  description = "List of availability zones to deploy the resources. Leave empty to automatically select based on the region and the variable num_zones."
+}
+
+###############################
+############ S3 ###############
+###############################
 
 variable "s3_buckets_names" {
   type        = string
@@ -148,6 +169,10 @@ variable "s3_buckets_arns" {
   default     = ""
   description = "The S3 buckets to use for the resources"
 }
+
+###############################
+############ IAM ##############
+###############################
 
 variable "iam_policies" {
   type        = string
