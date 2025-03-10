@@ -32,8 +32,6 @@ resource "tfe_workspace" "app" {
     oauth_token_id = data.tfe_workspace.current.vcs_repo[0].oauth_token_id
   }
   working_directory = "app-module"
-
-  depends_on = [tfe_variable.app-variables, tfe_agent_pool.app-agent-pool, tfe_agent_pool_allowed_workspaces.app, tfe_workspace_settings.app-settings]
 }
 
 resource "tfe_workspace_settings" "app-settings" {
