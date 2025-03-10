@@ -47,10 +47,10 @@ data "aws_eks_cluster_auth" "eks" {
 ### Load Balancer #####
 #######################
 
-data "aws_lb" "nlb" {
-  tags = {
-    "service.k8s.aws/stack" = "argocd/argocd-server"
-    "elbv2.k8s.aws/cluster" = module.eks.cluster_name
-  }
-  depends_on = [helm_release.argocd]
-}
+# data "aws_lb" "nlb" {
+#   tags = {
+#     "service.k8s.aws/stack" = "argocd/argocd-server"
+#     "elbv2.k8s.aws/cluster" = module.eks.cluster_name
+#   }
+#   depends_on = [helm_release.argocd]
+# }

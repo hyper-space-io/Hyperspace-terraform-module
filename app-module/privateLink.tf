@@ -1,4 +1,5 @@
 resource "null_resource" "wait_for_nlb" {
+  count = var.enable_argocd ? 1 : 0
   provisioner "local-exec" {
     command = <<EOF
       until STATE=$(aws elbv2 describe-load-balancers --load-balancer-arns ${data.aws_lb.nlb.arn} --query 'LoadBalancers[0].State.Code' --output text) && [ "$STATE" = "active" ]; do
