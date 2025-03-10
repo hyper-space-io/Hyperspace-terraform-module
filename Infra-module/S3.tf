@@ -56,6 +56,9 @@ locals {
         expiration = {
           days = 3650
         }
+        filter = {
+          prefix = ""
+        }
       }
     ]
   }
@@ -68,7 +71,11 @@ locals {
         enabled = true
         expiration = {
           days = 365
-      } }]
+        }
+        filter = {
+          prefix = ""
+        }
+      }]
     }
     core-dump-logs = {
       lifecycle_rule = [{
@@ -76,7 +83,11 @@ locals {
         enabled = true
         expiration = {
           days = 365
-      } }]
+        }
+        filter = {
+          prefix = ""
+        }
+      }]
     }
     velero = {}
     loki   = {}

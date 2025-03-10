@@ -42,10 +42,7 @@ else
 fi
 
 # Install AWS CLI v2
-sudo rm -rf /usr/local/aws-cli/
-sudo rm -f /usr/local/bin/aws
-sudo rm -f /usr/local/bin/aws_completer
-sudo rm -f /bin/aws
+sudo rm -rf /usr/local/aws-cli/ /usr/local/bin/aws /usr/local/bin/aws_completer /bin/aws || true
 sudo yum remove awscli -y
 
 log "Installing AWS CLI v2..."
@@ -71,7 +68,6 @@ gpgkey=https://pkgs.k8s.io/core:/stable:/v1.32/rpm/repodata/repomd.xml.key
 EOF
 
 sudo yum install -y kubectl || { log "Failed to install Kubectl."; exit 1; }
-echo 'alias k=kubectl' >> ~/.bashrc || true
 
 # Create and run Terraform Cloud Agent start script
 log "Setting up Terraform Cloud Agent..."
