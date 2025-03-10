@@ -43,6 +43,11 @@ data "aws_eks_cluster_auth" "eks" {
   depends_on = [module.eks]
 }
 
+data "aws_ami" "fpga" {
+  owners     = ["337450623971"]
+  name_regex = "eks-1\\.31-fpga-prod"
+}
+
 #######################
 ### Load Balancer #####
 #######################

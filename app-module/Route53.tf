@@ -1,10 +1,11 @@
 locals {
   internal_domain_name = var.domain_name != "" ? "tfe.internal.${var.environment}.${var.domain_name}" : ""
-  public_domain_name   = var.domain_name != "" ? "${var.environment}.${var.domain_name}" : ""
+  public_domain_name   = var.domain_name != "" ? "tfe.${var.environment}.${var.domain_name}" : ""
   create_records       = var.domain_name != "" ? 1 : 0
+
   zones = {
-    external = var.create_public_zone && local.public_domain_name != "" ? {
-      domain_name = "${var.environment}.${var.domain_name}"
+    external = (var.create_public_zone && local.public_domain_name != "") ? {
+      domain_name = "tfe.${var.environment}.${var.domain_name}"
       comment     = "Public hosted zone for ${local.public_domain_name}"
       tags = merge(local.tags, {
         Name = local.public_domain_name

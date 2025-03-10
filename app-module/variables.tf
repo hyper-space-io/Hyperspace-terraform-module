@@ -92,12 +92,6 @@ variable "worker_instance_type" {
   description = "The list of allowed instance types for worker nodes."
 }
 
-variable "data_node_ami_id" {
-  type        = string
-  default     = ""
-  description = "The AMI ID to use for the data nodes"
-}
-
 ###############################
 ########## ArgoCD #############
 ###############################

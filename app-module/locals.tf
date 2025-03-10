@@ -32,7 +32,7 @@ locals {
       max_size                 = 20
       desired_size             = 0
       instance_type            = "f1.2xlarge"
-      ami_id                   = "${var.data_node_ami_id}"
+      ami_id                   = "${data.aws_ami.fpga.id}"
       bootstrap_extra_args     = "--kubelet-extra-args '--node-labels=hyperspace.io/type=fpga --register-with-taints=fpga=true:NoSchedule'"
       post_bootstrap_user_data = <<-EOT
       #!/bin/bash -e
@@ -45,7 +45,7 @@ locals {
       echo "/dev/mapper/data-data /data xfs defaults,noatime 1 1" >> /etc/fstab
       mkdir /data/private/
       EOT
-      tags                     = merge(local.tags, { nodegroup = "fpga" })
+      tags                   = merge(local.tags, { nodegroup = "fpga" })
       autoscaling_group_tags = merge(local.default_node_pool_tags, {
         "k8s.io/cluster-autoscaler/node-template/taint/fpga"              = "true:NoSchedule"
         "k8s.io/cluster-autoscaler/node-template/resources/hugepages-1Gi" = "100Gi"
