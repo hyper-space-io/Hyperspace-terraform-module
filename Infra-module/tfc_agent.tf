@@ -120,6 +120,7 @@ resource "aws_iam_role_policy" "tfc_agent_iam_policy" {
           "elasticloadbalancing:DescribeSSLPolicies",
           "ec2:CreateVpcEndpointServiceConfiguration",
           "ec2:DescribeVpcEndpointServiceConfigurations",
+          "ec2:ModifyVpcEndpointServiceConfiguration",
           "ec2:DeleteVpcEndpointServiceConfigurations",
           "ec2:DescribeVpcEndpointServicePermissions",
           "ec2:ModifyVpcEndpointServicePermissions",
