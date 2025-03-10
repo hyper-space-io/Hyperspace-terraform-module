@@ -23,6 +23,10 @@ resource "aws_vpc_endpoint_service" "argocd_server" {
   supported_regions          = [var.aws_region]
   private_dns_name           = "argocd.${local.internal_domain_name}"
 
+  lifecycle {
+    create_before_destroy = true
+  }
+
   tags = merge(local.tags, {
     Name = "${var.project}-${var.environment} ArgoCD Endpoint Service"
   })
