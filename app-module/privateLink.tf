@@ -1,10 +1,11 @@
 resource "null_resource" "wait_for_nlb" {
   provisioner "local-exec" {
     command = <<EOF
-      until aws elbv2 describe-listeners --load-balancer-arn ${data.aws_lb.nlb.arn}; do
-        echo "Waiting for NLB..."
+      until STATE=$(aws elbv2 describe-load-balancers --load-balancer-arns ${data.aws_lb.nlb.arn} --query 'LoadBalancers[0].State.Code' --output text) && [ "$STATE" = "active" ]; do
+        echo "Waiting for NLB to become active... Current state: $STATE"
         sleep 10
       done
+      echo "NLB is now active"
     EOF
   }
 
