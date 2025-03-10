@@ -111,13 +111,13 @@ variable "data_node_ami_id" {
 variable "enable_argocd" {
   description = "should we enable and install argocd"
   type        = bool
-  default     = true
+  default     = false
 }
 
 variable "enable_ha_argocd" {
   description = "should we install argocd in ha mode"
   type        = bool
-  default     = true
+  default     = false
 }
 
 variable "dex_connectors" {
