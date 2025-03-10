@@ -66,12 +66,6 @@ variable "create_eks" {
   description = "Should we create the eks cluster?"
 }
 
-variable "cluster_version" {
-  type        = string
-  default     = "1.31"
-  description = "The version of the EKS cluster"
-}
-
 variable "enable_cluster_autoscaler" {
   description = "should we enable and install cluster-autoscaler"
   type        = bool

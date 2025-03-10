@@ -17,7 +17,7 @@ module "eks" {
   version         = "~> 20.8.5"
   create          = var.create_eks
   cluster_name    = local.cluster_name
-  cluster_version = var.cluster_version
+  cluster_version = "1.31"
   subnet_ids      = local.vpc_module.private_subnets
   vpc_id          = local.vpc_module.vpc_id
   tags            = local.tags
