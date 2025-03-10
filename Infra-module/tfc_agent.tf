@@ -89,6 +89,7 @@ resource "aws_iam_role_policy" "tfc_agent_iam_policy" {
           "ec2:DescribeInstanceTypeOfferings",
           "kms:CreateKey",
           "kms:CreateAlias",
+          "kms:DeleteAlias",
           "kms:ListKeys",
           "kms:ListAliases",
           "route53:ListHostedZones",
@@ -187,7 +188,6 @@ resource "aws_iam_role_policy" "tfc_agent_iam_policy" {
           "kms:TagResource",
           "kms:DescribeKey",
           "kms:DeleteKey",
-          "kms:DeleteAlias",
           "kms:ScheduleKeyDeletion"
         ]
         Resource = [
