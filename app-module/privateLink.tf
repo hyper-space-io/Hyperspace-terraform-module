@@ -25,7 +25,10 @@ resource "aws_vpc_endpoint_service" "argocd_server" {
 
   lifecycle {
     create_before_destroy = false
-    replace_triggered_by = [private_dns_name, network_load_balancer_arns]
+    replace_triggered_by = [
+      aws_vpc_endpoint_service.argocd_server.private_dns_name,
+      aws_vpc_endpoint_service.argocd_server.network_load_balancer_arns
+    ]
   }
 
   tags = merge(local.tags, {
