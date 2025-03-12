@@ -34,22 +34,22 @@ module "zones" {
   depends_on = [module.acm]
 }
 
-resource "aws_route53_record" "wildcard" {
-  count      = var.create_public_zone ? local.create_records : 0
-  zone_id    = module.zones.route53_zone_zone_id["external"]
-  name       = "*"
-  type       = "CNAME"
-  ttl        = "300"
-  records    = [data.kubernetes_ingress_v1.external_ingress.status.0.load_balancer.0.ingress.0.hostname]
-  depends_on = [helm_release.nginx-ingress]
-}
+# resource "aws_route53_record" "wildcard" {
+#   count      = var.create_public_zone ? local.create_records : 0
+#   zone_id    = module.zones.route53_zone_zone_id["external"]
+#   name       = "*"
+#   type       = "CNAME"
+#   ttl        = "300"
+#   records    = [data.kubernetes_ingress_v1.external_ingress.status.0.load_balancer.0.ingress.0.hostname]
+#   depends_on = [helm_release.nginx-ingress]
+# }
 
-resource "aws_route53_record" "internal_wildcard" {
-  count      = local.create_records
-  zone_id    = module.zones.route53_zone_zone_id["internal"]
-  name       = "*"
-  type       = "CNAME"
-  ttl        = "300"
-  records    = [data.kubernetes_ingress_v1.internal_ingress.status.0.load_balancer.0.ingress.0.hostname]
-  depends_on = [helm_release.nginx-ingress]
-}
+# resource "aws_route53_record" "internal_wildcard" {
+#   count      = local.create_records
+#   zone_id    = module.zones.route53_zone_zone_id["internal"]
+#   name       = "*"
+#   type       = "CNAME"
+#   ttl        = "300"
+#   records    = [data.kubernetes_ingress_v1.internal_ingress.status.0.load_balancer.0.ingress.0.hostname]
+#   depends_on = [helm_release.nginx-ingress]
+# }
