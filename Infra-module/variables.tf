@@ -75,7 +75,7 @@ variable "single_nat_gateway" {
 
 variable "create_vpc_flow_logs" {
   type        = bool
-  default     = true
+  default     = false
   description = "Whether we create vpc flow logs or not"
 }
 

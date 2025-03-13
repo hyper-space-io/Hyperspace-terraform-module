@@ -45,7 +45,7 @@ locals {
       echo "/dev/mapper/data-data /data xfs defaults,noatime 1 1" >> /etc/fstab
       mkdir /data/private/
       EOT
-      tags                   = merge(local.tags, { nodegroup = "fpga" })
+      tags                     = merge(local.tags, { nodegroup = "fpga" })
       autoscaling_group_tags = merge(local.default_node_pool_tags, {
         "k8s.io/cluster-autoscaler/node-template/taint/fpga"              = "true:NoSchedule"
         "k8s.io/cluster-autoscaler/node-template/resources/hugepages-1Gi" = "100Gi"
