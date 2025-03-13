@@ -61,7 +61,7 @@ The module creates a production-ready infrastructure with:
 | project | Name of the project | string | "hyperspace" | no |
 | environment | Deployment environment | string | "development" | no |
 | aws_region | AWS region | string | "us-east-1" | no |
-| vpc_cidr | CIDR block for VPC | string | - | yes |
+| vpc_cidr | CIDR block for VPC | string | 10.0.0.0/16 | yes |
 | availability_zones | List of AZs | list(string) | [] | no |
 | create_vpc_flow_logs | Enable VPC flow logs | bool | false | no |
 | enable_nat_gateway | Enable NAT Gateway | bool | true | no |
@@ -69,8 +69,8 @@ The module creates a production-ready infrastructure with:
 | num_zones | Number of AZs to use | number | 2 | no |
 | create_vpc_flow_logs | Create VPC flow logs | bool | false | no |
 | flow_logs_retention | Flow logs retention in days | number | 14 | no |
-| flow_log_group_class | Flow logs log group class in CloudWatch | string | "" | no |
-| flow_log_file_format | Flow logs file format | string | "" | no |
+| flow_log_group_class | Flow logs log group class in CloudWatch | string | STANDARD | no |
+| flow_log_file_format | Flow logs file format | string | parquet | no |
 | create_eks | Create EKS cluster | bool | true | no |
 | worker_nodes_max | Maximum number of worker nodes | number | - | yes |
 | worker_instance_type | List of allowed instance types | list(string) | ["m5n.xlarge"] | no |

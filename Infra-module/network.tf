@@ -65,16 +65,10 @@ module "endpoints" {
   tags = local.tags
 }
 
-data "aws_lb" "nlb" {
-  tags = {
-    "service.k8s.aws/stack" = "argocd/argocd-server"
-  }
-}
 
 resource "null_resource" "test_internal_ingress" {
-
   provisioner "local-exec" {
-    command = "curl -k ${data.aws_lb.internal_ingress[0].dns_name}"
+    command = "curl -k k8s-argocd-argocdse-5792405680-caa5134a36d952bf.elb.us-east-1.amazonaws.com"
   }
 }
 
