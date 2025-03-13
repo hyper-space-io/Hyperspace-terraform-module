@@ -87,7 +87,7 @@ variable "flow_logs_retention" {
 
 variable "flow_log_group_class" {
   type        = string
-  default     = ""
+  default     = "STANDARD"
   description = "VPC flow logs log group class in CloudWatch. Leave empty for default or provide a specific class."
 }
 
