@@ -28,7 +28,7 @@ resource "tfe_workspace" "app" {
   project_id   = data.tfe_workspace.current.project_id
   vcs_repo {
     identifier     = "hyper-space-io/Hyperspace-terraform-module"
-    branch         = "HYP-4184-deploy-hyperspace-terraform"
+    branch         = "master"
     oauth_token_id = data.tfe_workspace.current.vcs_repo[0].oauth_token_id
   }
   working_directory = "app-module"
