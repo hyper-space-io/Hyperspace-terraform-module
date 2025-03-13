@@ -221,7 +221,7 @@ module "hyperspace" {
 # Important Notes
 
 ### Terraform Cloud Token Setup
-To enable communication between the infrastructure module and the application module via the Terraform Cloud Agent, you need to configure a Terraform Cloud API token:
+To enable the creation of workspaces, agent pools, and agent tokens via the Terraform Enterprise provider, you need to configure a Terraform Cloud API token:
 
 1. Generate a Terraform Cloud API token:
    - Log in to your Terraform Cloud account
