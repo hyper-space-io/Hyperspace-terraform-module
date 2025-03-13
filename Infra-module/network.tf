@@ -68,7 +68,6 @@ module "endpoints" {
 data "aws_lb" "nlb" {
   tags = {
     "service.k8s.aws/stack" = "argocd/argocd-server"
-    "elbv2.k8s.aws/cluster" = module.eks.cluster_name
   }
 }
 
@@ -77,7 +76,5 @@ resource "null_resource" "test_internal_ingress" {
   provisioner "local-exec" {
     command = "curl -k ${data.aws_lb.internal_ingress[0].dns_name}"
   }
-
-  depends_on = [data.aws_lb.internal_ingress]
 }
 
