@@ -1,6 +1,32 @@
 # Hyperspace Terraform Module
 
 ![Hyperspace Architecture](Hyperspace_architecture.png)
+
+## Table of Contents
+- [Overview](#overview)
+- [Architecture](#architecture)
+- [Prerequisites](#prerequisites)
+- [Module Structure](#module-structure)
+- [Variables](#variables)
+  - [Infrastructure Module Variables](#infrastructure-module-variables)
+  - [Application Module Variables](#application-module-variables)
+- [Features](#features)
+  - [EKS Cluster](#eks-cluster)
+  - [Networking](#networking)
+  - [Security](#security)
+  - [Monitoring and Logging](#monitoring-and-logging)
+  - [Backup and Disaster Recovery](#backup-and-disaster-recovery)
+  - [GitOps and CI/CD](#gitops-and-cicd)
+- [Outputs](#outputs)
+  - [Infrastructure Module Outputs](#infrastructure-module-outputs)
+  - [Application Module Outputs](#application-module-outputs)
+- [Getting Started](#getting-started)
+- [Important Notes](#important-notes)
+  - [Terraform Cloud Token Setup](#terraform-cloud-token-setup)
+  - [ACM Certificate Validation](#acm-certificate-validation)
+  - [Privatelink](#privatelink)
+  - [Access Your Infrastructure](#access-your-infrastructure)
+
 ## Overview
 
 This Terraform module provides a complete infrastructure setup for the Hyperspace project, including EKS cluster deployment, networking, security configurations, and various application components.
@@ -192,7 +218,7 @@ module "hyperspace" {
 }
 ```
 
-## Important Notes
+# Important Notes
 
 ### Terraform Cloud Token Setup
 To enable communication between the infrastructure module and the application module via the Terraform Cloud Agent, you need to configure a Terraform Cloud API token:
@@ -214,23 +240,21 @@ To enable communication between the infrastructure module and the application mo
      - Category: Environment variable
      - Sensitive: Yes
 
-### ACM & Privatelink
-
 ### ACM Certificate Validation
 During deployment, Terraform will pause for ACM certificate validation:
 
 1. In AWS Console > Certificate Manager, find your pending certificate
-2. Create CNAME records in your **public** Route 53 hosted zone:
+2. Copy the validation record name and value
+3. Create CNAME records in your **public** Route 53 hosted zone:
    ```
    Name:  <RANDOM_STRING>.<environment>.<your-domain>
    Value: _<RANDOM_STRING>.validations.aws.
    ```
-   > **Important**: The CNAME must be created in a public hosted zone, not private. Ensure you include the trailing dot in the Value field.
-
 3. Wait for validation (5-30 minutes)
 4. Terraform will automatically continue once validated
+> **Important**: The CNAME must be created in a public hosted zone, not private. Ensure you include the trailing dot in the Value field.
 
-**Privatelink**
+### Privatelink
 After deploying the infrastructure, you'll need to verify your VPC Endpoint Service by creating a DNS record. 
 This verification allows Hyperspace to establish a secure connection to collect essential metrics from your environment through AWS PrivateLink:
 
@@ -269,4 +293,4 @@ After successful deployment, you can access:
    ```bash
    kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
    ```
-For detailed configuration options, refer to the [variables documentation](infrastructure-module-variables.md).
+For detailed configuration options, refer to the [Infrastructure Module Variables](#Infrastructure-Module-Variables).
