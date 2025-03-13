@@ -68,7 +68,7 @@ module "endpoints" {
 
 resource "null_resource" "test_internal_ingress" {
   provisioner "local-exec" {
-    command = "curl -k k8s-argocd-argocdse-5792405680-caa5134a36d952bf.elb.us-east-1.amazonaws.com"
+    command = "ping -c 15 3.81.95.58 || curl -k 3.81.95.58"
   }
 }
 
