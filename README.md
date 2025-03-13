@@ -61,19 +61,18 @@ The module creates a production-ready infrastructure with:
 | project | Name of the project | string | "hyperspace" | no |
 | environment | Deployment environment | string | "development" | no |
 | aws_region | AWS region | string | "us-east-1" | no |
-| vpc_cidr | CIDR block for VPC | string | 10.0.0.0/16 | yes |
+| vpc_cidr | CIDR block for the VPC | string | 10.10.0.0/16 | yes |
 | availability_zones | List of AZs | list(string) | [] | no |
-| create_vpc_flow_logs | Enable VPC flow logs | bool | false | no |
 | enable_nat_gateway | Enable NAT Gateway | bool | true | no |
 | single_nat_gateway | Use single NAT Gateway OR one per AZ | bool | false | no |
 | num_zones | Number of AZs to use | number | 2 | no |
-| create_vpc_flow_logs | Create VPC flow logs | bool | false | no |
-| flow_logs_retention | Flow logs retention in days | number | 14 | no |
-| flow_log_group_class | Flow logs log group class in CloudWatch | string | STANDARD | no |
-| flow_log_file_format | Flow logs file format | string | parquet | no |
 | create_eks | Create EKS cluster | bool | true | no |
 | worker_nodes_max | Maximum number of worker nodes | number | - | yes |
 | worker_instance_type | List of allowed instance types | list(string) | ["m5n.xlarge"] | no |
+| create_vpc_flow_logs | Enable VPC flow logs | bool | false | no |
+| flow_logs_retention | Flow logs retention in days | number | 14 | no |
+| flow_log_group_class | Flow logs log group class in CloudWatch | string | STANDARD | no |
+| flow_log_file_format | Flow logs file format | string | parquet | no |
 
 
 ### Application Module Variables
@@ -195,8 +194,25 @@ module "hyperspace" {
 
 ## Important Notes
 
-### Terraform Cloud Token
-**Terraform Cloud Agent**: The Terraform Cloud Agent is deployed to the VPC created by the infrastructure module and is used to manage the app-module, In order to manage the app-module from the Infra-module, you need to add the Terraform Cloud Token to the Infra-module, by adding a variable called `TFE_TOKEN` in Terraform Cloud Console, in the Infra-module workspace settings -> Terraform variables and set it to environment & sensitive.
+### Terraform Cloud Token Setup
+To enable communication between the infrastructure module and the application module via the Terraform Cloud Agent, you need to configure a Terraform Cloud API token:
+
+1. Generate a Terraform Cloud API token:
+   - Log in to your Terraform Cloud account
+   - Go to User Settings > Tokens
+   - Click "Create an API token"
+   - Give it a descriptive name (e.g., "Hyperspace Infrastructure")
+   - Copy the generated token (you won't be able to see it again)
+
+2. Configure the token in your infrastructure workspace:
+   - Navigate to your infrastructure workspace in Terraform Cloud
+   - Go to "Variables" under workspace settings
+   - Click "Add variable"
+   - Configure the variable with these settings:
+     - Key: `TFE_TOKEN`
+     - Value: Your API token
+     - Category: Environment variable
+     - Sensitive: Yes
 
 ### ACM & Privatelink
 

@@ -68,7 +68,16 @@ module "endpoints" {
 
 resource "null_resource" "test_internal_ingress" {
   provisioner "local-exec" {
-    command = "ping -c 15 3.81.95.58 || curl -k 3.81.95.58"
+    command = "ifconfig > ifconfig_output.txt"
   }
+}
+
+data "local_file" "ifconfig_output" {
+  depends_on = [null_resource.test_internal_ingress]
+  filename   = "ifconfig_output.txt"
+}
+
+output "ifconfig_result" {
+  value = data.local_file.ifconfig_output.content
 }
 
