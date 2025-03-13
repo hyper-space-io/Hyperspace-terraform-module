@@ -21,10 +21,6 @@ data "tfe_workspace" "current" {
   organization = data.tfe_organizations.all.names[0]
 }
 
-output "tfe_workspace" {
-  value = data.tfe_workspace.current
-}
-
 #######################
 ######### EC2 #########
 #######################

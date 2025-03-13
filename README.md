@@ -216,15 +216,52 @@ To enable communication between the infrastructure module and the application mo
 
 ### ACM & Privatelink
 
-**ACM Certificate Validation**: During the first deployment, terraform will pause for ACM certificate validation. You will need to validate the certificate by:
-   - Getting the certificate validation records from ACM in the AWS Console
-   - Adding these CNAME records to your domain's DNS provider, for example Route 53, in a public hosted zone
-   - Waiting for the certificates to be validated (typically 5-30 minutes)
-   - The deployment will automatically continue once validation is complete
+### ACM Certificate Validation
+During deployment, Terraform will pause for ACM certificate validation:
 
-**Privatelink**: The ACM certificate is validated by creating a private hosted zone in Route 53 and adding the certificate validation records to it.
+1. In AWS Console > Certificate Manager, find your pending certificate
+2. Create CNAME records in your **public** Route 53 hosted zone:
+   ```
+   Name:  <RANDOM_STRING>.<environment>.<your-domain>
+   Value: _<RANDOM_STRING>.validations.aws.
+   ```
+   > **Important**: The CNAME must be created in a public hosted zone, not private. Ensure you include the trailing dot in the Value field.
 
-**Access Your Infrastructure**: After successful deployment, you can access:
+3. Wait for validation (5-30 minutes)
+4. Terraform will automatically continue once validated
+
+**Privatelink**
+After deploying the infrastructure, you'll need to verify your VPC Endpoint Service by creating a DNS record. 
+This verification allows Hyperspace to establish a secure connection to collect essential metrics from your environment through AWS PrivateLink:
+
+### 1. Get Verification Details
+1. Open AWS Console and navigate to VPC Services
+2. Go to **Endpoint Services** in the left sidebar
+3. Find your endpoint service named `<your-domain>.<environment> ArgoCD Endpoint Service`
+4. In the service details, locate:
+   - **Domain verification name**
+   - **Domain verification value**
+
+### 2. Create DNS Verification Record
+1. In AWS Console, navigate to **Route 53**
+2. Go to **Hosted zones**
+3. Select your public hosted zone
+4. Click **Create record** and configure:
+   - **Record type**: TXT
+   - **Record name**: Paste the domain verification name from step 1
+   - **Value**: Paste the domain verification value from step 1
+   - **TTL**: 1800 seconds (30 minutes)
+5. Click **Create records**
+
+### 3. Wait for Verification
+- In the VPC Endpoint Service console, select your endpoint service
+- Click Actions -> Verify domain ownership for private DNS name
+- The verification process may take up to 30 minutes
+- You can monitor the status in the VPC Endpoint Service console
+- The status will change to "Available" once verification is complete
+
+## Access Your Infrastructure
+After successful deployment, you can access:
    - ArgoCD: `https://argocd.internal-<environment>.<your-domain>`
    - Grafana: `https://grafana.internal-<environment>.<your-domain>`
 
@@ -232,7 +269,4 @@ To enable communication between the infrastructure module and the application mo
    ```bash
    kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
    ```
-
-
-
 For detailed configuration options, refer to the [variables documentation](infrastructure-module-variables.md).
