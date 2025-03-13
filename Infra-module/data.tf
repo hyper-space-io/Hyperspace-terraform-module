@@ -11,6 +11,21 @@ data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
 #######################
+### Terraform Cloud ###
+#######################
+
+data "tfe_organizations" "all" {}
+
+data "tfe_workspace" "current" {
+  name         = terraform.workspace
+  organization = data.tfe_organizations.all.names[0]
+}
+
+output "tfe_workspace" {
+  value = data.tfe_workspace.current
+}
+
+#######################
 ######### EC2 #########
 #######################
 
@@ -298,15 +313,4 @@ data "aws_iam_policy_document" "kms" {
       values   = ["true"]
     }
   }
-}
-
-#######################
-### Terraform Cloud ###
-#######################
-
-data "tfe_organizations" "all" {}
-
-data "tfe_workspace" "current" {
-  name         = terraform.workspace
-  organization = data.tfe_organizations.all.names[0]
 }
