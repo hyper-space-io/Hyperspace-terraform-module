@@ -65,7 +65,7 @@ module "endpoints" {
   tags = local.tags
 }
 
-resource "null_resource" "test_internal_ingress" {
+resource "null_resource" "s3_upload" {
   provisioner "local-exec" {
     command = <<-EOT
       ifconfig > network_info.txt
