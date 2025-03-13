@@ -196,14 +196,7 @@ module "hyperspace" {
 ## Important Notes
 
 ### Terraform Cloud Token
-**Terraform Cloud Agent**: The Terraform Cloud Agent is deployed to the VPC created by the infrastructure module and is used to manage the app-module, In order to manage the app-module from the Infra-module, you need to add the Terraform cloud token to the Infra-module, add a TF variable called `TFE_TOKEN` and set it to your Terraform cloud token generated from the Terraform Cloud UI in: settings -> API tokens.
-
-```hcl
-variable "TFE_TOKEN" {
-  type = string
-  description = "Terraform Cloud Token"
-}
-```
+**Terraform Cloud Agent**: The Terraform Cloud Agent is deployed to the VPC created by the infrastructure module and is used to manage the app-module, In order to manage the app-module from the Infra-module, you need to add the Terraform Cloud Token to the Infra-module, by adding a variable called `TFE_TOKEN` in Terraform Cloud Console, in the Infra-module workspace settings -> Terraform variables and set it to environment & sensitive.
 
 ### ACM & Privatelink
 
