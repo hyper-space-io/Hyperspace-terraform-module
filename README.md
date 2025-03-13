@@ -195,23 +195,35 @@ module "hyperspace" {
 
 ## Important Notes
 
-1. **ACM Certificate Validation**: During the first deployment, the process will pause for ACM certificate validation. You will need to:
-   - Get the ACM validation records from the AWS Console
-   - Add these CNAME records to your domain's DNS settings
-   - Wait for the certificates to be validated (typically 5-30 minutes)
+### Terraform Cloud Token
+**Terraform Cloud Agent**: The Terraform Cloud Agent is deployed to the VPC created by the infrastructure module and is used to manage the app-module, In order to manage the app-module from the Infra-module, you need to add the Terraform cloud token to the Infra-module, add a TF variable called `TFE_TOKEN` and set it to your Terraform cloud token generated from the Terraform Cloud UI in: settings -> API tokens.
+
+```hcl
+variable "TFE_TOKEN" {
+  type = string
+  description = "Terraform Cloud Token"
+}
+```
+
+### ACM & Privatelink
+
+**ACM Certificate Validation**: During the first deployment, terraform will pause for ACM certificate validation. You will need to validate the certificate by:
+   - Getting the certificate validation records from ACM in the AWS Console
+   - Adding these CNAME records to your domain's DNS provider, for example Route 53, in a public hosted zone
+   - Waiting for the certificates to be validated (typically 5-30 minutes)
    - The deployment will automatically continue once validation is complete
 
-2. **Access Your Infrastructure**: After successful deployment, you can access:
+**Privatelink**: The ACM certificate is validated by creating a private hosted zone in Route 53 and adding the certificate validation records to it.
+
+**Access Your Infrastructure**: After successful deployment, you can access:
    - ArgoCD: `https://argocd.internal-<environment>.<your-domain>`
    - Grafana: `https://grafana.internal-<environment>.<your-domain>`
 
-3. **Initial ArgoCD Password**: Retrieve it using:
+**Initial ArgoCD Password**: Retrieve it using:
    ```bash
    kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
    ```
 
-4. **Terraform Cloud Agent**: The Terraform Cloud Agent is deployed to the VPC created by the infrastructure module and is used to manage the app-module.
 
-5. **Terraform cloud token**: In order to manage the app-module from the Infra-module, you need to add the Terraform cloud token to the Infra-module, add a variable called `TFE_TOKEN` and set it to your Terraform cloud token generated from the Terraform Cloud UI in: settings -> API tokens.
 
-For detailed configuration options, refer to the module variables documentation above.
+For detailed configuration options, refer to the [variables documentation](infrastructure-module-variables.md).
