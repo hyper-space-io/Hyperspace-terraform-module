@@ -71,24 +71,18 @@ prometheus:
           minBackoff: 1s
           maxBackoff: 600s
         writeRelabelConfigs:
-          # Sanitize label values first (before creating entity label)
+          # Drop all metrics that don't match the desired namespace
+          - sourceLabels: [namespace]
+            regex: '^(argocd|kube-system)$'
+            action: keep
+          # Keep only specific metrics we care about
+          - sourceLabels: [__name__]
+            regex: '^(kube_deployment_status.*|kube_pod_container_status.*|kube_node.*|container_memory_usage_bytes|container_cpu_usage_seconds_total)$'
+            action: keep
+          # Sanitize all label values to ensure they're valid
           - regex: '([^a-zA-Z0-9_])'
             replacement: '_'
             action: labelmap
-          # Keep only metrics with specific names and add PT prefix
-          - sourceLabels: [__name__]
-            regex: '(container_.*|kube_.*|node_.*)'
-            targetLabel: __name__
-            replacement: 'PT_${1}'
-            action: replace
-          # Create a merged label combining relevant information (after sanitization)
-          - sourceLabels: [namespace, pod, node]
-            separator: "_"
-            targetLabel: entity
-            action: replace
-          # Keep only essential labels
-          - regex: '(entity|job|instance|environment)'
-            action: labelkeep
     storageSpec:
       volumeClaimTemplate:
         spec:
