@@ -49,9 +49,8 @@ prometheus:
   prometheusSpec:
     externalLabels:
       source_cluster: "PT-TFC"
-      cluster_type: "writer"
       environment: "${var.environment}"
-      cluster_type_2: "remote"
+      cluster_type: "writer"
     additionalScrapeConfigs:
       - job_name: "otel_collector"
         scrape_interval: "10s"
@@ -61,16 +60,10 @@ prometheus:
             - "opentelemetry-collector.opentelemetry:8888"
     remoteWrite:
       - url: "https://prometheus.internal.devops-dev.hyper-space.xyz/api/v1/write"
+        writeRelabelConfigs:
+          - action: "labeldrop"
+            regex: "(endpoint|service|prometheus|prometheus_replica)"
         remoteTimeout: 60s
-        queueConfig:
-          capacity: 20000
-          maxShards: 200
-          maxSamplesPerSend: 500
-          batchSendDeadline: 60s
-          minShards: 1
-          maxRetries: 10
-          minBackoff: 1s
-          maxBackoff: 600s
     storageSpec:
       volumeClaimTemplate:
         spec:
