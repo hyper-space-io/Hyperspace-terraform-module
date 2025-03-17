@@ -71,10 +71,6 @@ prometheus:
           minBackoff: 1s
           maxBackoff: 600s
         writeRelabelConfigs:
-          # Drop all metrics that don't match the desired namespace
-          - sourceLabels: [namespace]
-            regex: '^(app)$'
-            action: keep
           # Add PT prefix to metric names
           - targetLabel: "__name__"
             replacement: "pt_${1}"
@@ -103,15 +99,6 @@ kubeControllerManager:
 
 kubeScheduler:
   enabled: false
-
-kubelet:
-  enabled: true
-  serviceMonitor:
-    relabelConfigs:
-      # Keep only app namespace metrics
-      - sourceLabels: [namespace]
-        action: keep
-        regex: '^(app)$'
 EOF
   ]
   set_sensitive {
