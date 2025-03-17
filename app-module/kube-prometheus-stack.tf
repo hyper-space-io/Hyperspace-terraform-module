@@ -71,13 +71,24 @@ prometheus:
           minBackoff: 1s
           maxBackoff: 600s
         writeRelabelConfigs:
-          # Keep only metrics with specific names
+          # Keep only metrics with specific names and add PT prefix
           - sourceLabels: [__name__]
             regex: '(container_.*|kube_.*|node_.*)'
-            action: keep
-          # Keep only specific labels
-          - regex: '(container|pod|namespace|node|service|job|instance|environment)'
+            targetLabel: __name__
+            replacement: 'PT_${1}'
+            action: replace
+          # Create a merged label combining relevant information
+          - sourceLabels: [namespace, pod, node]
+            separator: "_"
+            targetLabel: entity
+            action: replace
+          # Keep only essential labels
+          - regex: '(entity|job|instance|environment)'
             action: labelkeep
+          # Sanitize label values
+          - regex: '([^a-zA-Z0-9_])'
+            replacement: '_'
+            action: labelmap
     storageSpec:
       volumeClaimTemplate:
         spec:
