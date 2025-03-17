@@ -73,7 +73,7 @@ prometheus:
         writeRelabelConfigs:
           # Drop all metrics that don't match the desired namespace
           - sourceLabels: [namespace]
-            regex: '^(argocd|kube-system)$'
+            regex: '^(app)$'
             action: keep
           # Add PT prefix to all labels
           - targetLabel: "__name__"
@@ -99,14 +99,6 @@ kubeControllerManager:
 
 kubeScheduler:
   enabled: false
-
-# Testing
-prometheusOperator:
-  prometheusRules:
-    enabled: true
-    rules:
-      kubelet:
-        KubeletTooManyPods: false
 EOF
   ]
   set_sensitive {
