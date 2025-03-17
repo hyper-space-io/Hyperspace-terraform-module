@@ -49,6 +49,9 @@ prometheus:
   prometheusSpec:
     externalLabels:
       source_cluster: "PT-TFC"
+      cluster_type: "writer"
+      environment: "${var.environment}"
+      cluster_type_2: "remote"
     additionalScrapeConfigs:
       - job_name: "otel_collector"
         scrape_interval: "10s"
@@ -88,7 +91,7 @@ kubeControllerManager:
 kubeScheduler:
   enabled: false
 EOF
-  ]
+  ] 
   
   set_sensitive {
     name  = "grafana.adminPassword"
