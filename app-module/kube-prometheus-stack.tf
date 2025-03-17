@@ -7,7 +7,7 @@ resource "helm_release" "kube_prometheus_stack" {
   chart            = local.prometheus_release_name
   create_namespace = true
   cleanup_on_fail  = true
-  version          = "~> 65.5.0"
+  version          = "68.3.0"
   namespace        = "monitoring"
   repository       = "https://prometheus-community.github.io/helm-charts"
   values = [<<EOF
