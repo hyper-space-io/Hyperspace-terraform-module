@@ -62,12 +62,22 @@ prometheus:
       - url: "vpce-040e9368864cc6946-82layxz6.vpce-svc-0b19cfa5673827ab3.eu-west-1.vpce.amazonaws.com"
         remoteTimeout: 30s
         queueConfig:
-          capacity: 2500
+          capacity: 10000
           maxShards: 200
-          maxSamplesPerSend: 500
-          batchSendDeadline: 5s
+          maxSamplesPerSend: 1000
+          batchSendDeadline: 30s
           minShards: 1
-          maxRetries: 3
+          maxRetries: 5
+          minBackoff: 1s
+          maxBackoff: 300s
+        writeRelabelConfigs:
+          # Keep only metrics with specific names
+          - sourceLabels: [__name__]
+            regex: '(container_.*|kube_.*|node_.*)'
+            action: keep
+          # Keep only specific labels
+          - regex: '(container|pod|namespace|node|service|job|instance|environment)'
+            action: labelkeep
     storageSpec:
       volumeClaimTemplate:
         spec:
