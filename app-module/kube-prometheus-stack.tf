@@ -75,11 +75,15 @@ prometheus:
           - sourceLabels: [namespace]
             regex: '^(app)$'
             action: keep
-          # Add PT prefix to all labels
+          # Add PT prefix to metric names
           - targetLabel: "__name__"
             replacement: "pt_${1}"
             action: replace
             regex: "(.+)"
+          # Add PT prefix to label names
+          - action: labelmap
+            regex: "(.+)"
+            replacement: "pt_$1"
     storageSpec:
       volumeClaimTemplate:
         spec:
@@ -99,6 +103,15 @@ kubeControllerManager:
 
 kubeScheduler:
   enabled: false
+
+kubelet:
+  enabled: true
+  serviceMonitor:
+    relabelConfigs:
+      # Keep only app namespace metrics
+      - sourceLabels: [namespace]
+        action: keep
+        regex: '^(app)$'
 EOF
   ]
   set_sensitive {
