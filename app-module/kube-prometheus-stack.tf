@@ -79,10 +79,22 @@ prometheus:
           - sourceLabels: [__name__]
             regex: '^(kube_deployment_status.*|kube_pod_container_status.*|kube_node.*|container_memory_usage_bytes|container_cpu_usage_seconds_total)$'
             action: keep
-          # Sanitize all label values to ensure they're valid
-          - regex: '([^a-zA-Z0-9_])'
+          # Sanitize label values - modify to handle more characters and be less aggressive
+          - regex: '([^a-zA-Z0-9_.])'  # Allow dots in label values
             replacement: '_'
-            action: labelmap
+          # Add explicit rules for known labels
+          - sourceLabels: [entity]
+            regex: '(.*)'
+            targetLabel: entity
+            action: replace
+          - sourceLabels: [instance]
+            regex: '(.*)'
+            targetLabel: instance
+            action: replace
+          - sourceLabels: [job]
+            regex: '(.*)'
+            targetLabel: job
+            action: replace
     storageSpec:
       volumeClaimTemplate:
         spec:
