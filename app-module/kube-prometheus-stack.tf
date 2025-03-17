@@ -71,15 +71,9 @@ prometheus:
           minBackoff: 1s
           maxBackoff: 600s
         writeRelabelConfigs:
-          # Add PT prefix to metric names
-          - targetLabel: "__name__"
-            replacement: "pt_${1}"
-            action: replace
-            regex: "(.+)"
-          # Add PT prefix to label names
-          - action: labelmap
-            regex: "(.+)"
-            replacement: "pt_$1"
+          # Add cluster identifier
+          - targetLabel: "source_cluster"
+            replacement: "PT-TFC"
     storageSpec:
       volumeClaimTemplate:
         spec:
