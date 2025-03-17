@@ -12,18 +12,13 @@ resource "helm_release" "kube_prometheus_stack" {
   repository       = "https://prometheus-community.github.io/helm-charts"
   values = [<<EOF
 global:
-  externalLabels:
-    source_cluster: "PT-TFC"
-
   imagePullSecrets:
     - name: "regcred-secret"
 
 commonLabels:
-
   environment: "${var.environment}"
 
 grafana:
-
   ingress:
     enabled: true
     ingressClassName: "${local.internal_ingress_class_name}"
@@ -38,7 +33,6 @@ grafana:
       - secretName: "monitoring-tls"
         hosts:
           - "grafana.${local.internal_domain_name}"
-
   persistence:
     enabled: true
     size: 10Gi
@@ -53,6 +47,8 @@ additionalDataSources:
 
 prometheus:
   prometheusSpec:
+    externalLabels:
+      source_cluster: "PT-TFC"
     additionalScrapeConfigs:
       - job_name: "otel_collector"
         scrape_interval: "10s"
@@ -93,6 +89,7 @@ kubeScheduler:
   enabled: false
 EOF
   ]
+  
   set_sensitive {
     name  = "grafana.adminPassword"
     value = random_password.grafana_admin_password.result
