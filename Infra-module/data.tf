@@ -8,6 +8,10 @@ data "aws_availability_zones" "available" {
 
 data "aws_caller_identity" "current" {}
 
+data "tls_certificate" "tfc_certificate" {
+  url = "https://${var.tfc_hostname}"
+}
+
 data "aws_region" "current" {}
 
 #######################
