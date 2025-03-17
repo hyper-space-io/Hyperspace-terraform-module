@@ -98,7 +98,15 @@ kubeControllerManager:
   enabled: false
 
 kubeScheduler:
-  enabled: false    
+  enabled: false
+
+# Testing
+prometheusOperator:
+  prometheusRules:
+    enabled: true
+    rules:
+      kubelet:
+        KubeletTooManyPods: false
 EOF
   ]
   set_sensitive {
