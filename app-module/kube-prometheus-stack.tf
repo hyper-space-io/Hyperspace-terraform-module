@@ -60,16 +60,16 @@ prometheus:
             - "opentelemetry-collector.opentelemetry:8888"
     remoteWrite:
       - url: "https://prometheus.internal.devops-dev.hyper-space.xyz/api/v1/write"
-        remoteTimeout: 30s
+        remoteTimeout: 60s
         queueConfig:
-          capacity: 10000
+          capacity: 20000
           maxShards: 200
-          maxSamplesPerSend: 1000
-          batchSendDeadline: 30s
+          maxSamplesPerSend: 500
+          batchSendDeadline: 60s
           minShards: 1
-          maxRetries: 5
+          maxRetries: 10
           minBackoff: 1s
-          maxBackoff: 300s
+          maxBackoff: 600s
         writeRelabelConfigs:
           # Keep only metrics with specific names
           - sourceLabels: [__name__]
