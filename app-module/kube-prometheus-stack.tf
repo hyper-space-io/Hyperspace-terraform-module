@@ -59,7 +59,7 @@ prometheus:
             - "opentelemetry-collector.opentelemetry:9100"
             - "opentelemetry-collector.opentelemetry:8888"
     remoteWrite:
-      - url: "vpce-040e9368864cc6946-82layxz6.vpce-svc-0b19cfa5673827ab3.eu-west-1.vpce.amazonaws.com"
+      - url: "https://prometheus.internal.devops-dev.hyper-space.xyz/api/v1/write"
         remoteTimeout: 30s
         queueConfig:
           capacity: 10000
