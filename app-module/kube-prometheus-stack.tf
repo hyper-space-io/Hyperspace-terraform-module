@@ -75,26 +75,11 @@ prometheus:
           - sourceLabels: [namespace]
             regex: '^(argocd|kube-system)$'
             action: keep
-          # Keep only specific metrics we care about
-          - sourceLabels: [__name__]
-            regex: '^(kube_deployment_status.*|kube_pod_container_status.*|kube_node.*|container_memory_usage_bytes|container_cpu_usage_seconds_total)$'
-            action: keep
-          # Sanitize label values - modify to handle more characters and be less aggressive
-          - regex: '([^a-zA-Z0-9_.])'  # Allow dots in label values
-            replacement: '_'
-          # Add explicit rules for known labels
-          - sourceLabels: [entity]
-            regex: '(.*)'
-            targetLabel: entity
+          # Add PT prefix to all labels
+          - targetLabel: "__name__"
+            replacement: "pt_${1}"
             action: replace
-          - sourceLabels: [instance]
-            regex: '(.*)'
-            targetLabel: instance
-            action: replace
-          - sourceLabels: [job]
-            regex: '(.*)'
-            targetLabel: job
-            action: replace
+            regex: "(.+)"
     storageSpec:
       volumeClaimTemplate:
         spec:
