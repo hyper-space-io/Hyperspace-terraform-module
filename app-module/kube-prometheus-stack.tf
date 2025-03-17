@@ -12,6 +12,8 @@ resource "helm_release" "kube_prometheus_stack" {
   repository       = "https://prometheus-community.github.io/helm-charts"
   values = [<<EOF
 global:
+  externalLabels:
+    source_cluster: "PT-TFC"
 
   imagePullSecrets:
     - name: "regcred-secret"
@@ -70,10 +72,6 @@ prometheus:
           maxRetries: 10
           minBackoff: 1s
           maxBackoff: 600s
-        writeRelabelConfigs:
-          # Add cluster identifier
-          - targetLabel: "source_cluster"
-            replacement: "PT-TFC"
     storageSpec:
       volumeClaimTemplate:
         spec:
