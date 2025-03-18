@@ -49,6 +49,7 @@ prometheus:
   prometheusSpec:
     externalLabels:
       environment: "${var.environment}-tfc"
+      cluster: "${var.environment}-tfc"
     additionalScrapeConfigs:
       - job_name: "otel_collector"
         scrape_interval: "10s"
