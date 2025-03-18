@@ -48,6 +48,7 @@ additionalDataSources:
 prometheus:
   prometheusSpec:
     externalLabels:
+      cluster: "cluster-1"
       source_cluster: "PT-TFC"
       environment: "${var.environment}"
       cluster_type: "writer"
