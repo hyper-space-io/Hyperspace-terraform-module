@@ -1,11 +1,12 @@
 module "eks" {
+  count           = var.create_eks ? 1 : 0
   source          = "terraform-aws-modules/eks/aws"
-  version         = "~> 20.8.5"
+  version         = "~> 20.34.0"
   create          = var.create_eks
   cluster_name    = local.cluster_name
   cluster_version = "1.31"
-  subnet_ids      = local.vpc_module.private_subnets
-  vpc_id          = local.vpc_module.vpc_id
+  subnet_ids      = module.vpc.private_subnets
+  vpc_id          = module.vpc.vpc_id
   tags            = local.tags
 
   cluster_addons = {
@@ -23,7 +24,7 @@ module "eks" {
       min_size       = 1
       max_size       = var.worker_nodes_max
       desired_size   = 1
-      instance_types = jsondecode(var.worker_instance_type)
+      instance_types = var.worker_instance_type
       capacity_type  = "ON_DEMAND"
       labels         = { Environment = "${var.environment}" }
       tags           = merge(local.tags, { nodegroup = "workers", Name = "${local.cluster_name}-eks-medium" })
@@ -51,7 +52,7 @@ module "eks" {
       AmazonSSMManagedInstanceCore = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore",
       AmazonEBSCSIDriverPolicy     = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
     }
-    subnets = local.vpc_module.private_subnets
+    subnets = module.vpc.private_subnets
 
     tags = {
       "k8s.io/cluster-autoscaler/enabled"               = "True"
@@ -67,7 +68,7 @@ module "eks" {
 
   # Sperating the self managed nodegroups to az's ( 1 AZ : 1 ASG )
   self_managed_node_groups = merge([
-    for subnet in slice(local.vpc_module.private_subnets, 0, length(local.availability_zones)) : {
+    for subnet in slice(module.vpc.private_subnets, 0, length(local.availability_zones)) : {
       for pool_name, pool_values in local.additional_self_managed_node_pools :
       "${var.environment}-${subnet}-${pool_name}" => merge(
         pool_values,
@@ -85,9 +86,9 @@ module "eks" {
     iam_role_additional_policies = {
       AmazonSSMManagedInstanceCore = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
       AmazonEBSCSIDriverPolicy     = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
-      EC2TagsControl               = "${local.iam_policies["ec2_tags"].arn}"
-      FpgaPull                     = "${local.iam_policies["fpga_pull"].arn}"
-      KMSAccess                    = "${local.iam_policies["kms"].arn}"
+      EC2TagsControl               = "${aws_iam_policy.policies["ec2_tags"].arn}"
+      FpgaPull                     = "${aws_iam_policy.policies["fpga_pull"].arn}"
+      KMSAccess                    = "${aws_iam_policy.policies["kms"].arn}"
     }
   }
   #######################
@@ -95,7 +96,7 @@ module "eks" {
   #######################
 
 
-  node_security_group_additional_rules = {
+  node_security_group_additional_rules = merge({
     ingress_auth0 = {
       description = "Allow ingress to Auth0 endpoints"
       protocol    = "tcp"
@@ -111,8 +112,8 @@ module "eks" {
       from_port        = 0
       to_port          = 0
       type             = "ingress"
-      cidr_blocks      = [local.vpc_module.vpc_cidr_block]
-      ipv6_cidr_blocks = length(local.vpc_module.vpc_ipv6_cidr_block) > 0 ? [local.vpc_module.vpc_ipv6_cidr_block] : []
+      cidr_blocks      = [module.vpc.vpc_cidr_block]
+      ipv6_cidr_blocks = length(module.vpc.vpc_ipv6_cidr_block) > 0 ? [module.vpc.vpc_ipv6_cidr_block] : []
     }
 
     egress_vpc_only = {
@@ -121,8 +122,8 @@ module "eks" {
       from_port        = 0
       to_port          = 0
       type             = "egress"
-      cidr_blocks      = [local.vpc_module.vpc_cidr_block]
-      ipv6_cidr_blocks = length(local.vpc_module.vpc_ipv6_cidr_block) > 0 ? [local.vpc_module.vpc_ipv6_cidr_block] : []
+      cidr_blocks      = [module.vpc.vpc_cidr_block]
+      ipv6_cidr_blocks = length(module.vpc.vpc_ipv6_cidr_block) > 0 ? [module.vpc.vpc_ipv6_cidr_block] : []
     }
 
     cluster_nodes_incoming = {
@@ -133,21 +134,22 @@ module "eks" {
       type                          = "ingress"
       source_cluster_security_group = true
     }
-  }
+  }, var.node_security_group_additional_rules)
 
-  cluster_security_group_additional_rules = {
+  cluster_security_group_additional_rules = merge({
     recieve_traffic_from_vpc = {
       description      = "Allow all traffic from within the VPC"
       protocol         = "-1"
       from_port        = 0
       to_port          = 0
       type             = "ingress"
-      cidr_blocks      = [local.vpc_module.vpc_cidr_block]
-      ipv6_cidr_blocks = length(local.vpc_module.vpc_ipv6_cidr_block) > 0 ? [local.vpc_module.vpc_ipv6_cidr_block] : []
+      cidr_blocks      = [module.vpc.vpc_cidr_block]
+      ipv6_cidr_blocks = length(module.vpc.vpc_ipv6_cidr_block) > 0 ? [module.vpc.vpc_ipv6_cidr_block] : []
     }
-  }
+  }, var.cluster_security_group_additional_rules)
 
   enable_cluster_creator_admin_permissions = true
+  access_entries                           = var.eks_access_entries
   enable_irsa                              = "true"
   cluster_endpoint_private_access          = "true"
   cluster_endpoint_public_access           = "false"
@@ -164,6 +166,7 @@ module "eks" {
 
 # EBS CSI Driver IRSA 
 module "irsa-ebs-csi" {
+  count                 = var.create_eks ? 1 : 0
   source                = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
   version               = "~>5.48.0"
   role_name             = "${local.cluster_name}-ebs-csi"
@@ -171,10 +174,11 @@ module "irsa-ebs-csi" {
 
   oidc_providers = {
     eks = {
-      provider_arn               = module.eks.oidc_provider_arn
+      provider_arn               = module.eks[0].oidc_provider_arn
       namespace_service_accounts = ["kube-system:ebs-csi-controller-sa"]
     }
   }
+  depends_on = [module.eks[0]]
 }
 
 module "eks_blueprints_addons" {
@@ -182,76 +186,73 @@ module "eks_blueprints_addons" {
   source                              = "aws-ia/eks-blueprints-addons/aws"
   version                             = "1.16.3"
   cluster_name                        = local.cluster_name
-  cluster_endpoint                    = module.eks.cluster_endpoint
-  cluster_version                     = module.eks.cluster_version
-  oidc_provider_arn                   = module.eks.oidc_provider_arn
+  cluster_endpoint                    = module.eks[0].cluster_endpoint
+  cluster_version                     = module.eks[0].cluster_version
+  oidc_provider_arn                   = module.eks[0].oidc_provider_arn
   enable_aws_load_balancer_controller = true
   aws_load_balancer_controller        = { values = [local.alb_values], wait = true }
+  depends_on                          = [module.eks[0]]
 }
 
 # Remove non encrypted default storage class
-resource "kubernetes_annotations" "default_storageclass" {
-  api_version = "storage.k8s.io/v1"
-  kind        = "StorageClass"
-  force       = "true"
+# resource "kubernetes_annotations" "default_storageclass" {
+#   api_version = "storage.k8s.io/v1"
+#   kind        = "StorageClass"
+#   force       = "true"
 
-  metadata {
-    name = data.kubernetes_storage_class.name.metadata[0].name
-  }
-  annotations = {
-    "storageclass.kubernetes.io/is-default-class" = "false"
-  }
-}
+#   metadata {
+#     name = data.kubernetes_storage_class.gp2.metadata[0].name
+#   }
+#   annotations = {
+#     "storageclass.kubernetes.io/is-default-class" = "false"
+#   }
+# }
 
-resource "kubernetes_storage_class" "ebs_sc_gp3" {
-  metadata {
-    name = "ebs-sc-gp3"
-    annotations = {
-      "storageclass.kubernetes.io/is-default-class" = "true"
-    }
-  }
-  storage_provisioner = "ebs.csi.aws.com"
-  reclaim_policy      = "Delete"
-  parameters = {
-    "csi.storage.k8s.io/fstype" = "ext4"
-    encrypted                   = "true"
-    type                        = "gp3"
-    tagSpecification_1          = "Name={{ .PVCNamespace }}/{{ .PVCName }}"
-    tagSpecification_2          = "Namespace={{ .PVCNamespace }}"
-  }
-  allow_volume_expansion = true
-  volume_binding_mode    = "WaitForFirstConsumer"
-  depends_on             = [kubernetes_annotations.default_storageclass]
-}
+# resource "kubernetes_storage_class" "ebs_sc_gp3" {
+#   metadata {
+#     name = "ebs-sc-gp3"
+#     annotations = {
+#       "storageclass.kubernetes.io/is-default-class" = "true"
+#     }
+#   }
+#   storage_provisioner = "ebs.csi.aws.com"
+#   reclaim_policy      = "Delete"
+#   parameters = {
+#     "csi.storage.k8s.io/fstype" = "ext4"
+#     encrypted                   = "true"
+#     type                        = "gp3"
+#     tagSpecification_1          = "Name={{ .PVCNamespace }}/{{ .PVCName }}"
+#     tagSpecification_2          = "Namespace={{ .PVCNamespace }}"
+#   }
+#   allow_volume_expansion = true
+#   volume_binding_mode    = "WaitForFirstConsumer"
+#   depends_on             = [kubernetes_annotations.default_storageclass]
+# }
 
 module "iam_iam-assumable-role-with-oidc" {
   source                        = "terraform-aws-modules/iam/aws//modules/iam-assumable-role-with-oidc"
   version                       = "~> 5.48.0"
-  for_each                      = { for k, v in local.local_iam_policies : k => v if lookup(v, "create_assumable_role", false) == true }
+  for_each                      = { for k, v in aws_iam_policy.policies : k => v if lookup(v, "create_assumable_role", false) == true }
   create_role                   = true
   role_name                     = each.value.name
-  provider_url                  = module.eks.cluster_oidc_issuer_url
-  role_policy_arns              = [local.iam_policies["${each.key}"].arn]
+  provider_url                  = module.eks[0].cluster_oidc_issuer_url
+  role_policy_arns              = [aws_iam_policy.policies["${each.key}"].arn]
   oidc_fully_qualified_subjects = ["system:serviceaccount:${each.value.sa_namespace}:${each.key}"]
 }
 
 module "boto3_irsa" {
   source    = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
-  for_each  = { for k, v in local.local_iam_policies : k => v if lookup(v, "create_cluster_wide_role", false) == true }
+  for_each  = { for k, v in aws_iam_policy.policies : k => v if lookup(v, "create_cluster_wide_role", false) == true }
   role_name = each.value.name
   role_policy_arns = {
-    policy = local.iam_policies["${each.key}"].arn
+    policy = aws_iam_policy.policies["${each.key}"].arn
   }
   assume_role_condition_test = "StringLike"
   oidc_providers = {
     ex = {
-      provider_arn               = module.eks.oidc_provider_arn
+      provider_arn               = module.eks[0].oidc_provider_arn
       namespace_service_accounts = ["*:*"]
     }
   }
-  depends_on = [module.eks]
-}
-
-output "iam_policies" {
-  value = local.iam_policies
+  depends_on = [module.eks[0]]
 }
