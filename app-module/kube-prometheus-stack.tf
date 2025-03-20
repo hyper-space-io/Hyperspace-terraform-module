@@ -15,9 +15,6 @@ global:
   imagePullSecrets:
     - name: "regcred-secret"
 
-commonLabels:
-  environment: "${var.environment}"
-
 grafana:
   ingress:
     enabled: true
@@ -59,6 +56,9 @@ prometheus:
             - "opentelemetry-collector.opentelemetry:8888"
     remoteWrite:
       - url: "https://prometheus.internal.devops-dev.hyper-space.xyz/api/v1/write"
+        writeRelabelConfigs:
+          - action: "labeldrop"
+            regex: "(endpoint|service|prometheus|prometheus_replica)"
     storageSpec:
       volumeClaimTemplate:
         spec:

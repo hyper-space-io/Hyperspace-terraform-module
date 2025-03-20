@@ -74,6 +74,17 @@ controller:
     enabled: true
   metrics:
     enabled: true
+    serviceMonitor:
+      enabled: true
+      additionalLabels:
+        release: kube-prometheus-stack
+      namespace: ingress
+      scrapeInterval: 30s
+    port: 10254
+    service:
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "10254"
   ingressClassByName: true
   ingressClassResource:
     name: nginx-${each.key}
