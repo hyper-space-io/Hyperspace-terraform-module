@@ -111,3 +111,38 @@ resource "random_password" "grafana_admin_password" {
   special          = true
   override_special = "_%@"
 }
+
+resource "aws_vpc_endpoint" "prometheus" {
+  vpc_id            = module.vpc.vpc_id
+  service_name      = "prometheus.internal.devops-dev.hyper-space.xyz"
+  vpc_endpoint_type = "Interface"
+  subnet_ids = [module.vpc.private_subnets[0], module.vpc.private_subnets[1]]
+  security_group_ids = [aws_security_group.prometheus_endpoint_service.id]
+  private_dns_enabled = true
+  ip_address_type = "ipv4"
+
+  tags = merge(local.tags, {
+    Name = "${var.project}-${var.environment}-prometheus-vpc-endpoint"
+  })
+}
+
+resource "aws_security_group" "prometheus_endpoint_service" {
+  name        = "prometheus-endpoint-service"
+  description = "Security group for prometheus endpoint service"
+  vpc_id      = module.vpc.vpc_id
+
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = [module.vpc.vpc_cidr]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
