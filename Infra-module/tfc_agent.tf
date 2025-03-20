@@ -30,7 +30,7 @@ resource "aws_instance" "tfc_agent" {
 
 resource "aws_iam_role" "tfc_agent_role" {
   # count = local.create_agent ? 1 : 0
-  name  = "tfc-agent-role"
+  name = "tfc-agent-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -48,8 +48,8 @@ resource "aws_iam_role" "tfc_agent_role" {
 
 resource "aws_iam_role_policy" "tfc_agent_iam_policy" {
   # count = local.create_agent ? 1 : 0
-  name  = "tfc-agent-iam-policy"
-  role  = aws_iam_role.tfc_agent_role.name
+  name = "tfc-agent-iam-policy"
+  role = aws_iam_role.tfc_agent_role.name
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -267,8 +267,8 @@ resource "aws_iam_role_policy_attachment" "tfc_agent_policies" {
 
 resource "aws_iam_instance_profile" "tfc_agent_profile" {
   # count = local.create_agent ? 1 : 0
-  name  = "tfc-agent-profile"
-  role  = aws_iam_role.tfc_agent_role.name
+  name = "tfc-agent-profile"
+  role = aws_iam_role.tfc_agent_role.name
 }
 
 resource "aws_security_group" "tfc_agent_sg" {

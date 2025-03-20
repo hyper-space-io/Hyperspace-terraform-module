@@ -173,3 +173,13 @@ variable "local_iam_policies" {
   default     = ""
   description = "The IAM policies to use for the resources"
 }
+
+###############################
+########## Prometheus ##########
+###############################
+
+variable "prometheus_endpoint_allowed_cidr_blocks" {
+  type        = list(string)
+  default     = []
+  description = "The CIDR blocks to allow access to the prometheus vpc endpoint"
+}

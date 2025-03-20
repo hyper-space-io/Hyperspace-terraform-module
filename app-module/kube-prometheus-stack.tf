@@ -79,8 +79,8 @@ kubeControllerManager:
 kubeScheduler:
   enabled: false
 EOF
-  ] 
-  
+  ]
+
   set_sensitive {
     name  = "grafana.adminPassword"
     value = random_password.grafana_admin_password.result
@@ -113,13 +113,13 @@ resource "random_password" "grafana_admin_password" {
 }
 
 resource "aws_vpc_endpoint" "prometheus" {
-  vpc_id            = module.vpc.vpc_id
-  service_name      = "prometheus.internal.devops-dev.hyper-space.xyz"
-  vpc_endpoint_type = "Interface"
-  subnet_ids = [module.vpc.private_subnets[0], module.vpc.private_subnets[1]]
-  security_group_ids = [aws_security_group.prometheus_endpoint_service.id]
+  vpc_id              = module.vpc.vpc_id
+  service_name        = "prometheus.internal.devops-dev.hyper-space.xyz"
+  vpc_endpoint_type   = "Interface"
+  subnet_ids          = [module.vpc.private_subnets[0], module.vpc.private_subnets[1]]
+  security_group_ids  = [aws_security_group.prometheus_endpoint_service.id]
   private_dns_enabled = true
-  ip_address_type = "ipv4"
+  ip_address_type     = "ipv4"
 
   tags = merge(local.tags, {
     Name = "${var.project}-${var.environment}-prometheus-vpc-endpoint"
@@ -129,13 +129,13 @@ resource "aws_vpc_endpoint" "prometheus" {
 resource "aws_security_group" "prometheus_endpoint_service" {
   name        = "prometheus-endpoint-service"
   description = "Security group for prometheus endpoint service"
-  vpc_id      = module.vpc.vpc_id
+  vpc_id      = local.vpc_module.vpc_id
 
   ingress {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = [module.vpc.vpc_cidr]
+    cidr_blocks = var.prometheus_endpoint_allowed_cidr_blocks
   }
 
   egress {

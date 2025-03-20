@@ -1,25 +1,26 @@
 locals {
   app_module_variables = {
-    create_public_zone   = var.create_public_zone
-    dex_connectors       = jsonencode(var.dex_connectors)
-    domain_name          = var.domain_name
-    enable_ha_argocd     = var.enable_ha_argocd
-    infra_workspace_name = terraform.workspace
-    organization         = data.tfe_organizations.all.names[0]
-    project              = var.project
-    environment          = var.environment
-    create_eks           = var.create_eks
-    worker_nodes_max     = var.worker_nodes_max
-    worker_instance_type = jsonencode(var.worker_instance_type)
-    availability_zones   = jsonencode(local.availability_zones)
-    aws_region           = var.aws_region
-    data_node_ami_id     = data.aws_ami.fpga.id
-    tags                 = jsonencode(local.tags)
-    vpc_module           = jsonencode(module.vpc)
-    s3_buckets_arns      = jsonencode({ for k, v in module.s3_buckets : k => v.s3_bucket_arn })
-    s3_buckets_names     = jsonencode({ for k, v in module.s3_buckets : k => v.s3_bucket_id })
-    iam_policies         = jsonencode({ for k, v in aws_iam_policy.policies : k => v })
-    local_iam_policies   = jsonencode({ for k, v in local.iam_policies : k => v })
+    create_public_zone                      = var.create_public_zone
+    dex_connectors                          = jsonencode(var.dex_connectors)
+    domain_name                             = var.domain_name
+    enable_ha_argocd                        = var.enable_ha_argocd
+    infra_workspace_name                    = terraform.workspace
+    organization                            = data.tfe_organizations.all.names[0]
+    project                                 = var.project
+    environment                             = var.environment
+    create_eks                              = var.create_eks
+    worker_nodes_max                        = var.worker_nodes_max
+    worker_instance_type                    = jsonencode(var.worker_instance_type)
+    availability_zones                      = jsonencode(local.availability_zones)
+    aws_region                              = var.aws_region
+    data_node_ami_id                        = data.aws_ami.fpga.id
+    tags                                    = jsonencode(local.tags)
+    vpc_module                              = jsonencode(module.vpc)
+    s3_buckets_arns                         = jsonencode({ for k, v in module.s3_buckets : k => v.s3_bucket_arn })
+    s3_buckets_names                        = jsonencode({ for k, v in module.s3_buckets : k => v.s3_bucket_id })
+    iam_policies                            = jsonencode({ for k, v in aws_iam_policy.policies : k => v })
+    local_iam_policies                      = jsonencode({ for k, v in local.iam_policies : k => v })
+    prometheus_endpoint_allowed_cidr_blocks = [var.vpc_cidr, "10.11.0.0/16"] # PT VPC CIDR Placeholder
   }
 }
 resource "tfe_workspace" "app" {
