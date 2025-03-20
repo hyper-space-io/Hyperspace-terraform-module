@@ -162,3 +162,9 @@ variable "domain_name" {
   type        = string
   default     = ""
 }
+
+variable "existing_agent_pool_name" {
+  description = "The name of the existing agent pool to use"
+  type        = string
+  default     = ""
+}
