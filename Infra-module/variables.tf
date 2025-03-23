@@ -176,7 +176,7 @@ variable "prometheus_endpoint_service_name" {
 }
 
 variable "prometheus_endpoint_allowed_cidr_blocks" {
-  type        = list(string)
-  default     = []
+  type        = string
+  default     = ""
   description = "The CIDR blocks to allow access to the prometheus vpc endpoint"
 }
