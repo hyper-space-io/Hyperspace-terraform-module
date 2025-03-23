@@ -120,7 +120,7 @@ resource "aws_vpc_endpoint" "prometheus" {
   security_group_ids  = [aws_security_group.prometheus_endpoint_service.id]
   private_dns_enabled = true
   ip_address_type     = "ipv4"
-  service_region      = "eu-west-1" # PT Region Placeholder
+  service_region      = distinct(concat([var.aws_region], jsondecode(var.prometheus_endpoint_additional_aws_regions)))
 
   tags = merge(local.tags, {
     Name = "${var.project}-${var.environment}-prometheus-vpc-endpoint"
@@ -136,7 +136,7 @@ resource "aws_security_group" "prometheus_endpoint_service" {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = distinct(concat([local.vpc_module.vpc_cidr_block], jsondecode(var.prometheus_endpoint_allowed_cidr_blocks)))
+    cidr_blocks = distinct(concat([local.vpc_module.vpc_cidr_block], jsondecode(var.prometheus_endpoint_additional_cidr_blocks)))
   }
 
   egress {

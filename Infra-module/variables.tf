@@ -1,6 +1,5 @@
 ########################
-# GENERAL
-
+####### GENERAL ########
 ########################
 
 variable "project" {
@@ -32,7 +31,7 @@ variable "aws_region" {
 }
 
 ########################
-# VPC
+######### VPC ##########
 ########################
 
 variable "vpc_cidr" {
@@ -102,7 +101,7 @@ variable "flow_log_file_format" {
 }
 
 ########################
-# EKS
+######### EKS ##########
 ########################
 
 variable "create_eks" {
@@ -131,14 +130,20 @@ variable "worker_instance_type" {
   description = "The list of allowed instance types for worker nodes."
 }
 
-# Auto-scaling
+########################
+#### Auto-scaling ######
+########################
+
 variable "enable_cluster_autoscaler" {
   description = "should we enable and install cluster-autoscaler"
   type        = bool
   default     = true
 }
 
-# APP MODULE
+########################
+###### APP MODULE ######
+########################
+
 variable "create_public_zone" {
   description = "Whether to create the public Route 53 zone"
   type        = bool
@@ -169,14 +174,24 @@ variable "existing_agent_pool_name" {
   default     = ""
 }
 
+########################
+###### PROMETHEUS ######
+########################
+
 variable "prometheus_endpoint_service_name" {
   type        = string
   default     = ""
   description = "The service name to use for the prometheus vpc endpoint"
 }
 
-variable "prometheus_endpoint_allowed_cidr_blocks" {
+variable "prometheus_endpoint_additional_cidr_blocks" {
   type        = list(string)
   default     = []
   description = "The CIDR blocks to allow access to the prometheus vpc endpoint"
+}
+
+variable "prometheus_endpoint_additional_aws_regions" {
+  type        = list(string)
+  default     = ["us-east-1", "eu-west-1", "eu-central-1"]
+  description = "The additional aws regions to enable for the prometheus vpc endpoint"
 }
