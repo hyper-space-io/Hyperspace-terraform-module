@@ -121,6 +121,7 @@ resource "aws_iam_role_policy" "tfc_agent_iam_policy" {
           "ec2:CreateVpcEndpoint",
           "ec2:DeleteVpcEndpoint",
           "ec2:ModifyVpcEndpoint",
+          "vpce:*",
           "ec2:DescribeVpcEndpoints"
         ]
         Resource = "*"
