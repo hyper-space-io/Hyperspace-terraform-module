@@ -24,6 +24,7 @@ locals {
     prometheus_endpoint_service_name        = var.prometheus_endpoint_service_name
   }
 }
+
 resource "tfe_workspace" "app" {
   name         = "hyperspace-app-module"
   organization = data.tfe_organizations.all.names[0]
