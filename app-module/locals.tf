@@ -8,7 +8,7 @@ locals {
   internal_ingress_class_name = "nginx-internal"
   availability_zones          = jsondecode(var.availability_zones)
 
-  alb_values                  = <<EOT
+  alb_values = <<EOT
   vpcId: ${local.vpc_module.vpc_id}
   region: ${var.aws_region}
   EOT

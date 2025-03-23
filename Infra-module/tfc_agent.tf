@@ -70,7 +70,7 @@ resource "aws_iam_role_policy" "tfc_agent_iam_policy" {
           "iam:CreatePolicy",
           "iam:CreateRole",
           "iam:DeletePolicy",
-          "iam:DeleteRole", 
+          "iam:DeleteRole",
           "iam:DeleteRolePolicy",
           "iam:RemoveRoleFromInstanceProfile",
           "iam:DeleteInstanceProfile",
