@@ -123,12 +123,7 @@ resource "aws_iam_role_policy" "tfc_agent_iam_policy" {
           "ec2:ModifyVpcEndpoint",
           "ec2:DescribeVpcEndpoints"
         ]
-        Resource = [
-          "arn:aws:ec2:*:*:vpc-endpoint/*",
-          "arn:aws:ec2:*:*:vpc/*",
-          "arn:aws:ec2:*:*:security-group/*",
-          "arn:aws:ec2:*:*:subnet/*"
-        ]
+        Resource = "*"
       },
       {
         Effect = "Allow"
