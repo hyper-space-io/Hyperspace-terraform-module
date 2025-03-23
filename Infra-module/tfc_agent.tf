@@ -133,12 +133,10 @@ resource "aws_iam_role_policy" "tfc_agent_iam_policy" {
       {
         Effect = "Allow"
         Action = [
-          "eks:*Addon*",
           "eks:*Cluster*",
           "eks:*AccessEntry*",
           "eks:*AccessPolic*",
           "eks:*Nodegroup*",
-          "eks:DescribeAddonVersions"
         ]
         Resource = [
           "arn:aws:eks:*:*:cluster/*",
@@ -149,6 +147,7 @@ resource "aws_iam_role_policy" "tfc_agent_iam_policy" {
       {
         Effect = "Allow"
         Action = [
+          "eks:*Addon*",
           "elasticloadbalancing:Describe*"
         ]
         Resource = "*"
