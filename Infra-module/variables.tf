@@ -189,9 +189,3 @@ variable "prometheus_endpoint_additional_cidr_blocks" {
   default     = []
   description = "The CIDR blocks to allow access to the prometheus vpc endpoint"
 }
-
-variable "prometheus_endpoint_additional_aws_regions" {
-  type        = list(string)
-  default     = ["us-east-1", "eu-west-1", "eu-central-1"]
-  description = "The additional aws regions to enable for the prometheus vpc endpoint"
-}

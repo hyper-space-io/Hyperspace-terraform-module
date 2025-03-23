@@ -20,9 +20,8 @@ locals {
     s3_buckets_names                           = jsonencode({ for k, v in module.s3_buckets : k => v.s3_bucket_id })
     iam_policies                               = jsonencode({ for k, v in aws_iam_policy.policies : k => v })
     local_iam_policies                         = jsonencode({ for k, v in local.iam_policies : k => v })
-    prometheus_endpoint_additional_aws_regions = jsonencode(var.prometheus_endpoint_additional_cidr_blocks)
+    prometheus_endpoint_additional_cidr_blocks = jsonencode(var.prometheus_endpoint_additional_cidr_blocks)
     prometheus_endpoint_service_name           = var.prometheus_endpoint_service_name
-    prometheus_endpoint_additional_aws_regions = jsonencode(var.prometheus_endpoint_additional_aws_regions)
   }
 }
 

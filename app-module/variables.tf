@@ -189,9 +189,3 @@ variable "prometheus_endpoint_service_name" {
   default     = ""
   description = "The service name to use for the prometheus vpc endpoint"
 }
-
-variable "prometheus_endpoint_additional_aws_regions" {
-  type        = string
-  default     = ""
-  description = "additional aws regions to enable for the prometheus vpc endpoint"
-}

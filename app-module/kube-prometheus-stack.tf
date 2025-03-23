@@ -1,6 +1,7 @@
 locals {
   prometheus_release_name = "kube-prometheus-stack"
 }
+
 resource "helm_release" "kube_prometheus_stack" {
   count            = var.create_eks ? 1 : 0
   name             = local.prometheus_release_name
@@ -120,7 +121,7 @@ resource "aws_vpc_endpoint" "prometheus" {
   security_group_ids  = [aws_security_group.prometheus_endpoint_service.id]
   private_dns_enabled = true
   ip_address_type     = "ipv4"
-  service_region      = distinct(concat([var.aws_region], jsondecode(var.prometheus_endpoint_additional_aws_regions)))
+  service_region      = var.aws_region
 
   tags = merge(local.tags, {
     Name = "${var.project}-${var.environment}-prometheus-vpc-endpoint"
