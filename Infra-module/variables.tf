@@ -170,13 +170,13 @@ variable "existing_agent_pool_name" {
 }
 
 variable "prometheus_endpoint_service_name" {
-  type        = list(string)
-  default     = []
+  type        = string
+  default     = ""
   description = "The service name to use for the prometheus vpc endpoint"
 }
 
 variable "prometheus_endpoint_allowed_cidr_blocks" {
-  type        = string
-  default     = ""
+  type        = list(string)
+  default     = []
   description = "The CIDR blocks to allow access to the prometheus vpc endpoint"
 }
