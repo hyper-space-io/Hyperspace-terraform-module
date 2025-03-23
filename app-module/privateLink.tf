@@ -19,12 +19,12 @@ resource "aws_vpc_endpoint_service" "argocd_server" {
   count                      = var.enable_argocd ? 1 : 0
   acceptance_required        = false
   network_load_balancer_arns = [data.aws_lb.nlb.arn]
-  allowed_principals         = ["arn:aws:iam::418316469434:root"]
-  supported_regions          = [var.aws_region, "eu-central-1"]
+  allowed_principals         = jsondecode(var.argocd_endpoint_allowed_principals)
+  supported_regions          = concat([var.aws_region], var.argocd_endpoint_additional_aws_regions)
   private_dns_name           = "argocd.${var.project}.${local.internal_domain_name}"
 
   tags = merge(local.tags, {
-    Name = "${var.project}-${var.environment} ArgoCD Endpoint Service"
+    Name = "ArgoCD Endpoint Service - ${var.project}-${var.environment}"
   })
 
   depends_on = [null_resource.wait_for_nlb]

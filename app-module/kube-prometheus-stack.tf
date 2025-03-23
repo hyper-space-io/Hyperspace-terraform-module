@@ -121,10 +121,10 @@ resource "aws_vpc_endpoint" "prometheus" {
   security_group_ids  = [aws_security_group.prometheus_endpoint_service.id]
   private_dns_enabled = true
   ip_address_type     = "ipv4"
-  service_region      = var.aws_region
+  service_region      = [var.aws_region]
 
   tags = merge(local.tags, {
-    Name = "${var.project}-${var.environment}-prometheus-vpc-endpoint"
+    Name = "Prometheus Endpoint - ${var.project}-${var.environment}"
   })
 }
 

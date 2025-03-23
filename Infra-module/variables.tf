@@ -174,14 +174,30 @@ variable "existing_agent_pool_name" {
   default     = ""
 }
 
-########################
-###### PROMETHEUS ######
-########################
+################################
+###### ArgoCD Privatelink ######
+################################
+
+variable "argocd_endpoint_additional_aws_regions" {
+  type        = list(string)
+  default     = ["eu-central-1"]
+  description = "The additional aws regions to enable for the argocd vpc endpoint"
+}
+
+variable "argocd_endpoint_allowed_principals" {
+  type        = list(string)
+  default     = []
+  description = "The allowed principals for the argocd vpc endpoint"
+}
+
+################################
+#### Prometheus Privatelink ####
+################################
 
 variable "prometheus_endpoint_service_name" {
   type        = string
   default     = ""
-  description = "The service name to use for the prometheus vpc endpoint"
+  description = "The service name the vpc endpoint will connect to"
 }
 
 variable "prometheus_endpoint_additional_cidr_blocks" {
