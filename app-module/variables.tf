@@ -180,7 +180,7 @@ variable "local_iam_policies" {
 
 variable "prometheus_endpoint_allowed_cidr_blocks" {
   type        = string
-  default     = []
+  default     = ""
   description = "The CIDR blocks to allow access to the prometheus vpc endpoint"
 }
 
