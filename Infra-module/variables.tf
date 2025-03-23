@@ -170,8 +170,8 @@ variable "existing_agent_pool_name" {
 }
 
 variable "prometheus_endpoint_service_name" {
-  type        = string
-  default     = ""
+  type        = list(string)
+  default     = []
   description = "The service name to use for the prometheus vpc endpoint"
 }
 
