@@ -200,6 +200,8 @@ resource "aws_iam_role_policy" "tfc_agent_iam_policy" {
           "route53:CreateHostedZone",
           "route53:ChangeResourceRecordSets",
           "route53:ListTagsForResource",
+          "route53:AssociateVPCWithHostedZone",
+          "route53:DisassociateVPCFromHostedZone",
           "route53:ChangeTagsForResource"
         ]
         Resource = "*"
