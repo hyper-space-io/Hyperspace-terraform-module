@@ -114,7 +114,7 @@ resource "aws_iam_role_policy" "tfc_agent_iam_policy" {
         Effect = "Allow"
         Action = [
           "ec2:CreateVpcEndpoint",
-          "ec2:DeleteVpcEndpoint",
+          "ec2:DeleteVpcEndpoints",
           "ec2:ModifyVpcEndpoint",
           "vpce:*",
           "ec2:DescribeVpcEndpoints"
