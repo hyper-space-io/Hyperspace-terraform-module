@@ -137,7 +137,8 @@ resource "aws_iam_role_policy" "tfc_agent_iam_policy" {
           "eks:*Cluster*",
           "eks:*AccessEntry*",
           "eks:*AccessPolic*",
-          "eks:*Nodegroup*"
+          "eks:*Nodegroup*",
+          "eks:DescribeAddonVersions"
         ]
         Resource = [
           "arn:aws:eks:*:*:cluster/*",
