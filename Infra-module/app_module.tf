@@ -21,6 +21,7 @@ locals {
     iam_policies                            = jsonencode({ for k, v in aws_iam_policy.policies : k => v })
     local_iam_policies                      = jsonencode({ for k, v in local.iam_policies : k => v })
     prometheus_endpoint_allowed_cidr_blocks = jsonencode([var.vpc_cidr, "10.11.0.0/16"]) # PT VPC CIDR Placeholder
+    prometheus_endpoint_service_name        = var.prometheus_endpoint_service_name
   }
 }
 resource "tfe_workspace" "app" {

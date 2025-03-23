@@ -114,7 +114,7 @@ resource "random_password" "grafana_admin_password" {
 
 resource "aws_vpc_endpoint" "prometheus" {
   vpc_id              = local.vpc_module.vpc_id
-  service_name        = "prometheus.internal.devops-dev.hyper-space.xyz"
+  service_name        = var.prometheus_endpoint_service_name
   vpc_endpoint_type   = "Interface"
   subnet_ids          = local.vpc_module.private_subnets
   security_group_ids  = [aws_security_group.prometheus_endpoint_service.id]
