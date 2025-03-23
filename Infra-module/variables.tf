@@ -174,3 +174,9 @@ variable "prometheus_endpoint_service_name" {
   default     = ""
   description = "The service name to use for the prometheus vpc endpoint"
 }
+
+variable "prometheus_endpoint_allowed_cidr_blocks" {
+  type        = list(string)
+  default     = ["10.171.0.0/16", "10.11.0.0/16"]
+  description = "The CIDR blocks to allow access to the prometheus vpc endpoint"
+}
