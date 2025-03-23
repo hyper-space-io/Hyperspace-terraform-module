@@ -136,7 +136,7 @@ resource "aws_security_group" "prometheus_endpoint_service" {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = var.prometheus_endpoint_allowed_cidr_blocks
+    cidr_blocks = jsondecode(var.prometheus_endpoint_allowed_cidr_blocks)
   }
 
   egress {
@@ -146,4 +146,3 @@ resource "aws_security_group" "prometheus_endpoint_service" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
-
