@@ -24,6 +24,7 @@ locals {
     prometheus_endpoint_service_name           = var.prometheus_endpoint_service_name
     argocd_endpoint_allowed_principals         = jsonencode(var.argocd_endpoint_allowed_principals)
     argocd_endpoint_additional_aws_regions     = jsonencode(var.argocd_endpoint_additional_aws_regions)
+    prometheus_endpoint_service_region         = var.prometheus_endpoint_service_region
   }
 }
 

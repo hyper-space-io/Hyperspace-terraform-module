@@ -205,3 +205,9 @@ variable "prometheus_endpoint_service_name" {
   default     = ""
   description = "The service name to use for the prometheus vpc endpoint"
 }
+
+variable "prometheus_endpoint_service_region" {
+  type        = string
+  default     = ""
+  description = "The region the prometheus vpc endpoint will connect to"
+}

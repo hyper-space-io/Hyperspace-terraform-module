@@ -205,3 +205,9 @@ variable "prometheus_endpoint_additional_cidr_blocks" {
   default     = []
   description = "The CIDR blocks to allow access to the prometheus vpc endpoint"
 }
+
+variable "prometheus_endpoint_service_region" {
+  type        = string
+  default     = "us-east-1"
+  description = "The region the prometheus vpc endpoint will connect to"
+}
