@@ -310,9 +310,3 @@ data "aws_iam_policy_document" "kms" {
     }
   }
 }
-
-data "tfe_agent_pool" "existing_pool" {
-  count        = var.existing_agent_pool_name != "" ? 1 : 0
-  name         = var.existing_agent_pool_name
-  organization = data.tfe_organizations.all.names[0]
-}
