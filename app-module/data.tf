@@ -44,7 +44,7 @@ data "aws_eks_cluster_auth" "eks" {
 }
 
 data "aws_ami" "fpga" {
-  owners     = ["337450623971"]
+  owners     = ["${var.hyperspace_account_id}"]
   name_regex = "eks-1\\.31-fpga-prod"
 }
 

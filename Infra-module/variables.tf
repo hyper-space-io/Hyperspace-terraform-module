@@ -8,6 +8,11 @@ variable "project" {
   description = "Name of the project - this is used to generate names for resources"
 }
 
+variable "hyperspace_account_id" {
+  type        = string
+  description = "The account ID of the hyperspace account"
+}
+
 variable "environment" {
   type        = string
   default     = "development"
