@@ -29,10 +29,11 @@
 
 ## Overview
 
-This Terraform module provides a complete infrastructure setup for the Hyperspace project, including EKS cluster deployment, networking, security configurations, and various application components.
+This Terraform module provides a complete infrastructure setup for Hyperspace. It creates everything needed to run your applications in AWS, including networking, Kubernetes cluster, security settings, and monitoring tools.
+
 The module is split into two main parts:
-- Infrastructure Module (`Infra-module`)
-- Application Module (`app-module`)
+- Infrastructure Module (`Infra-module`): Handles the basic AWS setup including VPC, S3 buckets, and Terraform Cloud agent
+- Application Module (`app-module`): Handles EKS Deployment, ArgoCD, Prometheus & Grafana for monitoring, Loki for logging and Velero for backups.
 
 ## Architecture
 
@@ -61,22 +62,22 @@ The module creates a production-ready infrastructure with:
 ```
 .
 ├── Infra-module/
-│ ├── eks.tf # EKS cluster configuration
-│ ├── network.tf # VPC and networking setup
-│ ├── S3.tf # S3 buckets configuration
-│ ├── tfc_agent.tf # Terraform Cloud agent setup
-│ ├── variables.tf # Input variables
-│ ├── outputs.tf # Output values
-│ ├── locals.tf # Local variables
-│ ├── providers.tf # Provider configuration
+│ ├── eks.tf           # EKS cluster configuration
+│ ├── network.tf       # VPC and networking setup
+│ ├── S3.tf            # S3 buckets configuration
+│ ├── tfc_agent.tf     # Terraform Cloud agent setup
+│ ├── variables.tf     # Input variables
+│ ├── outputs.tf       # Output values
+│ ├── locals.tf        # Local variables
+│ ├── providers.tf     # Provider configuration
 │ └── user_data.sh.tpl # User data for EC2 instances
 ├── app-module/
-│ ├── argocd.tf # ArgoCD installation
-│ ├── loki.tf # Logging stack
-│ ├── velero.tf # Backup solution
-│ ├── Route53.tf # DNS configuration
-│ ├── variables.tf # Input variables
-│ └── providers.tf # Provider configuration
+│ ├── argocd.tf        # ArgoCD installation
+│ ├── loki.tf          # Logging stack
+│ ├── velero.tf        # Backup solution
+│ ├── Route53.tf       # DNS configuration
+│ ├── variables.tf     # Input variables
+│ └── providers.tf     # Provider configuration
 ```
 
 
@@ -85,6 +86,7 @@ The module creates a production-ready infrastructure with:
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|----------|
 | project | Name of the project | string | "hyperspace" | no |
+| hyperspace_account_id | The account ID of the hyperspace account | string | - | no |
 | environment | Deployment environment | string | "development" | no |
 | aws_region | AWS region | string | "us-east-1" | no |
 | vpc_cidr | CIDR block for the VPC | string | 10.10.0.0/16 | yes |
@@ -93,7 +95,7 @@ The module creates a production-ready infrastructure with:
 | single_nat_gateway | Use single NAT Gateway OR one per AZ | bool | false | no |
 | num_zones | Number of AZs to use | number | 2 | no |
 | create_eks | Create EKS cluster | bool | true | no |
-| worker_nodes_max | Maximum number of worker nodes | number | - | yes |
+| worker_nodes_max | Maximum number of worker nodes | number | 10 | no |
 | worker_instance_type | List of allowed instance types | list(string) | ["m5n.xlarge"] | no |
 | create_vpc_flow_logs | Enable VPC flow logs | bool | false | no |
 | flow_logs_retention | Flow logs retention in days | number | 14 | no |
@@ -105,8 +107,6 @@ The module creates a production-ready infrastructure with:
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|----------|
-| organization | Terraform Cloud organization name | string | - | yes |
-| infra_workspace_name | Infrastructure workspace name | string | - | yes |
 | domain_name | Main domain name for sub-domains | string | "" | no |
 | enable_argocd | Enable ArgoCD installation | bool | true | no |
 | enable_ha_argocd | Enable HA for ArgoCD | bool | true | no |
