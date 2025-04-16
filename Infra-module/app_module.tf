@@ -27,18 +27,26 @@ locals {
     prometheus_endpoint_service_region         = var.prometheus_endpoint_service_region
     prometheus_endpoint_additional_cidr_blocks = jsonencode(var.prometheus_endpoint_additional_cidr_blocks)
   }
+  # Determine which VCS authentication method to use
+  vcs_auth = {
+    oauth_token_id             = try(data.tfe_workspace.current.vcs_repo[0].oauth_token_id, "") != "" ? data.tfe_workspace.current.vcs_repo[0].oauth_token_id : null
+    github_app_installation_id = try(data.tfe_workspace.current.vcs_repo[0].github_app_installation_id, "") != "" ? data.tfe_workspace.current.vcs_repo[0].github_app_installation_id : null
+  }
 }
 
 resource "tfe_workspace" "app" {
   name         = "hyperspace-app-module"
   organization = data.tfe_organizations.all.names[0]
   project_id   = data.tfe_workspace.current.project_id
+  # when file_triggers_enabled is false, any push will trigger a run regardless of which files changed
+  file_triggers_enabled = false
+  working_directory     = "app-module"
   vcs_repo {
-    identifier     = "hyper-space-io/Hyperspace-terraform-module"
-    branch         = "master"
-    oauth_token_id = data.tfe_workspace.current.vcs_repo[0].oauth_token_id
+    identifier                 = "${var.github_organization}/Hyperspace-terraform-module"
+    branch                     = var.github_branch
+    oauth_token_id             = local.vcs_auth.oauth_token_id
+    github_app_installation_id = local.vcs_auth.github_app_installation_id
   }
-  working_directory = "app-module"
 }
 
 resource "tfe_workspace_settings" "app-settings" {
@@ -74,4 +82,16 @@ resource "tfe_agent_token" "app-agent-token" {
 resource "tfe_workspace_settings" "Infra-settings" {
   workspace_id              = data.tfe_workspace.current.id
   remote_state_consumer_ids = [tfe_workspace.app.id]
+}
+
+output "tfe_oauth_token_id" {
+  value = data.tfe_workspace.current.vcs_repo[0].oauth_token_id
+}
+
+output "tfe_organization" {
+  value = data.tfe_organizations.all.names[0]
+}
+
+output "tfe_organizations" {
+  value = data.tfe_organizations.all
 }

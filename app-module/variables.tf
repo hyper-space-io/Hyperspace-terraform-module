@@ -33,8 +33,8 @@ variable "aws_region" {
   type    = string
   default = "us-east-1"
   validation {
-    condition     = contains(["us-east-1", "us-west-1", "eu-west-1", "eu-central-1"], var.aws_region)
-    error_message = "Hyperspace currently does not support this region, valid values: [us-east-1, us-west-1, eu-west-1, eu-central-1]."
+    condition     = contains(["us-east-1", "us-west-1", "eu-west-1", "eu-central-1", "eu-west-2"], var.aws_region)
+    error_message = "Hyperspace currently does not support this region, valid values: [us-east-1, us-west-1, eu-west-1, eu-central-1, eu-west-2]."
   }
   description = "This is used to define where resources are created and used"
 }
@@ -89,10 +89,10 @@ variable "worker_nodes_max" {
 
 variable "worker_instance_type" {
   type    = string
-  default = "[m5n.xlarge]"
+  default = "m5n.xlarge"
   validation {
-    condition     = alltrue([for instance in jsondecode(var.worker_instance_type) : contains(["m5n.xlarge", "m5n.large"], instance)])
-    error_message = "Invalid input for 'worker_instance_type'. Only the following instance type(s) are allowed: ['m5n.xlarge', 'm5n.large']."
+    condition     = alltrue([for instance in jsondecode(var.worker_instance_type) : contains(["m5n.xlarge", "m5n.large", "m5d.xlarge", "m5d.large"], instance)])
+    error_message = "Invalid input for 'worker_instance_type'. Only the following instance type(s) are allowed: ['m5n.xlarge', 'm5n.large', 'm5d.xlarge', 'm5d.large']."
   }
   description = "The list of allowed instance types for worker nodes."
 }

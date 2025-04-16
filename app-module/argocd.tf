@@ -25,7 +25,7 @@ resource "helm_release" "argocd" {
           "policy.csv"     = try(join("\n", var.argocd_rbac_policy_rules), "")
         }
         cm = {
-          "exec.enabled"           = "true"
+          "exec.enabled"           = "false"
           "timeout.reconciliation" = "5s"
           "dex.config" = yamlencode({
             connectors = [
@@ -55,7 +55,7 @@ resource "helm_release" "argocd" {
         }
         extraArgs = ["--insecure"]
         ingress = {
-          enabled          = false
+          enabled          = true
           ingressClassName = "nginx-internal"
           hosts = [
             "argocd.${local.internal_domain_name}"

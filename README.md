@@ -1,4 +1,4 @@
-# Hyperspace Terraform Module
+# Hyperspace Terraform Module.
 
 ![Hyperspace Architecture](Hyperspace_architecture.png)
 
@@ -90,6 +90,7 @@ The module creates a production-ready infrastructure with:
 | environment | Deployment environment | string | "development" | no |
 | aws_region | AWS region | string | "us-east-1" | no |
 | vpc_cidr | CIDR block for the VPC | string | 10.10.0.0/16 | yes |
+| prometheus_endpoint_service_name | Hyperspace Prometheus Endpoint to Connect to | string | 'Add Dev Endpoint' | yes
 | availability_zones | List of AZs | list(string) | [] | no |
 | enable_nat_gateway | Enable NAT Gateway | bool | true | no |
 | single_nat_gateway | Use single NAT Gateway OR one per AZ | bool | false | no |

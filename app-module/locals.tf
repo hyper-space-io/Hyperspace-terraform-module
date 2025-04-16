@@ -1,12 +1,17 @@
 locals {
-  tags                        = jsondecode(var.tags)
-  vpc_module                  = jsondecode(var.vpc_module)
-  s3_bucket_names             = jsondecode(var.s3_buckets_names)
-  s3_bucket_arns              = jsondecode(var.s3_buckets_arns)
-  iam_policies                = jsondecode(var.iam_policies)
-  local_iam_policies          = jsondecode(var.local_iam_policies)
-  internal_ingress_class_name = "nginx-internal"
-  availability_zones          = jsondecode(var.availability_zones)
+  tags                                       = jsondecode(var.tags)
+  vpc_module                                 = jsondecode(var.vpc_module)
+  s3_bucket_names                            = jsondecode(var.s3_buckets_names)
+  s3_bucket_arns                             = jsondecode(var.s3_buckets_arns)
+  iam_policies                               = jsondecode(var.iam_policies)
+  local_iam_policies                         = jsondecode(var.local_iam_policies)
+  availability_zones                         = jsondecode(var.availability_zones)
+  worker_instance_type                       = jsondecode(var.worker_instance_type)
+  argocd_endpoint_allowed_principals         = jsondecode(var.argocd_endpoint_allowed_principals)
+  argocd_endpoint_additional_aws_regions     = jsondecode(var.argocd_endpoint_additional_aws_regions)
+  prometheus_endpoint_additional_cidr_blocks = jsondecode(var.prometheus_endpoint_additional_cidr_blocks)
+  prometheus_remote_write_endpoint           = "https://prometheus.internal.devops-dev.hyper-space.xyz/api/v1/write"
+  internal_ingress_class_name                = "nginx-internal"
 
   alb_values = <<EOT
   vpcId: ${local.vpc_module.vpc_id}
@@ -115,30 +120,30 @@ locals {
       "54.69.107.228/32"
     ],
     eu = [
-      "18.197.9.11",
-      "18.198.229.148",
-      "3.125.185.137",
-      "3.65.249.224",
-      "3.67.233.131",
-      "3.68.125.137",
-      "3.72.27.152",
-      "3.74.90.247",
-      "34.246.118.27",
-      "35.157.198.116",
-      "35.157.221.52",
-      "52.17.111.199",
-      "52.19.3.147",
-      "52.208.95.174",
-      "52.210.121.45",
-      "52.210.122.50",
-      "52.28.184.187",
-      "52.30.153.34",
-      "52.57.230.214",
-      "54.228.204.106",
-      "54.228.86.224",
-      "54.73.137.216",
-      "54.75.208.179",
-      "54.76.184.103"
+      "18.197.9.11/32",
+      "18.198.229.148/32",
+      "3.125.185.137/32",
+      "3.65.249.224/32",
+      "3.67.233.131/32",
+      "3.68.125.137/32",
+      "3.72.27.152/32",
+      "3.74.90.247/32",
+      "34.246.118.27/32",
+      "35.157.198.116/32",
+      "35.157.221.52/32",
+      "52.17.111.199/32",
+      "52.19.3.147/32",
+      "52.208.95.174/32",
+      "52.210.121.45/32",
+      "52.210.122.50/32",
+      "52.28.184.187/32",
+      "52.30.153.34/32",
+      "52.57.230.214/32",
+      "54.228.204.106/32",
+      "54.228.86.224/32",
+      "54.73.137.216/32",
+      "54.75.208.179/32",
+      "54.76.184.103/32"
     ]
   }
 }
