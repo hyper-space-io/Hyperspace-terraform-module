@@ -2,6 +2,9 @@ locals {
   #####################
   #      GENERAL      #
   #####################
+
+  hyperspace_org_name = "hyper-space-io"
+
   tags = merge(var.tags, {
     project     = "hyperspace"
     environment = "${var.environment}"
