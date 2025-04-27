@@ -195,7 +195,7 @@ locals {
   } : {}
 
   # Default ArgoCD RBAC policy rules
-  default_argocd_rbac_policy_rules = [
+  default_argocd_rbac_policy_rules = distinct(concat([
     # Role definitions
     "p, role:org-admin, applications, *, */*, allow",
     "p, role:org-admin, clusters, get, *, allow",
@@ -212,5 +212,5 @@ locals {
 
     # Team-specific permissions
     "g, ${local.argocd_vcs_configuration.organization}:DevOps, role:org-admin",
-  ]
+  ], var.argocd_rbac_policy_rules))
 }

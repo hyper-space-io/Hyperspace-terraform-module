@@ -40,6 +40,12 @@ variable "aws_region" {
   description = "This is used to define where resources are created and used"
 }
 
+variable "tfc_agent_token" {
+  type        = string
+  sensitive   = true
+  description = "The token for the TFC agent"
+}
+
 variable "hyperspace_aws_region" {
   type        = string
   default     = "us-east-1"
