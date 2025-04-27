@@ -29,7 +29,7 @@ resource "helm_release" "argocd" {
           "timeout.reconciliation" = "5s"
           "accounts.hyperspace"    = "login"
           "dex.config" = yamlencode({
-            connectors = [local.dex_connectors]
+            connectors = local.dex_connectors
           })
         }
         credentialTemplates = local.argocd_credential_templates
