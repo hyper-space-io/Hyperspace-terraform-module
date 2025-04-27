@@ -45,7 +45,7 @@ resource "tfe_workspace" "app" {
   working_directory     = "app-module"
   vcs_repo {
     identifier                 = "${local.hyperspace_org_name}/Hyperspace-terraform-module"
-    branch                     = var.argocd_vcs_configuration.branch # Rethink this Variable
+    branch                     = "simulation"
     oauth_token_id             = local.vcs_auth.oauth_token_id
     github_app_installation_id = local.vcs_auth.github_app_installation_id
   }

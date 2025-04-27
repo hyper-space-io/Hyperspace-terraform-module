@@ -86,44 +86,6 @@ resource "aws_iam_role_policy" "tfc_agent_iam_policy" {
       {
         Effect = "Allow"
         Action = [
-          "ec2:Describe*",
-          "ec2:CreateLaunchTemplate",
-          "ec2:DeleteLaunchTemplate",
-          "ec2:DeleteLaunchTemplateVersions",
-          "ec2:RunInstances",
-          "ec2:CreateTags",
-          "ec2:DeleteTags",
-          "ec2:CreateVpcEndpointServiceConfiguration",
-          "ec2:ModifyVpcEndpointServiceConfiguration",
-          "ec2:DeleteVpcEndpointServiceConfigurations",
-          "ec2:ModifyVpcEndpointServicePermissions"
-        ]
-        Resource = "*"
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "ec2:RevokeSecurityGroupEgress",
-          "ec2:RevokeSecurityGroupIngress",
-          "ec2:AuthorizeSecurityGroupEgress",
-          "ec2:AuthorizeSecurityGroupIngress"
-        ]
-        Resource = "arn:aws:ec2:*:*:security-group/*"
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "ec2:CreateVpcEndpoint",
-          "ec2:DeleteVpcEndpoints",
-          "ec2:ModifyVpcEndpoint",
-          "vpce:*",
-          "ec2:DescribeVpcEndpoints"
-        ]
-        Resource = "*"
-      },
-      {
-        Effect = "Allow"
-        Action = [
           "eks:*",
           "eks-auth:*"
         ]
@@ -238,7 +200,8 @@ resource "aws_iam_role_policy_attachment" "tfc_agent_policies" {
     "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy",
     "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM",
     "arn:aws:iam::aws:policy/AmazonSSMFullAccess",
-    "arn:aws:iam::aws:policy/SecretsManagerReadWrite"
+    "arn:aws:iam::aws:policy/SecretsManagerReadWrite",
+    "arn:aws:iam::aws:policy/AmazonEC2FullAccess"
   ])
   policy_arn = each.value
   role       = aws_iam_role.tfc_agent_role.name

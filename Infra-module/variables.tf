@@ -193,7 +193,6 @@ variable "existing_agent_pool_name" {
 variable "argocd_vcs_configuration" {
   type = object({
     organization = string
-    branch       = string
     github = optional(object({
       enabled                 = optional(bool)
       app_secret_name         = optional(string)
@@ -213,7 +212,6 @@ variable "argocd_vcs_configuration" {
   })
   default = {
     organization = ""
-    branch       = "master"
     github = {
       enabled                 = false
       app_secret_name         = "argocd/githubapp"
