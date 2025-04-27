@@ -189,18 +189,18 @@ variable "argocd_vcs_configuration" {
     organization = string
     github = optional(object({
       enabled = optional(bool, false)
-      app_secret = object({
+      app_secret = optional(object({
         name = optional(string)
-      })
-      private_key_secret = object({
+      }))
+      private_key_secret = optional(object({
         name = optional(string)
-      })
+      }))
     }))
     gitlab = optional(object({
       enabled = optional(bool, false)
-      app_secret = object({
+      app_secret = optional(object({
         name = optional(string)
-      })
+      }))
     }))
   })
   default = {
