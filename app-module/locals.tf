@@ -217,7 +217,8 @@ locals {
     "p, role:org-admin, projects, delete, *, allow",
     "p, role:org-admin, logs, get, *, allow",
     "p, role:org-admin, exec, create, */*, allow",
+
     # Team-specific permissions
-    "g, ${var.argocd_vcs_configuration.organization}:DevOps, role:org-admin",
+    "g, ${local.argocd_vcs_configuration.organization}:DevOps, role:org-admin",
   ]
 }
