@@ -101,13 +101,6 @@ resource "aws_iam_role_policy" "tfc_agent_iam_policy" {
       {
         Effect = "Allow"
         Action = [
-          "elasticloadbalancing:Describe*"
-        ]
-        Resource = "*"
-      },
-      {
-        Effect = "Allow"
-        Action = [
           "ecr:Get*",
           "ecr:List*",
           "ecr:Describe*",
@@ -173,63 +166,6 @@ resource "aws_iam_role_policy" "tfc_agent_iam_policy" {
           "acm:ListTagsForCertificate"
         ]
         Resource = "arn:aws:acm:*:*:certificate/*"
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "autoscaling:CreateAutoScalingGroup",
-          "autoscaling:DeleteAutoScalingGroup",
-          "autoscaling:DescribeAutoScalingGroups",
-          "autoscaling:DescribeAutoScalingInstances",
-          "autoscaling:DescribeLaunchConfigurations",
-          "autoscaling:UpdateAutoScalingGroup",
-          "autoscaling:SetDesiredCapacity",
-          "autoscaling:TerminateInstanceInAutoScalingGroup",
-          "autoscaling:DescribeScalingActivities"
-        ]
-        Resource = "*"
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "ec2:Describe*",
-          "ec2:CreateLaunchTemplate",
-          "ec2:CreateLaunchTemplateVersion",
-          "ec2:DeleteLaunchTemplate",
-          "ec2:DeleteLaunchTemplateVersions",
-          "ec2:ModifyLaunchTemplate",
-          "ec2:DescribeLaunchTemplates",
-          "ec2:DescribeLaunchTemplateVersions",
-          "ec2:RunInstances",
-          "ec2:CreateTags",
-          "ec2:DeleteTags",
-          "ec2:CreateVpcEndpointServiceConfiguration",
-          "ec2:ModifyVpcEndpointServiceConfiguration",
-          "ec2:DeleteVpcEndpointServiceConfigurations",
-          "ec2:ModifyVpcEndpointServicePermissions"
-        ]
-        Resource = "*"
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "ec2:RevokeSecurityGroupEgress",
-          "ec2:RevokeSecurityGroupIngress",
-          "ec2:AuthorizeSecurityGroupEgress",
-          "ec2:AuthorizeSecurityGroupIngress"
-        ]
-        Resource = "arn:aws:ec2:*:*:security-group/*"
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "ec2:CreateVpcEndpoint",
-          "ec2:DeleteVpcEndpoints",
-          "ec2:ModifyVpcEndpoint",
-          "vpce:*",
-          "ec2:DescribeVpcEndpoints"
-        ]
-        Resource = "*"
       }
     ]
   })

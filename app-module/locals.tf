@@ -154,43 +154,33 @@ locals {
   ### ArgoCD VCS ####
   ###################
 
-  # GitLab configuration (for future implementation)
-  gitlab_config = {
-    enabled = try(local.argocd_vcs_configuration.gitlab.enabled, false)
-    ssh_key = {
-      enabled     = try(local.argocd_vcs_configuration.gitlab.ssh_key.enabled, false)
-      secret_name = try(local.argocd_vcs_configuration.gitlab.ssh_key.secret_name, "argocd/gitlab-ssh-key")
-    }
-    access_token = {
-      enabled     = try(local.argocd_vcs_configuration.gitlab.access_token.enabled, false)
-      secret_name = try(local.argocd_vcs_configuration.gitlab.access_token.secret_name, "argocd/gitlab-access-token")
-    }
+  # VCS connector configuration
+  vcs_config = {
+    github = try(local.argocd_vcs_configuration.github.enabled, false) ? {
+      type = "github"
+      id   = "github"
+      name = "GitHub"
+      config = {
+        clientID     = try(jsondecode(data.aws_secretsmanager_secret_version.argocd_github_app[0].secret_string).client_id, null)
+        clientSecret = try(jsondecode(data.aws_secretsmanager_secret_version.argocd_github_app[0].secret_string).client_secret, null)
+        orgs = [{
+          name = local.argocd_vcs_configuration.organization
+        }]
+      }
+    } : null,
+    gitlab = try(local.argocd_vcs_configuration.gitlab.enabled, false) ? {
+      type = "gitlab"
+      id   = "gitlab"
+      name = "GitLab"
+      config = {
+        clientID     = try(jsondecode(data.aws_secretsmanager_secret_version.argocd_gitlab_app[0].secret_string).application_id, null)
+        clientSecret = try(jsondecode(data.aws_secretsmanager_secret_version.argocd_gitlab_app[0].secret_string).secret, null)
+        baseURL      = try(local.argocd_vcs_configuration.gitlab.base_url, "https://gitlab.com")
+      }
+    } : null
   }
 
-  # GitHub connector (only if enabled)
-  github_connector = try(local.argocd_vcs_configuration.github.enabled, false) ? {
-    type = "github"
-    id   = "github"
-    name = "GitHub"
-    config = {
-      clientID     = try(jsondecode(data.aws_secretsmanager_secret_version.argocd_github_app[0].secret_string).client_id, null)
-      clientSecret = try(jsondecode(data.aws_secretsmanager_secret_version.argocd_github_app[0].secret_string).client_secret, null)
-      orgs = [{
-        name = local.argocd_vcs_configuration.organization
-      }]
-    }
-  } : null
-
-  # Connector configuration
-  # ADD SUPPORT FOR GITLAB CONNECTOR LATER 
-  dex_connectors = local.github_connector
-
-  # ArgoCD secret configuration
-  argocd_secret_config = try(local.argocd_vcs_configuration.github.enabled, false) ? {
-    extra = {
-      "dex.github.clientSecret" = try(jsondecode(data.aws_secretsmanager_secret_version.argocd_github_app[0].secret_string).client_secret, null)
-    }
-  } : {}
+  dex_connectors = compact([local.vcs_config.github, local.vcs_config.gitlab])
 
   # ArgoCD credential templates
   argocd_credential_templates = try(local.argocd_vcs_configuration.github.enabled, false) ? {

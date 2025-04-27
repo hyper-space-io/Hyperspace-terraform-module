@@ -32,7 +32,6 @@ resource "helm_release" "argocd" {
             connectors = [local.dex_connectors]
           })
         }
-        secret              = local.argocd_secret_config
         credentialTemplates = local.argocd_credential_templates
       }
       server = {

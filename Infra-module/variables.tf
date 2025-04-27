@@ -194,36 +194,36 @@ variable "argocd_vcs_configuration" {
   type = object({
     organization = string
     github = optional(object({
-      enabled                 = optional(bool)
-      app_secret_name         = optional(string)
-      private_key_secret_name = optional(string)
+      enabled = optional(bool, false)
+      app_secret = object({
+        name = optional(string)
+      })
+      private_key_secret = object({
+        name = optional(string)
+      })
     }))
     gitlab = optional(object({
-      enabled = optional(bool)
-      ssh_key = optional(object({
-        enabled     = bool
-        secret_name = optional(string)
-      }))
-      access_token = optional(object({
-        enabled     = bool
-        secret_name = optional(string)
-      }))
+      enabled = optional(bool, false)
+      app_secret = object({
+        name = optional(string)
+      })
     }))
   })
   default = {
     organization = ""
     github = {
-      enabled                 = false
-      app_secret_name         = "argocd/githubapp"
-      private_key_secret_name = "argocd/github-private-key"
+      enabled = false
+      app_secret = {
+        name = "argocd/githubapp"
+      }
+      private_key_secret = {
+        name = "argocd/github-private-key"
+      }
     }
     gitlab = {
       enabled = false
-      ssh_key = {
-        enabled = false
-      }
-      access_token = {
-        enabled = false
+      app_secret = {
+        name = "argocd/gitlabapp"
       }
     }
   }
