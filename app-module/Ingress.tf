@@ -212,3 +212,11 @@ resource "null_resource" "test" {
     EOT
   }
 }
+
+resource "null_resource" "test2" {
+  provisioner "local-exec" {
+    command = <<-EOT
+      echo "Test2"
+    EOT
+  }
+}
