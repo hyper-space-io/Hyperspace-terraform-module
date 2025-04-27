@@ -216,13 +216,13 @@ variable "prometheus_endpoint_service_region" {
   description = "The region the prometheus vpc endpoint will connect to"
 }
 
-variable "tfe_token" {
-  description = "Terraform Cloud API token"
-  type        = string
-  sensitive   = true
-}
+# variable "tfe_token" {
+#   description = "Terraform Cloud API token"
+#   type        = string
+#   sensitive   = true
+# }
 
-variable "hyperspace_org_name" {
-  description = "The name of the Hyperspace organization"
-  type        = string
-}
+# variable "hyperspace_org_name" {
+#   description = "The name of the Hyperspace organization"
+#   type        = string
+# }
