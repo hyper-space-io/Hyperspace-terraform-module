@@ -73,7 +73,12 @@ data "aws_lb" "argocd_privatelink_nlb" {
 ###### ArgoCD #########
 #######################
 
-data "aws_secretsmanager_secret_version" "github_secret" {
-  count     = var.create_eks && var.enable_argocd && try(local.vcs_configuration.github.enabled, false) ? 1 : 0
-  secret_id = coalesce(local.vcs_configuration.github.secret_name, "argocd/githubapp")
+data "aws_secretsmanager_secret_version" "argocd_github_app" {
+  count     = var.create_eks && var.enable_argocd && try(local.argocd_vcs_configuration.github.enabled, false) ? 1 : 0
+  secret_id = coalesce(local.argocd_vcs_configuration.github.app_secret_name, "argocd/githubapp")
+}
+
+data "aws_secretsmanager_secret_version" "argocd_private_key" {
+  count     = var.create_eks && var.enable_argocd && try(local.argocd_vcs_configuration.github.enabled, false) ? 1 : 0
+  secret_id = coalesce(local.argocd_vcs_configuration.github.private_key_secret_name, "argocd/github-private-key")
 }

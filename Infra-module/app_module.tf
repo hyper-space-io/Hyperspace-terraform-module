@@ -21,7 +21,7 @@ locals {
     data_node_ami_id                           = data.aws_ami.fpga.id
     enable_ha_argocd                           = var.enable_ha_argocd
     create_public_zone                         = var.create_public_zone
-    vcs_configuration                          = jsonencode(var.vcs_configuration)
+    argocd_vcs_configuration                   = jsonencode(var.argocd_vcs_configuration)
     argocd_endpoint_allowed_principals         = jsonencode(var.argocd_endpoint_allowed_principals)
     argocd_endpoint_additional_aws_regions     = jsonencode(var.argocd_endpoint_additional_aws_regions)
     prometheus_endpoint_service_name           = var.prometheus_endpoint_service_name
@@ -32,10 +32,6 @@ locals {
   vcs_auth = {
     oauth_token_id             = try(data.tfe_workspace.current.vcs_repo[0].oauth_token_id, "") != "" ? data.tfe_workspace.current.vcs_repo[0].oauth_token_id : null
     github_app_installation_id = try(data.tfe_workspace.current.vcs_repo[0].github_app_installation_id, "") != "" ? data.tfe_workspace.current.vcs_repo[0].github_app_installation_id : null
-  }
-  hyperspace_vcs_auth = {
-    github_app_installation_id = try(jsondecode(data.aws_secretsmanager_secret_version.hyperspace_github_app.secret_string).github_app_installation_id, "") != "" ? jsondecode(data.aws_secretsmanager_secret_version.hyperspace_github_app.secret_string).github_app_installation_id : null
-    oauth_token_id             = try(jsondecode(data.aws_secretsmanager_secret_version.hyperspace_github_app.secret_string).oauth_token_id, "") != "" ? jsondecode(data.aws_secretsmanager_secret_version.hyperspace_github_app.secret_string).oauth_token_id : null
   }
 }
 
@@ -50,8 +46,8 @@ resource "tfe_workspace" "app" {
   vcs_repo {
     identifier                 = "${local.hyperspace_org_name}/Hyperspace-terraform-module"
     branch                     = var.vcs_configuration.branch
-    oauth_token_id             = local.hyperspace_vcs_auth.oauth_token_id
-    github_app_installation_id = local.hyperspace_vcs_auth.github_app_installation_id
+    oauth_token_id             = local.vcs_auth.oauth_token_id
+    github_app_installation_id = local.vcs_auth.github_app_installation_id
   }
 }
 

@@ -14,7 +14,7 @@ locals {
   prometheus_endpoint_additional_cidr_blocks = jsondecode(var.prometheus_endpoint_additional_cidr_blocks)
   prometheus_remote_write_endpoint           = "https://prometheus.internal.devops-dev.hyper-space.xyz/api/v1/write"
   internal_ingress_class_name                = "nginx-internal"
-  vcs_configuration                          = jsondecode(var.vcs_configuration)
+  argocd_vcs_configuration                   = jsondecode(var.argocd_vcs_configuration)
 
   alb_values = <<EOT
   vpcId: ${local.vpc_module.vpc_id}
@@ -155,34 +155,34 @@ locals {
   ##################
 
   # GitHub configuration
-  github_config = {
-    enabled     = local.vcs_configuration.github.enabled
-    secret_name = local.vcs_configuration.github.secret_name
+  argocd_github_config = {
+    enabled     = local.argocd_vcs_configuration.github.enabled
+    secret_name = local.argocd_vcs_configuration.github.secret_name
   }
 
   # GitLab configuration (for future implementation)
   gitlab_config = {
-    enabled     = try(local.vcs_configuration.gitlab.enabled, false)
+    enabled = try(local.argocd_vcs_configuration.gitlab.enabled, false)
     ssh_key = {
-      enabled     = try(local.vcs_configuration.gitlab.ssh_key.enabled, false)
-      secret_name = try(local.vcs_configuration.gitlab.ssh_key.secret_name, "argocd/gitlab-ssh-key")
+      enabled     = try(local.argocd_vcs_configuration.gitlab.ssh_key.enabled, false)
+      secret_name = try(local.argocd_vcs_configuration.gitlab.ssh_key.secret_name, "argocd/gitlab-ssh-key")
     }
     access_token = {
-      enabled     = try(local.vcs_configuration.gitlab.access_token.enabled, false)
-      secret_name = try(local.vcs_configuration.gitlab.access_token.secret_name, "argocd/gitlab-access-token")
+      enabled     = try(local.argocd_vcs_configuration.gitlab.access_token.enabled, false)
+      secret_name = try(local.argocd_vcs_configuration.gitlab.access_token.secret_name, "argocd/gitlab-access-token")
     }
   }
 
   # GitHub connector (only if enabled)
-  github_connector = try(local.vcs_configuration.github.enabled, false) ? {
+  github_connector = try(local.argocd_vcs_configuration.github.enabled, false) ? {
     type = "github"
     id   = "github"
     name = "GitHub"
     config = {
-      clientID     = try(jsondecode(data.aws_secretsmanager_secret_version.github_secret[0].secret_string).client_id, null)
-      clientSecret = try(jsondecode(data.aws_secretsmanager_secret_version.github_secret[0].secret_string).client_secret, null)
+      clientID     = try(jsondecode(data.aws_secretsmanager_secret_version.argocd_github_app[0].secret_string).client_id, null)
+      clientSecret = try(jsondecode(data.aws_secretsmanager_secret_version.argocd_github_app[0].secret_string).client_secret, null)
       orgs = [{
-        name = local.vcs_configuration.organization
+        name = local.argocd_vcs_configuration.organization
       }]
     }
   } : null
@@ -192,19 +192,19 @@ locals {
   dex_connectors = local.github_connector
 
   # ArgoCD secret configuration
-  argocd_secret_config = try(local.vcs_configuration.github.enabled, false) ? {
+  argocd_secret_config = try(local.argocd_vcs_configuration.github.enabled, false) ? {
     extra = {
-      "dex.github.clientSecret" = try(jsondecode(data.aws_secretsmanager_secret_version.github_secret[0].secret_string).client_secret, null)
+      "dex.github.clientSecret" = try(jsondecode(data.aws_secretsmanager_secret_version.argocd_github_app[0].secret_string).client_secret, null)
     }
   } : {}
 
   # ArgoCD credential templates
-  argocd_credential_templates = try(local.vcs_configuration.github.enabled, false) ? {
+  argocd_credential_templates = try(local.argocd_vcs_configuration.github.enabled, false) ? {
     "github-creds" = {
-      url = "https://github.com/${local.vcs_configuration.organization}/"
-      githubAppID             = try(jsondecode(data.aws_secretsmanager_secret_version.github_secret[0].secret_string).github_app_id, null)
-      githubAppInstallationID = try(jsondecode(data.aws_secretsmanager_secret_version.github_secret[0].secret_string).github_installation_id, null)
-      githubAppPrivateKey     = try(jsondecode(data.aws_secretsmanager_secret_version.github_secret[0].secret_string).private_key, null)
+      url                     = "https://github.com/${local.argocd_vcs_configuration.organization}/"
+      githubAppID             = try(jsondecode(data.aws_secretsmanager_secret_version.argocd_github_app[0].secret_string).github_app_id, null)
+      githubAppInstallationID = try(jsondecode(data.aws_secretsmanager_secret_version.argocd_github_app[0].secret_string).github_installation_id, null)
+      githubAppPrivateKey     = try(jsondecode(data.aws_secretsmanager_secret_version.argocd_private_key[0].secret_string).private_key, null)
     }
   } : {}
 }

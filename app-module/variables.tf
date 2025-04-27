@@ -125,7 +125,7 @@ variable "argocd_rbac_policy_rules" {
   default     = []
 }
 
-variable "vcs_configuration" {
+variable "argocd_vcs_configuration" {
   description = "VCS configuration for ArgoCD"
   type        = string
   default     = "{}"

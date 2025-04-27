@@ -184,13 +184,14 @@ variable "existing_agent_pool_name" {
   default     = ""
 }
 
-variable "vcs_configuration" {
+variable "argocd_vcs_configuration" {
   type = object({
     organization = string
-    branch      = string
+    branch       = string
     github = optional(object({
-      enabled     = optional(bool)
-      secret_name = optional(string)
+      enabled                 = optional(bool)
+      app_secret_name         = optional(string)
+      private_key_secret_name = optional(string)
     }))
     gitlab = optional(object({
       enabled = optional(bool)
@@ -206,18 +207,19 @@ variable "vcs_configuration" {
   })
   default = {
     organization = ""
-    branch      = "master"
+    branch       = "master"
     github = {
-      enabled     = false
-      secret_name = "argocd/githubapp"
+      enabled                 = false
+      app_secret_name         = "argocd/githubapp"
+      private_key_secret_name = "argocd/github-private-key"
     }
     gitlab = {
       enabled = false
       ssh_key = {
-        enabled     = false
+        enabled = false
       }
       access_token = {
-        enabled     = false
+        enabled = false
       }
     }
   }
