@@ -119,11 +119,6 @@ variable "argocd_rbac_policy_default" {
   default     = "role:readonly"
 }
 
-variable "githubOrg" {
-  description = "GitHub organization name"
-  type        = string
-}
-
 variable "argocd_rbac_policy_rules" {
   description = "Custom RBAC policy rules for ArgoCD. If empty, default rules will be used"
   type        = list(string)
