@@ -180,7 +180,7 @@ locals {
     } : null
   }
 
-  dex_connectors = compact([local.vcs_config.github, local.vcs_config.gitlab])
+  dex_connectors = coalesce(local.vcs_config.github, local.vcs_config.gitlab)
 
   # ArgoCD credential templates
   argocd_credential_templates = try(local.argocd_vcs_configuration.github.enabled, false) ? {
