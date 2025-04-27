@@ -80,5 +80,5 @@ data "aws_secretsmanager_secret_version" "argocd_github_app" {
 
 data "aws_secretsmanager_secret_version" "argocd_private_key" {
   count     = var.create_eks && var.enable_argocd && try(local.argocd_vcs_configuration.github.enabled, false) ? 1 : 0
-  secret_id = coalesce(local.argocd_vcs_configuration.github.private_key_secret_name, "argocd/github-private-key")
+  secret_id = coalesce(local.argocd_vcs_configuration.github.private_key_secret_name, "argocd/githubapp-private-key")
 }

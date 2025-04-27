@@ -154,12 +154,6 @@ locals {
   ##### VCS ########
   ##################
 
-  # GitHub configuration
-  argocd_github_config = {
-    enabled     = local.argocd_vcs_configuration.github.enabled
-    secret_name = local.argocd_vcs_configuration.github.secret_name
-  }
-
   # GitLab configuration (for future implementation)
   gitlab_config = {
     enabled = try(local.argocd_vcs_configuration.gitlab.enabled, false)

@@ -204,19 +204,3 @@ resource "time_sleep" "wait_for_external_ingress" {
   create_duration = "180s"
   depends_on      = [kubernetes_ingress_v1.nginx_ingress["external"]]
 }
-
-resource "null_resource" "test" {
-  provisioner "local-exec" {
-    command = <<-EOT
-      echo "Test"
-    EOT
-  }
-}
-
-resource "null_resource" "test2" {
-  provisioner "local-exec" {
-    command = <<-EOT
-      echo "Test2"
-    EOT
-  }
-}
