@@ -46,12 +46,6 @@ variable "hyperspace_aws_region" {
   description = "The region of the hyperspace account"
 }
 
-variable "tfc_agent_token" {
-  description = "Terraform Cloud agent token"
-  type        = string
-  sensitive   = true
-}
-
 ########################
 ######### VPC ##########
 ########################
