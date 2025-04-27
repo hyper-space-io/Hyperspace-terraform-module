@@ -75,15 +75,15 @@ data "aws_lb" "argocd_privatelink_nlb" {
 
 data "aws_secretsmanager_secret_version" "argocd_github_app" {
   count     = var.create_eks && var.enable_argocd && try(local.argocd_vcs_configuration.github.enabled, false) ? 1 : 0
-  secret_id = coalesce(local.argocd_vcs_configuration.github.app_secret.name, "argocd/githubapp")
+  secret_id = try(local.argocd_vcs_configuration.github.app_secret.name, "argocd/githubapp")
 }
 
 data "aws_secretsmanager_secret_version" "argocd_private_key" {
   count     = var.create_eks && var.enable_argocd && try(local.argocd_vcs_configuration.github.enabled, false) ? 1 : 0
-  secret_id = coalesce(local.argocd_vcs_configuration.github.private_key_secret.name, "argocd/github-private-key")
+  secret_id = try(local.argocd_vcs_configuration.github.private_key_secret.name, "argocd/githubapp-private-key")
 }
 
 data "aws_secretsmanager_secret_version" "argocd_gitlab_app" {
   count     = var.create_eks && var.enable_argocd && try(local.argocd_vcs_configuration.gitlab.enabled, false) ? 1 : 0
-  secret_id = coalesce(local.argocd_vcs_configuration.gitlab.app_secret.name, "argocd/gitlabapp")
+  secret_id = try(local.argocd_vcs_configuration.gitlab.app_secret.name, "argocd/gitlabapp")
 }
