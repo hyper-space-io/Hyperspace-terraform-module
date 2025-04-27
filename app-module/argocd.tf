@@ -22,7 +22,7 @@ resource "helm_release" "argocd" {
       configs = {
         rbac = {
           "policy.default" = "${var.argocd_rbac_policy_default}"
-          "policy.csv"     = try(join("\n", var.argocd_rbac_policy_rules), "")
+          "policy.csv"     = "${local.default_argocd_rbac_policy_rules}"
         }
         cm = {
           "exec.enabled"           = "false"

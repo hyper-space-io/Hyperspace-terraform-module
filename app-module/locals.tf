@@ -40,7 +40,7 @@ locals {
       min_size                 = 0
       max_size                 = 20
       desired_size             = 0
-      instance_type            = "f1.2xlarge"
+      instance_type            = "f1.4xlarge"
       ami_id                   = "${data.aws_ami.fpga.id}"
       bootstrap_extra_args     = "--kubelet-extra-args '--node-labels=hyperspace.io/type=fpga --register-with-taints=fpga=true:NoSchedule'"
       post_bootstrap_user_data = <<-EOT
@@ -150,9 +150,9 @@ locals {
     ]
   }
 
-  ##################
-  ##### VCS ########
-  ##################
+  ###################
+  ### ArgoCD VCS ####
+  ###################
 
   # GitLab configuration (for future implementation)
   gitlab_config = {
@@ -201,4 +201,23 @@ locals {
       githubAppPrivateKey     = try(data.aws_secretsmanager_secret_version.argocd_private_key[0].secret_string, null)
     }
   } : {}
+
+  # Default ArgoCD RBAC policy rules
+  default_argocd_rbac_policy_rules = [
+    # Role definitions
+    "p, role:org-admin, applications, *, */*, allow",
+    "p, role:org-admin, clusters, get, *, allow",
+    "p, role:org-admin, repositories, get, *, allow",
+    "p, role:org-admin, repositories, create, *, allow",
+    "p, role:org-admin, repositories, update, *, allow",
+    "p, role:org-admin, repositories, delete, *, allow",
+    "p, role:org-admin, projects, get, *, allow",
+    "p, role:org-admin, projects, create, *, allow",
+    "p, role:org-admin, projects, update, *, allow",
+    "p, role:org-admin, projects, delete, *, allow",
+    "p, role:org-admin, logs, get, *, allow",
+    "p, role:org-admin, exec, create, */*, allow",
+    # Team-specific permissions
+    "g, ${var.argocd_vcs_configuration.organization}:DevOps, role:org-admin",
+  ]
 }

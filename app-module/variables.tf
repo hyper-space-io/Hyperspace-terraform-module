@@ -119,8 +119,13 @@ variable "argocd_rbac_policy_default" {
   default     = "role:readonly"
 }
 
+variable "githubOrg" {
+  description = "GitHub organization name"
+  type        = string
+}
+
 variable "argocd_rbac_policy_rules" {
-  description = "Rules for argocd rbac"
+  description = "Custom RBAC policy rules for ArgoCD. If empty, default rules will be used"
   type        = list(string)
   default     = []
 }
@@ -215,14 +220,3 @@ variable "prometheus_endpoint_service_region" {
   default     = ""
   description = "The region the prometheus vpc endpoint will connect to"
 }
-
-# variable "tfe_token" {
-#   description = "Terraform Cloud API token"
-#   type        = string
-#   sensitive   = true
-# }
-
-# variable "hyperspace_org_name" {
-#   description = "The name of the Hyperspace organization"
-#   type        = string
-# }
