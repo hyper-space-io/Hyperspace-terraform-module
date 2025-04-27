@@ -198,7 +198,7 @@ locals {
       url                     = "https://github.com/${local.argocd_vcs_configuration.organization}/"
       githubAppID             = try(jsondecode(data.aws_secretsmanager_secret_version.argocd_github_app[0].secret_string).github_app_id, null)
       githubAppInstallationID = try(jsondecode(data.aws_secretsmanager_secret_version.argocd_github_app[0].secret_string).github_installation_id, null)
-      githubAppPrivateKey     = try(jsondecode(data.aws_secretsmanager_secret_version.argocd_private_key[0].secret_string).private_key, null)
+      githubAppPrivateKey     = try(data.aws_secretsmanager_secret_version.argocd_private_key[0].secret_string, null)
     }
   } : {}
 }
