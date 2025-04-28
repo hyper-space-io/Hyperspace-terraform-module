@@ -176,6 +176,6 @@ variable "argocd_endpoint_allowed_principals" {
 
 variable "prometheus_privatelink_config" {
   type        = string
-  default     = {}
+  default     = "{}"
   description = "The prometheus privatelink config"
 }
