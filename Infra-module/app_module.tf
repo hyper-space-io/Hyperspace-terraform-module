@@ -36,7 +36,7 @@ locals {
 }
 
 resource "tfe_oauth_client" "github" {
-  organization     = "${local.hyperspace_org_name}"
+  organization     = data.tfe_organizations.all.names[0]
   api_url          = "https://api.github.com"
   http_url         = "https://github.com"
   service_provider = "github"
