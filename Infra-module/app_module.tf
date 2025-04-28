@@ -1,32 +1,27 @@
 locals {
   app_module_variables = {
-    project                                    = var.project
-    environment                                = var.environment
-    aws_region                                 = var.aws_region
-    hyperspace_account_id                      = var.hyperspace_account_id
-    tags                                       = jsonencode(local.tags)
-    domain_name                                = var.domain_name
-    infra_workspace_name                       = terraform.workspace
-    tfe_organization                           = var.tfe_organization
-    organization                               = data.tfe_organizations.all.names[0]
-    vpc_module                                 = jsonencode(module.vpc)
-    availability_zones                         = jsonencode(local.availability_zones)
-    s3_buckets_arns                            = jsonencode({ for k, v in module.s3_buckets : k => v.s3_bucket_arn })
-    s3_buckets_names                           = jsonencode({ for k, v in module.s3_buckets : k => v.s3_bucket_id })
-    iam_policies                               = jsonencode({ for k, v in aws_iam_policy.policies : k => v })
-    local_iam_policies                         = jsonencode({ for k, v in local.iam_policies : k => v })
-    create_eks                                 = var.create_eks
-    worker_nodes_max                           = var.worker_nodes_max
-    worker_instance_type                       = jsonencode(var.worker_instance_type)
-    data_node_ami_id                           = data.aws_ami.fpga.id
-    enable_ha_argocd                           = var.enable_ha_argocd
-    create_public_zone                         = var.create_public_zone
-    argocd_vcs_configuration                   = jsonencode(var.argocd_vcs_configuration)
-    argocd_endpoint_allowed_principals         = jsonencode(var.argocd_endpoint_allowed_principals)
-    argocd_endpoint_additional_aws_regions     = jsonencode(var.argocd_endpoint_additional_aws_regions)
-    prometheus_endpoint_service_name           = var.prometheus_endpoint_service_name
-    prometheus_endpoint_service_region         = var.prometheus_endpoint_service_region
-    prometheus_endpoint_additional_cidr_blocks = jsonencode(var.prometheus_endpoint_additional_cidr_blocks)
+    project                       = var.project
+    environment                   = var.environment
+    aws_region                    = var.aws_region
+    hyperspace_account_id         = var.hyperspace_account_id
+    tags                          = jsonencode(local.tags)
+    domain_name                   = var.domain_name
+    infra_workspace_name          = terraform.workspace
+    tfe_organization              = var.tfe_organization
+    organization                  = data.tfe_organizations.all.names[0]
+    vpc_module                    = jsonencode(module.vpc)
+    availability_zones            = jsonencode(local.availability_zones)
+    s3_buckets_arns               = jsonencode({ for k, v in module.s3_buckets : k => v.s3_bucket_arn })
+    s3_buckets_names              = jsonencode({ for k, v in module.s3_buckets : k => v.s3_bucket_id })
+    iam_policies                  = jsonencode({ for k, v in aws_iam_policy.policies : k => v })
+    local_iam_policies            = jsonencode({ for k, v in local.iam_policies : k => v })
+    create_eks                    = var.create_eks
+    worker_nodes_max              = var.worker_nodes_max
+    worker_instance_type          = jsonencode(var.worker_instance_type)
+    data_node_ami_id              = data.aws_ami.fpga.id
+    create_public_zone            = var.create_public_zone
+    argocd_config                 = jsonencode(var.argocd_config)
+    prometheus_privatelink_config = jsonencode(var.prometheus_privatelink_config)
   }
   # Dynamic determine which VCS authentication method to use
   vcs_auth = {
@@ -52,9 +47,9 @@ resource "tfe_workspace" "app" {
   queue_all_runs        = false
   working_directory     = "app-module"
   vcs_repo {
-    identifier                 = "${local.hyperspace_org_name}/Hyperspace-terraform-module"
-    branch                     = "simulation"
-    oauth_token_id             = tfe_oauth_client.github.oauth_token_id
+    identifier     = "${local.hyperspace_org_name}/Hyperspace-terraform-module"
+    branch         = "simulation"
+    oauth_token_id = tfe_oauth_client.github.oauth_token_id
   }
 }
 

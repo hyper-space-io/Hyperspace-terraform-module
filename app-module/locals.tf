@@ -1,20 +1,16 @@
 locals {
-  tags                                       = jsondecode(var.tags)
-  vpc_module                                 = jsondecode(var.vpc_module)
-  s3_bucket_names                            = jsondecode(var.s3_buckets_names)
-  s3_bucket_arns                             = jsondecode(var.s3_buckets_arns)
-  iam_policies                               = jsondecode(var.iam_policies)
-  local_iam_policies                         = jsondecode(var.local_iam_policies)
-  availability_zones                         = jsondecode(var.availability_zones)
-  worker_instance_type                       = jsondecode(var.worker_instance_type)
-  argocd_endpoint_allowed_principals         = jsondecode(var.argocd_endpoint_allowed_principals)
-  argocd_endpoint_additional_aws_regions     = jsondecode(var.argocd_endpoint_additional_aws_regions)
-  argocd_endpoint_default_aws_regions        = ["eu-central-1", "us-east-1"]
-  argocd_endpoint_default_allowed_principals = ["arn:aws:iam::${var.hyperspace_account_id}:root"]
-  prometheus_endpoint_additional_cidr_blocks = jsondecode(var.prometheus_endpoint_additional_cidr_blocks)
-  prometheus_remote_write_endpoint           = "https://prometheus.internal.devops-dev.hyper-space.xyz/api/v1/write"
-  internal_ingress_class_name                = "nginx-internal"
-  argocd_vcs_configuration                   = jsondecode(var.argocd_vcs_configuration)
+  tags                             = jsondecode(var.tags)
+  vpc_module                       = jsondecode(var.vpc_module)
+  s3_bucket_names                  = jsondecode(var.s3_buckets_names)
+  s3_bucket_arns                   = jsondecode(var.s3_buckets_arns)
+  iam_policies                     = jsondecode(var.iam_policies)
+  local_iam_policies               = jsondecode(var.local_iam_policies)
+  availability_zones               = jsondecode(var.availability_zones)
+  worker_instance_type             = jsondecode(var.worker_instance_type)
+  prometheus_privatelink_config    = jsondecode(var.prometheus_privatelink_config)
+  prometheus_remote_write_endpoint = "https://prometheus.internal.devops-dev.hyper-space.xyz/api/v1/write"
+  internal_ingress_class_name      = "nginx-internal"
+  argocd_config                    = jsondecode(var.argocd_config)
 
   alb_values = <<EOT
   vpcId: ${local.vpc_module.vpc_id}
@@ -149,35 +145,78 @@ locals {
       "54.76.184.103/32"
     ]
   }
+  ###########################
+  ### ArgoCD Privatelink ####
+  ###########################
+  # Privatelink is enabled only if ALL conditions are true:
+  # 1. EKS is being created (var.create_eks)
+  # 2. ArgoCD is enabled (local.argocd_config.enabled)
+  # 3. Privatelink is enabled (local.argocd_config.privatelink.enabled)
+  argocd_privatelink_enabled = var.create_eks && try(local.argocd_config.enabled, true) && try(local.argocd_config.privatelink.enabled, true)
+
+  # Default values for Privatelink configuration
+  argocd_endpoint_default_aws_regions        = ["eu-central-1", "us-east-1"]
+  argocd_endpoint_default_allowed_principals = ["arn:aws:iam::${var.hyperspace_account_id}:root"]
+
+  # Privatelink configuration
+  argocd_privatelink_endpoint_service_name = local.argocd_config.privatelink.endpoint_service_name
+  argocd_privatelink_allowed_principals = distinct(concat(
+    try(local.argocd_config.privatelink.allowed_principals, []),
+    local.argocd_endpoint_default_allowed_principals
+  ))
+  argocd_privatelink_supported_regions = distinct(concat(
+    [var.aws_region],
+    try(local.argocd_config.privatelink.additional_aws_regions, []),
+    local.argocd_endpoint_default_aws_regions
+  ))
 
   ###################
   ### ArgoCD VCS ####
   ###################
 
+  # Base VCS configuration
+  vcs_base_config = {
+    github = {
+      type     = "github"
+      id       = "github"
+      name     = "GitHub"
+      base_url = "https://github.com"
+    }
+    gitlab = {
+      type     = "gitlab"
+      id       = "gitlab"
+      name     = "GitLab"
+      base_url = "https://gitlab.com"
+    }
+  }
+
   # VCS connector configuration
   vcs_config = {
-    github = try(local.argocd_vcs_configuration.github.enabled, false) ? {
-      type = "github"
-      id   = "github"
-      name = "GitHub"
-      config = {
-        clientID     = try(jsondecode(data.aws_secretsmanager_secret_version.argocd_github_app[0].secret_string).client_id, null)
-        clientSecret = try(jsondecode(data.aws_secretsmanager_secret_version.argocd_github_app[0].secret_string).client_secret, null)
-        orgs = [{
-          name = local.argocd_vcs_configuration.organization
-        }]
+    github = try(local.argocd_config.vcs.github.enabled, false) ? merge(
+      local.vcs_base_config.github,
+      {
+        config = {
+          clientID     = try(jsondecode(data.aws_secretsmanager_secret_version.argocd_github_app[0].secret_string).client_id, null)
+          clientSecret = try(jsondecode(data.aws_secretsmanager_secret_version.argocd_github_app[0].secret_string).client_secret, null)
+          orgs = [{
+            name = local.argocd_config.vcs.organization
+          }]
+        }
       }
-    } : null,
-    gitlab = try(local.argocd_vcs_configuration.gitlab.enabled, false) ? {
-      type = "gitlab"
-      id   = "gitlab"
-      name = "GitLab"
-      config = {
-        clientID     = try(jsondecode(data.aws_secretsmanager_secret_version.argocd_gitlab_app[0].secret_string).application_id, null)
-        clientSecret = try(jsondecode(data.aws_secretsmanager_secret_version.argocd_gitlab_app[0].secret_string).secret, null)
-        baseURL      = try(local.argocd_vcs_configuration.gitlab.base_url, "https://gitlab.com")
+    ) : null,
+    gitlab = try(local.argocd_config.vcs.gitlab.enabled, false) ? merge(
+      local.vcs_base_config.gitlab,
+      {
+        config = {
+          clientID     = try(jsondecode(data.aws_secretsmanager_secret_version.argocd_gitlab_app[0].secret_string).application_id, null)
+          clientSecret = try(jsondecode(data.aws_secretsmanager_secret_version.argocd_gitlab_app[0].secret_string).secret, null)
+          baseURL      = local.vcs_base_config.gitlab.base_url
+          orgs = [{
+            name = local.argocd_config.vcs.organization
+          }]
+        }
       }
-    } : null
+    ) : null
   }
 
   dex_connectors = [
@@ -185,16 +224,27 @@ locals {
   ]
 
   # ArgoCD credential templates
-  argocd_credential_templates = try(local.argocd_vcs_configuration.github.enabled, false) ? {
-    "github-creds" = {
-      url                     = "https://github.com/${local.argocd_vcs_configuration.organization}/"
-      githubAppID             = try(jsondecode(data.aws_secretsmanager_secret_version.argocd_github_app[0].secret_string).github_app_id, null)
-      githubAppInstallationID = try(jsondecode(data.aws_secretsmanager_secret_version.argocd_github_app[0].secret_string).github_installation_id, null)
-      githubAppPrivateKey     = try(data.aws_secretsmanager_secret_version.argocd_private_key[0].secret_string, null)
-    }
-  } : {}
+  argocd_credential_templates = merge([
+    for provider, config in local.vcs_base_config :
+    try(local.argocd_config.vcs[provider].enabled, false) ? {
+      "${provider}-creds" = merge(
+        {
+          url = "${config.base_url}/${local.argocd_config.vcs.organization}/"
+        },
+        provider == "github" ? {
+          githubAppID             = try(jsondecode(data.aws_secretsmanager_secret_version.argocd_github_app[0].secret_string).github_app_id, null)
+          githubAppInstallationID = try(jsondecode(data.aws_secretsmanager_secret_version.argocd_github_app[0].secret_string).github_installation_id, null)
+          githubAppPrivateKey     = try(data.aws_secretsmanager_secret_version.argocd_private_key[0].secret_string, null)
+          } : {
+          applicationId = try(jsondecode(data.aws_secretsmanager_secret_version.argocd_gitlab_app[0].secret_string).application_id, null)
+          secret        = try(jsondecode(data.aws_secretsmanager_secret_version.argocd_gitlab_app[0].secret_string).secret, null)
+        }
+      )
+    } : {}
+  ]...)
 
-  # Default ArgoCD RBAC policy rules
+  # Default ArgoCD RBAC policy rules for localusers
+  argocd_rbac_policy_default = "role:readonly"
   default_argocd_rbac_policy_rules = distinct(concat([
     # Role definitions
     "p, role:org-admin, applications, *, */*, allow",
@@ -210,7 +260,18 @@ locals {
     "p, role:org-admin, logs, get, *, allow",
     "p, role:org-admin, exec, create, */*, allow",
 
-    # Team-specific permissions
-    "g, ${local.argocd_vcs_configuration.organization}:DevOps, role:org-admin",
-  ], var.argocd_rbac_policy_rules))
+    # SSO-based access control
+    # If admin group is specified, only that group gets admin access
+    # Otherwise, all SSO users get admin access
+    try(local.argocd_config.rbac.sso_admin_group != null, false) ? [
+      # Admin group gets full access
+      "g, ${local.argocd_config.rbac.sso_admin_group}, role:org-admin"
+      ] : [
+      # All SSO users get admin access
+      "g, ${local.argocd_config.vcs.organization}:*, role:org-admin"
+    ],
+
+    # Custom rules for non-admin SSO users (if admin group is specified)
+    try(local.argocd_config.rbac.sso_admin_group != null, false) ? local.argocd_config.rbac.users_rbac_rules : [],
+  ], local.argocd_config.rbac.additional_rules))
 }

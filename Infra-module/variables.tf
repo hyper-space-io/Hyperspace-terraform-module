@@ -172,12 +172,6 @@ variable "create_public_zone" {
   default     = false
 }
 
-variable "enable_ha_argocd" {
-  description = "should we install argocd in ha mode"
-  type        = bool
-  default     = false
-}
-
 variable "domain_name" {
   description = "The main domain name to use to create sub-domains"
   type        = string
@@ -190,79 +184,80 @@ variable "existing_agent_pool_name" {
   default     = ""
 }
 
-variable "argocd_vcs_configuration" {
+variable "argocd_config" {
   type = object({
-    organization = string
-    github = optional(object({
-      enabled = optional(bool, false)
-      app_secret = optional(object({
-        name = optional(string)
+    enabled   = optional(bool, true)
+    enable_ha = optional(bool, false)
+    vcs = object({
+      organization = string
+      github = optional(object({
+        enabled            = optional(bool, false)
+        app_secret_name    = optional(string, "argocd/githubapp")
+        private_key_secret = optional(string, "argocd/github-private-key")
       }))
-      private_key_secret = optional(object({
-        name = optional(string)
+      gitlab = optional(object({
+        enabled         = optional(bool, false)
+        app_secret_name = optional(string, "argocd/gitlabapp")
       }))
+    })
+    rbac = optional(object({
+      sso_admin_group  = optional(string)
+      users_rbac_rules = optional(list(string))
+      additional_rules = optional(list(string))
     }))
-    gitlab = optional(object({
-      enabled = optional(bool, false)
-      app_secret = optional(object({
-        name = optional(string)
-      }))
+    privatelink = optional(object({
+      enabled                     = optional(bool, true)
+      endpoint_allowed_principals = optional(list(string), [])
+      additional_aws_regions      = optional(list(string), [])
     }))
   })
   default = {
-    organization = ""
-    github = {
-      enabled = false
-      app_secret = {
-        name = "argocd/githubapp"
+    vcs = {
+      organization = ""
+      github = {
+        enabled            = false
+        app_secret_name    = "argocd/githubapp"
+        private_key_secret = "argocd/github-private-key"
       }
-      private_key_secret = {
-        name = "argocd/github-private-key"
+      gitlab = {
+        enabled         = false
+        app_secret_name = "argocd/gitlabapp"
       }
     }
-    gitlab = {
-      enabled = false
-      app_secret = {
-        name = "argocd/gitlabapp"
-      }
+    rbac = {
+      sso_admin_group  = null
+      users_rbac_rules = []
+      additional_rules = []
+    }
+    privatelink = {
+      enabled                = true
+      allowed_principals     = []
+      additional_aws_regions = []
     }
   }
-  description = "Configuration for VCS authentication in ArgoCD"
-}
-
-################################
-###### ArgoCD Privatelink ######
-################################
-
-variable "argocd_endpoint_additional_aws_regions" {
-  type        = list(string)
-  default     = ["eu-central-1"]
-  description = "The additional aws regions to enable for the argocd vpc endpoint"
-}
-
-variable "argocd_endpoint_allowed_principals" {
-  type        = list(string)
-  default     = []
-  description = "The allowed principals for the argocd vpc endpoint"
+  validation {
+    condition     = try(var.argocd_config.vcs.github.enabled, false) || try(var.argocd_config.vcs.gitlab.enabled, false)
+    error_message = "At least one VCS provider (GitHub or GitLab) must be enabled in argocd_config.vcs"
+  }
+  description = "Configuration for ArgoCD including VCS authentication, RBAC settings, and privatelink configuration"
 }
 
 ################################
 #### Prometheus Privatelink ####
 ################################
 
-variable "prometheus_endpoint_service_name" {
-  type        = string
-  description = "The service name the vpc endpoint will connect to"
-}
-
-variable "prometheus_endpoint_additional_cidr_blocks" {
-  type        = list(string)
-  default     = []
-  description = "The CIDR blocks to allow access to the prometheus vpc endpoint"
-}
-
-variable "prometheus_endpoint_service_region" {
-  type        = string
-  default     = "us-east-1"
-  description = "The region the prometheus vpc endpoint will connect to"
+variable "prometheus_privatelink_config" {
+  type = object({
+    enabled                 = optional(bool, true)
+    endpoint_service_name   = optional(string)
+    endpoint_service_region = optional(string, "us-east-1")
+    additional_cidr_blocks  = optional(list(string), [])
+  })
+  default = {
+    enabled                 = true
+    endpoint_service_name   = null
+    endpoint_service_region = "us-east-1"
+    additional_cidr_blocks  = []
+  }
+  description = "Configuration for Prometheus including privatelink settings and endpoint configuration"
 }

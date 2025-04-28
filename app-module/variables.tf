@@ -101,32 +101,8 @@ variable "worker_instance_type" {
 ########## ArgoCD #############
 ###############################
 
-variable "enable_argocd" {
-  description = "should we enable and install argocd"
-  type        = bool
-  default     = true
-}
-
-variable "enable_ha_argocd" {
-  description = "should we install argocd in ha mode"
-  type        = bool
-  default     = true
-}
-
-variable "argocd_rbac_policy_default" {
-  description = "default role for argocd"
-  type        = string
-  default     = "role:readonly"
-}
-
-variable "argocd_rbac_policy_rules" {
-  description = "Custom RBAC policy rules for ArgoCD. If empty, default rules will be used"
-  type        = list(string)
-  default     = []
-}
-
-variable "argocd_vcs_configuration" {
-  description = "VCS configuration for ArgoCD"
+variable "argocd_config" {
+  description = "ArgoCD configuration including VCS and RBAC settings"
   type        = string
   default     = "{}"
 }
@@ -198,20 +174,8 @@ variable "argocd_endpoint_allowed_principals" {
 #### Prometheus Privatelink ####
 ################################
 
-variable "prometheus_endpoint_additional_cidr_blocks" {
+variable "prometheus_privatelink_config" {
   type        = string
-  default     = ""
-  description = "The CIDR blocks to allow access to the prometheus vpc endpoint"
-}
-
-variable "prometheus_endpoint_service_name" {
-  type        = string
-  default     = ""
-  description = "The service name to use for the prometheus vpc endpoint"
-}
-
-variable "prometheus_endpoint_service_region" {
-  type        = string
-  default     = ""
-  description = "The region the prometheus vpc endpoint will connect to"
+  default     = {}
+  description = "The prometheus privatelink config"
 }

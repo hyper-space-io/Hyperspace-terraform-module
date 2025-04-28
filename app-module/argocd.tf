@@ -1,5 +1,5 @@
 resource "helm_release" "argocd" {
-  count            = var.create_eks && var.enable_argocd ? 1 : 0
+  count            = var.create_eks && var.argocd_config.enabled ? 1 : 0
   chart            = "argo-cd"
   namespace        = "argocd"
   name             = "argocd"
@@ -21,7 +21,7 @@ resource "helm_release" "argocd" {
       }
       configs = {
         rbac = {
-          "policy.default" = "${var.argocd_rbac_policy_default}"
+          "policy.default" = "${local.argocd_config.rbac.argocd_rbac_policy_default}"
           "policy.csv"     = join("\n", local.default_argocd_rbac_policy_rules)
         }
         cm = {
@@ -32,7 +32,7 @@ resource "helm_release" "argocd" {
             connectors = local.dex_connectors
           })
         }
-        credentialTemplates = local.argocd_credential_templates
+        credentialTemplates = sensitive(local.argocd_credential_templates)
       }
       server = {
         service = {
@@ -72,25 +72,25 @@ resource "helm_release" "argocd" {
 }
 
 resource "random_password" "argocd_readonly" {
-  count  = var.create_eks && var.enable_argocd ? 1 : 0
+  count  = var.create_eks && var.argocd_config.enabled ? 1 : 0
   length = 16
 }
 
 resource "aws_secretsmanager_secret" "argocd_readonly_password" {
-  count       = var.create_eks && var.enable_argocd ? 1 : 0
+  count       = var.create_eks && var.argocd_config.enabled ? 1 : 0
   name        = "argocd-readonly-password"
   description = "Password for ArgoCD readonly hyperspace user"
 }
 
 resource "aws_secretsmanager_secret_version" "argocd_readonly_password" {
-  count         = var.create_eks && var.enable_argocd ? 1 : 0
+  count         = var.create_eks && var.argocd_config.enabled ? 1 : 0
   secret_id     = aws_secretsmanager_secret.argocd_readonly_password[0].id
   secret_string = random_password.argocd_readonly[0].result
 }
 
 # Execute ArgoCD CLI setup and password update
 resource "null_resource" "argocd_setup" {
-  count = var.create_eks && var.enable_argocd ? 1 : 0
+  count = var.create_eks && var.argocd_config.enabled ? 1 : 0
   provisioner "local-exec" {
     command = <<-EOT
       echo "Getting ArgoCD admin password..."
@@ -117,4 +117,40 @@ resource "null_resource" "argocd_setup" {
     helm_release_id   = helm_release.argocd[count.index].id
     readonly_password = random_password.argocd_readonly[count.index].result
   }
+}
+
+##################################
+####### ArgoCD Privatelink #######
+##################################
+
+resource "null_resource" "argocd_privatelink_nlb_active" {
+  count = local.argocd_privatelink_enabled ? 1 : 0
+  provisioner "local-exec" {
+    command = <<EOF
+      until STATE=$(aws elbv2 describe-load-balancers --load-balancer-arns ${data.aws_lb.argocd_privatelink_nlb[0].arn} --query 'LoadBalancers[0].State.Code' --output text) && [ "$STATE" = "active" ]; do
+        echo "Waiting for NLB to become active... Current state: $STATE"
+        sleep 10
+      done
+      echo "NLB is now active"
+    EOF
+  }
+
+  triggers = {
+    nlb_arn = data.aws_lb.argocd_privatelink_nlb[0].arn
+  }
+}
+
+resource "aws_vpc_endpoint_service" "argocd_server" {
+  count                      = local.argocd_privatelink_enabled ? 1 : 0
+  acceptance_required        = false
+  network_load_balancer_arns = [data.aws_lb.argocd_privatelink_nlb[0].arn]
+  allowed_principals         = local.argocd_privatelink_allowed_principals
+  supported_regions          = local.argocd_privatelink_supported_regions
+  private_dns_name           = "argocd.${var.project}.${local.internal_domain_name}"
+
+  tags = merge(local.tags, {
+    Name = "ArgoCD Endpoint Service - ${var.project}-${var.environment}"
+  })
+
+  depends_on = [data.aws_lb.argocd_privatelink_nlb[0]]
 }

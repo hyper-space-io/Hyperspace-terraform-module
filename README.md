@@ -109,7 +109,7 @@ The module creates a production-ready infrastructure with:
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|----------|
 | domain_name | Main domain name for sub-domains | string | "" | no |
-| enable_argocd | Enable ArgoCD installation | bool | true | no |
+| argocd_config.enabled | Enable ArgoCD installation | bool | true | no |
 | enable_ha_argocd | Enable HA for ArgoCD | bool | true | no |
 | create_public_zone | Create public Route53 zone | bool | false | no |
 | enable_cluster_autoscaler | Enable cluster autoscaler | bool | true | no |

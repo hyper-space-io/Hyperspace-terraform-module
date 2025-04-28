@@ -53,13 +53,13 @@ data "aws_ami" "fpga" {
 #######################
 
 resource "time_sleep" "wait_for_argocd_privatelink_nlb" {
-  count           = var.create_eks && var.enable_argocd ? 1 : 0
+  count           = var.create_eks && var.argocd_config.enabled ? 1 : 0
   create_duration = "180s"
   depends_on      = [helm_release.argocd]
 }
 
 data "aws_lb" "argocd_privatelink_nlb" {
-  count = var.create_eks && var.enable_argocd ? 1 : 0
+  count = var.create_eks && var.argocd_config.enabled ? 1 : 0
   tags = {
     "elbv2.k8s.aws/cluster"    = module.eks.cluster_name
     "service.k8s.aws/resource" = "LoadBalancer"
@@ -74,16 +74,16 @@ data "aws_lb" "argocd_privatelink_nlb" {
 #######################
 
 data "aws_secretsmanager_secret_version" "argocd_github_app" {
-  count     = var.create_eks && var.enable_argocd && try(local.argocd_vcs_configuration.github.enabled, false) ? 1 : 0
-  secret_id = try(local.argocd_vcs_configuration.github.app_secret.name, "argocd/githubapp")
+  count     = var.create_eks && var.argocd_config.enabled && try(local.argocd_config.vcs.github.enabled, false) ? 1 : 0
+  secret_id = try(local.argocd_config.vcs.github.app_secret_name, "argocd/githubapp")
 }
 
 data "aws_secretsmanager_secret_version" "argocd_private_key" {
-  count     = var.create_eks && var.enable_argocd && try(local.argocd_vcs_configuration.github.enabled, false) ? 1 : 0
-  secret_id = try(local.argocd_vcs_configuration.github.private_key_secret.name, "argocd/githubapp-private-key")
+  count     = var.create_eks && var.argocd_config.enabled && try(local.argocd_config.vcs.github.enabled, false) ? 1 : 0
+  secret_id = try(local.argocd_config.vcs.github.private_key_secret, "argocd/githubapp-private-key")
 }
 
 data "aws_secretsmanager_secret_version" "argocd_gitlab_app" {
-  count     = var.create_eks && var.enable_argocd && try(local.argocd_vcs_configuration.gitlab.enabled, false) ? 1 : 0
-  secret_id = try(local.argocd_vcs_configuration.gitlab.app_secret.name, "argocd/gitlabapp")
+  count     = var.create_eks && var.argocd_config.enabled && try(local.argocd_config.vcs.gitlab.enabled, false) ? 1 : 0
+  secret_id = try(local.argocd_config.vcs.gitlab.app_secret_name, "argocd/gitlabapp")
 }

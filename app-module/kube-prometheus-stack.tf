@@ -31,8 +31,21 @@ additionalDataSources:
 
 prometheus:
   prometheusSpec:
-    externalLabels:
-      cluster: "${local.cluster_name}"
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 50Gi
+    ${local.prometheus_privatelink_config.enabled ? yamlencode({
+    externalLabels : {
+      cluster : "${local.cluster_name}"
+    }
+    remoteWrite : [{
+      url : "${local.prometheus_remote_write_endpoint}"
+    }]
+}) : ""}
     additionalScrapeConfigs:
       - job_name: "otel_collector"
         scrape_interval: "10s"
@@ -40,14 +53,6 @@ prometheus:
           - targets:
             - "opentelemetry-collector.opentelemetry:9100"
             - "opentelemetry-collector.opentelemetry:8888"
-    remoteWrite:
-      - url: "${local.prometheus_remote_write_endpoint}"
-    storageSpec:
-      volumeClaimTemplate:
-        spec:
-          resources:
-            requests:
-              storage: 100Gi
     retention: 365d
 
 alertmanager:
@@ -62,8 +67,8 @@ kubeControllerManager:
 kubeScheduler:
   enabled: false
 EOF
-  ]
-  depends_on = [module.eks]
+]
+depends_on = [module.eks]
 }
 
 resource "random_password" "grafana_admin_password" {
@@ -86,16 +91,16 @@ ingress:
   enabled: true
   ingressClassName: "${local.internal_ingress_class_name}"
   annotations:
-    cert-manager.io/cluster-issuer: "prod-certmanager"
-    acme.cert-manager.io/http01-edit-in-place: "true"
+    # cert-manager.io/cluster-issuer: "prod-certmanager"
+    # acme.cert-manager.io/http01-edit-in-place: "true"
     nginx.ingress.kubernetes.io/auth-type: basic
     nginx.ingress.kubernetes.io/auth-secret: none
   hosts:
     - "grafana.${local.internal_domain_name}"
-  tls:
-    - secretName: "monitoring-tls"
-      hosts:
-        - "grafana.${local.internal_domain_name}"
+  # tls:
+  #   - secretName: "monitoring-tls"
+  #     hosts:
+  #       - "grafana.${local.internal_domain_name}"
 persistence:
   enabled: true
   size: 10Gi
@@ -128,15 +133,21 @@ EOF
   depends_on = [helm_release.kube_prometheus_stack, module.eks]
 }
 
+
+##################################
+##### Prometheus Privatelink #####
+##################################
+
 resource "aws_vpc_endpoint" "prometheus" {
+  count               = var.create_eks && var.prometheus_privatelink_config.enabled ? 1 : 0
   vpc_id              = local.vpc_module.vpc_id
-  service_name        = var.prometheus_endpoint_service_name
+  service_name        = local.prometheus_privatelink_config.endpoint_service_name
   vpc_endpoint_type   = "Interface"
   subnet_ids          = local.vpc_module.private_subnets
   security_group_ids  = [aws_security_group.prometheus_endpoint_service.id]
   private_dns_enabled = true
   ip_address_type     = "ipv4"
-  service_region      = var.prometheus_endpoint_service_region
+  service_region      = local.prometheus_privatelink_config.endpoint_service_region
 
   tags = merge(local.tags, {
     Name = "Prometheus Endpoint - ${var.project}-${var.environment}"
@@ -144,6 +155,7 @@ resource "aws_vpc_endpoint" "prometheus" {
 }
 
 resource "aws_security_group" "prometheus_endpoint_service" {
+  count       = var.create_eks && var.prometheus_privatelink_config.enabled ? 1 : 0
   name        = "prometheus-endpoint-service"
   description = "Security group for prometheus endpoint service"
   vpc_id      = local.vpc_module.vpc_id
@@ -152,7 +164,7 @@ resource "aws_security_group" "prometheus_endpoint_service" {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = distinct(concat([local.vpc_module.vpc_cidr_block], local.prometheus_endpoint_additional_cidr_blocks))
+    cidr_blocks = distinct(concat([local.vpc_module.vpc_cidr_block], local.prometheus_privatelink_config.additional_cidr_blocks))
   }
 
   egress {
