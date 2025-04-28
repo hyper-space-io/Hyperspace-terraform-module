@@ -273,5 +273,5 @@ locals {
 
     # Custom rules for non-admin SSO users (if admin group is specified)
     try(local.argocd_config.rbac.sso_admin_group != null, false) ? local.argocd_config.rbac.users_rbac_rules : [],
-  ], local.argocd_config.rbac.additional_rules))
+  ], local.argocd_config.rbac.users_additional_rules))
 }

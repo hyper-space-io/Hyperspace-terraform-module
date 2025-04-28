@@ -203,7 +203,7 @@ variable "argocd_config" {
     rbac = optional(object({
       sso_admin_group  = optional(string)
       users_rbac_rules = optional(list(string))
-      additional_rules = optional(list(string))
+      users_additional_rules = optional(list(string))
     }))
     privatelink = optional(object({
       enabled                     = optional(bool, true)
@@ -227,7 +227,7 @@ variable "argocd_config" {
     rbac = {
       sso_admin_group  = null
       users_rbac_rules = []
-      additional_rules = []
+      users_additional_rules = []
     }
     privatelink = {
       enabled                = true
