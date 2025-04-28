@@ -15,11 +15,11 @@ output "argocd_vpc_endpoint_service_domain_verification_value" {
 ########################
 
 output "grafana_vpc_endpoint_service_domain_verification_name" {
-  value = aws_vpc_endpoint_service.grafana_server[0].private_dns_name_configuration[0].name
+  value = aws_vpc_endpoint_service.grafana[0].private_dns_name_configuration[0].name
 }
 
 output "grafana_vpc_endpoint_service_domain_verification_value" {
-  value = aws_vpc_endpoint_service.grafana_server[0].private_dns_name_configuration[0].value
+  value = aws_vpc_endpoint_service.grafana[0].private_dns_name_configuration[0].value
 }
 
 #######################
