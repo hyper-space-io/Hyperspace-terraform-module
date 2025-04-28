@@ -41,7 +41,7 @@ prometheus:
     ${local.prometheus_privatelink_enabled ? yamlencode({
       externalLabels: {
         cluster: local.cluster_name
-      }
+      },
       remoteWrite: [{
         url: local.prometheus_remote_write_endpoint
       }]
