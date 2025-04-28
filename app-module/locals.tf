@@ -8,9 +8,10 @@ locals {
   availability_zones               = jsondecode(var.availability_zones)
   worker_instance_type             = jsondecode(var.worker_instance_type)
   prometheus_privatelink_config    = jsondecode(var.prometheus_privatelink_config)
+  prometheus_privatelink_enabled   = var.create_eks && local.prometheus_privatelink_config.enabled
+  argocd_config                    = jsondecode(var.argocd_config)
   prometheus_remote_write_endpoint = "https://prometheus.internal.devops-dev.hyper-space.xyz/api/v1/write"
   internal_ingress_class_name      = "nginx-internal"
-  argocd_config                    = jsondecode(var.argocd_config)
 
   alb_values = <<EOT
   vpcId: ${local.vpc_module.vpc_id}
@@ -148,10 +149,8 @@ locals {
   ###########################
   ### ArgoCD Privatelink ####
   ###########################
-  # Privatelink is enabled only if ALL conditions are true:
-  # 1. EKS is being created (var.create_eks)
-  # 2. ArgoCD is enabled (local.argocd_config.enabled)
-  # 3. Privatelink is enabled (local.argocd_config.privatelink.enabled)
+
+  argocd_enabled             = var.create_eks && local.argocd_config.enabled
   argocd_privatelink_enabled = var.create_eks && try(local.argocd_config.enabled, true) && try(local.argocd_config.privatelink.enabled, true)
 
   # Default values for Privatelink configuration
@@ -173,6 +172,9 @@ locals {
   ###################
   ### ArgoCD VCS ####
   ###################
+
+  github_vcs_enabled = local.argocd_enabled && try(local.argocd_config.vcs.github.enabled, false)
+  gitlab_vcs_enabled = local.argocd_enabled && try(local.argocd_config.vcs.gitlab.enabled, false)
 
   # Base VCS configuration
   vcs_base_config = {

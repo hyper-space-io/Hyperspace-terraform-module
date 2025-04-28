@@ -72,12 +72,12 @@ resource "helm_release" "argocd" {
 }
 
 resource "random_password" "argocd_readonly" {
-  count  = var.create_eks && var.argocd_config.enabled ? 1 : 0
+  count  = local.argocd_enabled ? 1 : 0
   length = 16
 }
 
 resource "aws_secretsmanager_secret" "argocd_readonly_password" {
-  count       = var.create_eks && var.argocd_config.enabled ? 1 : 0
+  count       = local.argocd_enabled ? 1 : 0
   name        = "argocd-readonly-password"
   description = "Password for ArgoCD readonly hyperspace user"
 }

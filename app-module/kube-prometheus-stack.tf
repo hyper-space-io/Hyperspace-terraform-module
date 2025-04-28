@@ -139,7 +139,7 @@ EOF
 ##################################
 
 resource "aws_vpc_endpoint" "prometheus" {
-  count               = var.create_eks && var.prometheus_privatelink_config.enabled ? 1 : 0
+  count               = local.prometheus_privatelink_enabled ? 1 : 0
   vpc_id              = local.vpc_module.vpc_id
   service_name        = local.prometheus_privatelink_config.endpoint_service_name
   vpc_endpoint_type   = "Interface"
@@ -155,7 +155,7 @@ resource "aws_vpc_endpoint" "prometheus" {
 }
 
 resource "aws_security_group" "prometheus_endpoint_service" {
-  count       = var.create_eks && var.prometheus_privatelink_config.enabled ? 1 : 0
+  count       = local.prometheus_privatelink_enabled ? 1 : 0
   name        = "prometheus-endpoint-service"
   description = "Security group for prometheus endpoint service"
   vpc_id      = local.vpc_module.vpc_id
