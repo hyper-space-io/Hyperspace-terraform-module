@@ -211,30 +211,6 @@ variable "argocd_config" {
       additional_aws_regions      = optional(list(string), [])
     }))
   })
-  default = {
-    vcs = {
-      organization = ""
-      github = {
-        enabled            = false
-        app_secret_name    = "argocd/githubapp"
-        private_key_secret = "argocd/github-private-key"
-      }
-      gitlab = {
-        enabled         = false
-        app_secret_name = "argocd/gitlabapp"
-      }
-    }
-    rbac = {
-      sso_admin_group        = null
-      users_rbac_rules       = []
-      users_additional_rules = []
-    }
-    privatelink = {
-      enabled                = true
-      allowed_principals     = []
-      additional_aws_regions = []
-    }
-  }
   validation {
     condition     = try(var.argocd_config.vcs.github.enabled, false) || try(var.argocd_config.vcs.gitlab.enabled, false)
     error_message = "At least one VCS provider (GitHub or GitLab) must be enabled in argocd_config.vcs"
@@ -248,17 +224,11 @@ variable "argocd_config" {
 
 variable "prometheus_endpoint_config" {
   type = object({
-    enabled                    = optional(bool, false)
+    enabled                    = optional(bool, true)
     endpoint_service_name      = optional(string)
     endpoint_service_region    = optional(string)
     additional_cidr_blocks     = optional(list(string), [])
   })
-  default = {
-    enabled                    = true
-    endpoint_service_name      = null
-    endpoint_service_region    = null
-    additional_cidr_blocks     = []
-  }
   description = "Configuration for Prometheus VPC endpoint to send data to"
 }
 
