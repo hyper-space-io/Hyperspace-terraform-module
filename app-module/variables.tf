@@ -164,3 +164,19 @@ variable "prometheus_endpoint_config" {
   default     = "{}"
   description = "Configuration for Prometheus VPC endpoint to send data to"
 }
+
+variable "eks_additional_admin_roles" {
+  description = "List of additional IAM roles to add as cluster admins"
+  type        = string
+  default     = "{}"
+}
+
+################################
+#### Grafana Privatelink ######
+################################
+
+variable "grafana_privatelink_config" {
+  type        = string
+  default     = "{}"
+  description = "Configuration for Grafana VPC endpoint to send data to"
+}

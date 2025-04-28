@@ -118,20 +118,14 @@ resource "helm_release" "grafana" {
   cleanup_on_fail  = true
   values = [<<EOF
 adminPassword: "${random_password.grafana_admin_password.result}"
+service:
+  type: ${local.grafana_networking.service_type}
+  annotations: ${yamlencode(local.grafana_networking.service_annotations)}
 ingress:
-  enabled: true
-  ingressClassName: "${local.internal_ingress_class_name}"
-  annotations:
-    # cert-manager.io/cluster-issuer: "prod-certmanager"
-    # acme.cert-manager.io/http01-edit-in-place: "true"
-    nginx.ingress.kubernetes.io/auth-type: basic
-    nginx.ingress.kubernetes.io/auth-secret: none
+  enabled: ${local.grafana_networking.ingress_enabled}
+  ingressClassName: ${local.grafana_networking.ingress_class_name}
   hosts:
     - "grafana.${local.internal_domain_name}"
-  # tls:
-  #   - secretName: "monitoring-tls"
-  #     hosts:
-  #       - "grafana.${local.internal_domain_name}"
 persistence:
   enabled: true
   size: 10Gi
@@ -204,4 +198,40 @@ resource "aws_security_group" "prometheus_endpoint" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
+}
+
+
+##################################
+####### Grafana Privatelink ######
+##################################
+
+resource "null_resource" "grafana_privatelink_nlb_active" {
+  count = local.grafana_privatelink_enabled ? 1 : 0
+  provisioner "local-exec" {
+    command = <<EOF
+      until STATE=$(aws elbv2 describe-load-balancers --load-balancer-arns ${data.aws_lb.grafana_privatelink_nlb[0].arn} --query 'LoadBalancers[0].State.Code' --output text) && [ "$STATE" = "active" ]; do
+        echo "Waiting for Grafana NLB to become active... Current state: $STATE"
+        sleep 10
+      done
+      echo "Grafana NLB is now active"
+    EOF
+  }
+  triggers = {
+    nlb_arn = data.aws_lb.grafana_privatelink_nlb[0].arn
+  }
+}
+
+resource "aws_vpc_endpoint_service" "grafana" {
+  count                      = local.grafana_privatelink_enabled ? 1 : 0
+  acceptance_required        = false
+  network_load_balancer_arns = [data.aws_lb.grafana_privatelink_nlb[0].arn]
+  allowed_principals         = local.grafana_privatelink_allowed_principals
+  supported_regions          = local.grafana_privatelink_supported_regions
+  private_dns_name           = "grafana.${var.project}.${local.internal_domain_name}"
+
+  tags = merge(local.tags, {
+    Name = "Grafana Endpoint Service - ${var.project}-${var.environment}"
+  })
+
+  depends_on = [data.aws_lb.grafana_privatelink_nlb[0]]
 }

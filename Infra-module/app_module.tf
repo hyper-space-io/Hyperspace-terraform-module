@@ -18,10 +18,12 @@ locals {
     create_eks                 = var.create_eks
     worker_nodes_max           = var.worker_nodes_max
     worker_instance_type       = jsonencode(var.worker_instance_type)
+    eks_additional_admin_roles = jsonencode(var.eks_additional_admin_roles)
     data_node_ami_id           = data.aws_ami.fpga.id
     create_public_zone         = var.create_public_zone
     argocd_config              = jsonencode(var.argocd_config)
     prometheus_endpoint_config = jsonencode(var.prometheus_endpoint_config)
+    grafana_privatelink_config = jsonencode(var.grafana_privatelink_config)
   }
   # Dynamic determine which VCS authentication method to use
   vcs_auth = {
@@ -39,10 +41,11 @@ resource "tfe_oauth_client" "github" {
 }
 
 resource "tfe_workspace" "app" {
-  name             = "hyperspace-app-module"
-  organization     = data.tfe_organizations.all.names[0]
-  project_id       = data.tfe_workspace.current.project_id
-  trigger_patterns = ["app-module/**/*"]
+  name              = "hyperspace-app-module"
+  organization      = data.tfe_organizations.all.names[0]
+  project_id        = data.tfe_workspace.current.project_id
+  working_directory = "app-module"
+  trigger_patterns  = ["app-module/**/*"]
   # Set to false as first run requires infra module variables. Initial run will have to be manual, subsequent runs are automatic via webhooks
   queue_all_runs = false
   vcs_repo {

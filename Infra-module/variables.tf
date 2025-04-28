@@ -152,6 +152,17 @@ variable "worker_instance_type" {
   description = "The list of allowed instance types for worker nodes."
 }
 
+variable "eks_additional_admin_roles" {
+  description = "List of additional IAM roles to add as cluster admins"
+  type        = list(string)
+  default     = []
+
+  validation {
+    condition     = alltrue([for arn in var.eks_additional_admin_roles : can(regex("^arn:aws:iam::[0-9]{12}:role/[a-zA-Z0-9+=,.@_-]+$", arn))])
+    error_message = "All role ARNs must be valid IAM role ARNs in the format: arn:aws:iam::<account-id>:role/<role-name>"
+  }
+}
+
 ########################
 #### Auto-scaling ######
 ########################
@@ -224,15 +235,25 @@ variable "argocd_config" {
 
 variable "prometheus_endpoint_config" {
   type = object({
-    enabled                 = optional(bool, true)
+    enabled                 = optional(bool, false)
     endpoint_service_name   = optional(string)
     endpoint_service_region = optional(string)
     additional_cidr_blocks  = optional(list(string), [])
   })
-  default     = null
+  default     = { enabled = false }
   description = "Configuration for Prometheus VPC endpoint to send data to"
 }
 
 ###############################
 #### Grafana Privatelink ######
 ###############################
+
+variable "grafana_privatelink_config" {
+  type = object({
+    enabled                     = optional(bool, true)
+    endpoint_allowed_principals = optional(list(string), [])
+    additional_aws_regions      = optional(list(string), [])
+  })
+  default     = { enabled = true }
+  description = "Configuration for Grafana VPC endpoint Service (Privatelink) configuration"
+}

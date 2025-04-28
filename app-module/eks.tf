@@ -147,6 +147,17 @@ module "eks" {
     }
   }
 
+  # Enable API and ConfigMap authentication
+  authentication_mode = "API_AND_CONFIG_MAP"
+
+  # Add access entries for additional admin roles
+  access_entries = {
+    for role in local.eks_additional_admin_roles : role => {
+      kubernetes_groups = ["system:masters"]
+      principal_arn     = role
+    }
+  }
+
   enable_cluster_creator_admin_permissions = true
   enable_irsa                              = "true"
   cluster_endpoint_private_access          = "true"

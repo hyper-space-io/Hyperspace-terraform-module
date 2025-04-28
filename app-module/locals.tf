@@ -7,10 +7,13 @@ locals {
   local_iam_policies               = jsondecode(var.local_iam_policies)
   availability_zones               = jsondecode(var.availability_zones)
   worker_instance_type             = jsondecode(var.worker_instance_type)
+  eks_additional_admin_roles       = jsondecode(var.eks_additional_admin_roles)
   prometheus_endpoint_config       = jsondecode(var.prometheus_endpoint_config)
   prometheus_endpoint_enabled      = var.create_eks && local.prometheus_endpoint_config.enabled
   argocd_config                    = jsondecode(var.argocd_config)
   prometheus_remote_write_endpoint = "https://prometheus.internal.devops-dev.hyper-space.xyz/api/v1/write"
+  grafana_privatelink_config       = jsondecode(var.grafana_privatelink_config)
+  grafana_privatelink_enabled      = var.create_eks && local.grafana_privatelink_config.enabled
   internal_ingress_class_name      = "nginx-internal"
 
   alb_values = <<EOT
@@ -146,6 +149,38 @@ locals {
       "54.76.184.103/32"
     ]
   }
+
+  ###########################
+  ### Grafana Privatelink ###
+  ###########################
+
+  grafana_privatelink_allowed_principals = distinct(concat(
+    try(local.grafana_privatelink_config.endpoint_allowed_principals, []),
+    ["arn:aws:iam::${var.hyperspace_account_id}:root"]
+  ))
+  grafana_privatelink_supported_regions = distinct(concat(
+    [var.aws_region],
+    try(local.grafana_privatelink_config.additional_aws_regions, []),
+    ["eu-central-1", "us-east-1"]
+  ))
+
+  grafana_networking = local.grafana_privatelink_enabled ? {
+    ingress_enabled    = false
+    ingress_class_name = ""
+    service_type       = "LoadBalancer"
+    service_annotations = {
+      "service.beta.kubernetes.io/aws-load-balancer-internal"               = "true"
+      "service.beta.kubernetes.io/aws-load-balancer-type"                   = "nlb-ip"
+      "service.beta.kubernetes.io/aws-load-balancer-scheme"                 = "internal"
+      "service.beta.kubernetes.io/aws-load-balancer-ssl-negotiation-policy" = "ELBSecurityPolicy-TLS13-1-2-2021-06"
+    }
+    } : {
+    ingress_enabled     = true
+    ingress_class_name  = local.internal_ingress_class_name
+    service_type        = "ClusterIP"
+    service_annotations = {}
+  }
+
   ###########################
   ### ArgoCD Privatelink ####
   ###########################

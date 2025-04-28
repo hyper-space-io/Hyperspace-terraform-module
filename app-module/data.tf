@@ -52,6 +52,7 @@ data "aws_ami" "fpga" {
 ### Load Balancer #####
 #######################
 
+#### ArgoCD Privatelink ####
 resource "time_sleep" "wait_for_argocd_privatelink_nlb" {
   count           = local.argocd_enabled ? 1 : 0
   create_duration = "180s"
@@ -67,6 +68,24 @@ data "aws_lb" "argocd_privatelink_nlb" {
   }
 
   depends_on = [time_sleep.wait_for_argocd_privatelink_nlb]
+}
+
+#### Grafana Privatelink ####
+resource "time_sleep" "wait_for_grafana_privatelink_nlb" {
+  count           = local.grafana_privatelink_enabled ? 1 : 0
+  create_duration = "180s"
+  depends_on      = [helm_release.grafana]
+}
+
+data "aws_lb" "grafana_privatelink_nlb" {
+  count = local.grafana_privatelink_enabled ? 1 : 0
+  tags = {
+    "elbv2.k8s.aws/cluster"    = module.eks.cluster_name
+    "service.k8s.aws/resource" = "LoadBalancer"
+    "service.k8s.aws/stack"    = "grafana/grafana"
+  }
+
+  depends_on = [time_sleep.wait_for_grafana_privatelink_nlb]
 }
 
 #######################
