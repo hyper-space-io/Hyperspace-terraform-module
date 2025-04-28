@@ -246,8 +246,9 @@ locals {
 
   # Default ArgoCD RBAC policy rules for localusers
   argocd_rbac_policy_default = "role:readonly"
-  default_argocd_rbac_policy_rules = distinct(concat([
-    # Role definitions
+  
+  # Base role definitions
+  base_rbac_rules = [
     "p, role:org-admin, applications, *, */*, allow",
     "p, role:org-admin, clusters, get, *, allow",
     "p, role:org-admin, repositories, get, *, allow",
@@ -259,20 +260,27 @@ locals {
     "p, role:org-admin, projects, update, *, allow",
     "p, role:org-admin, projects, delete, *, allow",
     "p, role:org-admin, logs, get, *, allow",
-    "p, role:org-admin, exec, create, */*, allow",
+    "p, role:org-admin, exec, create, */*, allow"
+  ]
 
-    # SSO-based access control
-    # If admin group is specified, only that group gets admin access
-    # Otherwise, all SSO users get admin access
-    try(local.argocd_config.rbac.sso_admin_group != null, false) ? [
-      # Admin group gets full access
-      "g, ${local.argocd_config.rbac.sso_admin_group}, role:org-admin"
-      ] : [
-      # All SSO users get admin access
-      "g, ${local.argocd_config.vcs.organization}:*, role:org-admin"
-    ],
+  # SSO access rules
+  sso_rbac_rules = try(local.argocd_config.rbac.sso_admin_group != null, false) ? [
+    "g, ${try(local.argocd_config.rbac.sso_admin_group, "")}, role:org-admin"
+  ] : [
+    "g, ${try(local.argocd_config.vcs.organization, "")}:*, role:org-admin"
+  ]
 
-    # Custom rules for non-admin SSO users (if admin group is specified)
-    try(local.argocd_config.rbac.sso_admin_group != null, false) ? try(local.argocd_config.rbac.users_rbac_rules, []) : []
-  ], try(local.argocd_config.rbac.users_additional_rules, [])))
+  # User rules
+  user_rbac_rules = try(local.argocd_config.rbac.sso_admin_group != null, false) ? try(local.argocd_config.rbac.users_rbac_rules, []) : []
+
+  # Additional rules
+  additional_rbac_rules = try(local.argocd_config.rbac.users_additional_rules, [])
+
+  # Combined rules
+  default_argocd_rbac_policy_rules = distinct(concat(
+    local.base_rbac_rules,
+    local.sso_rbac_rules,
+    local.user_rbac_rules,
+    local.additional_rbac_rules
+  ))
 }
