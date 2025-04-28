@@ -2,6 +2,88 @@ locals {
   prometheus_release_name      = "kube-prometheus-stack"
   prometheus_crds_release_name = "prometheus-operator-crds"
   monitoring_namespace         = "monitoring"
+
+  prometheus_values = {
+    global = {
+      imagePullSecrets = [
+        {
+          name = "regcred-secret"
+        }
+      ]
+    }
+
+    grafana = {
+      enabled = false
+    }
+
+    additionalDataSources = [
+      {
+        name      = "loki"
+        type      = "loki"
+        access    = "proxy"
+        url       = "http://loki.monitoring.svc.cluster.local:3100"
+        version   = 1
+        isDefault = false
+      }
+    ]
+
+    prometheus = {
+      prometheusSpec = merge({
+        storageSpec = {
+          volumeClaimTemplate = {
+            spec = {
+              accessModes = ["ReadWriteOnce"]
+              resources = {
+                requests = {
+                  storage = "50Gi"
+                }
+              }
+            }
+          }
+        }
+        additionalScrapeConfigs = [
+          {
+            job_name       = "otel_collector"
+            scrape_interval = "10s"
+            static_configs = [
+              {
+                targets = [
+                  "opentelemetry-collector.opentelemetry:9100",
+                  "opentelemetry-collector.opentelemetry:8888"
+                ]
+              }
+            ]
+          }
+        ]
+        retention = "365d"
+      }, local.prometheus_endpoint_enabled ? {
+        externalLabels = {
+          cluster = local.cluster_name
+        }
+        remoteWrite = [
+          {
+            url = local.prometheus_remote_write_endpoint
+          }
+        ]
+      } : {})
+    }
+
+    alertmanager = {
+      enabled = true
+    }
+
+    kubeEtcd = {
+      enabled = false
+    }
+
+    kubeControllerManager = {
+      enabled = false
+    }
+
+    kubeScheduler = {
+      enabled = false
+    }
+  }
 }
 
 resource "helm_release" "kube_prometheus_stack" {
@@ -13,62 +95,8 @@ resource "helm_release" "kube_prometheus_stack" {
   version          = "68.3.0"
   namespace        = local.monitoring_namespace
   repository       = "https://prometheus-community.github.io/helm-charts"
-  values = [<<EOF
-global:
-  imagePullSecrets:
-    - name: "regcred-secret"
-
-grafana:
-  enabled: false
-
-additionalDataSources:
-  - name: "loki"
-    type: "loki"
-    access: "proxy"
-    url: "http://loki.monitoring.svc.cluster.local:3100"
-    version: 1
-    isDefault: false
-
-prometheus:
-  prometheusSpec:
-    storageSpec:
-      volumeClaimTemplate:
-        spec:
-          accessModes: ["ReadWriteOnce"]
-          resources:
-            requests:
-              storage: 50Gi
-    ${local.prometheus_privatelink_enabled ? yamlencode({
-      externalLabels: {
-        cluster: local.cluster_name
-      },
-      remoteWrite: [{
-        url: local.prometheus_remote_write_endpoint
-      }]
-    }) : ""}
-    additionalScrapeConfigs:
-      - job_name: "otel_collector"
-        scrape_interval: "10s"
-        static_configs:
-          - targets:
-            - "opentelemetry-collector.opentelemetry:9100"
-            - "opentelemetry-collector.opentelemetry:8888"
-    retention: 365d
-
-alertmanager:
-  enabled: true
-
-kubeEtcd:
-  enabled: false
-
-kubeControllerManager:
-  enabled: false
-
-kubeScheduler:
-  enabled: false
-EOF
-]
-depends_on = [module.eks]
+  values           = [yamlencode(local.prometheus_values)]
+  depends_on       = [module.eks]
 }
 
 resource "random_password" "grafana_admin_password" {
@@ -135,36 +163,36 @@ EOF
 
 
 ##################################
-##### Prometheus Privatelink #####
+##### Prometheus Endpoint ########
 ##################################
 
 resource "aws_vpc_endpoint" "prometheus" {
-  count               = local.prometheus_privatelink_enabled ? 1 : 0
+  count               = local.prometheus_endpoint_enabled ? 1 : 0
   vpc_id              = local.vpc_module.vpc_id
-  service_name        = local.prometheus_privatelink_config.endpoint_service_name
+  service_name        = local.prometheus_endpoint_config.endpoint_service_name
   vpc_endpoint_type   = "Interface"
   subnet_ids          = local.vpc_module.private_subnets
-  security_group_ids  = [aws_security_group.prometheus_endpoint_service[0].id]
+  security_group_ids  = [aws_security_group.prometheus_endpoint[0].id]
   private_dns_enabled = true
   ip_address_type     = "ipv4"
-  service_region      = local.prometheus_privatelink_config.endpoint_service_region
+  service_region      = local.prometheus_endpoint_config.endpoint_service_region
 
   tags = merge(local.tags, {
     Name = "Prometheus Endpoint - ${var.project}-${var.environment}"
   })
 }
 
-resource "aws_security_group" "prometheus_endpoint_service" {
-  count       = local.prometheus_privatelink_enabled ? 1 : 0
-  name        = "prometheus-endpoint-service"
-  description = "Security group for prometheus endpoint service"
+resource "aws_security_group" "prometheus_endpoint" {
+  count       = local.prometheus_endpoint_enabled ? 1 : 0
+  name        = "prometheus-endpoint"
+  description = "Security group for prometheus endpoint"
   vpc_id      = local.vpc_module.vpc_id
 
   ingress {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = distinct(concat([local.vpc_module.vpc_cidr_block], local.prometheus_privatelink_config.additional_cidr_blocks))
+    cidr_blocks = distinct(concat([local.vpc_module.vpc_cidr_block], local.prometheus_endpoint_config.additional_cidr_blocks))
   }
 
   egress {

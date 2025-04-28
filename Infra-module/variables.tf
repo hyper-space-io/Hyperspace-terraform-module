@@ -243,23 +243,23 @@ variable "argocd_config" {
 }
 
 ################################
-#### Prometheus Privatelink ####
+#### Prometheus Endpoint #######
 ################################
 
-variable "prometheus_privatelink_config" {
+variable "prometheus_endpoint_config" {
   type = object({
-    enabled                 = optional(bool, true)
-    endpoint_service_name   = optional(string)
-    endpoint_service_region = optional(string, "us-east-1")
-    additional_cidr_blocks  = optional(list(string), [])
+    enabled                    = optional(bool, false)
+    endpoint_service_name      = optional(string)
+    endpoint_service_region    = optional(string)
+    additional_cidr_blocks     = optional(list(string), [])
   })
   default = {
-    enabled                 = false
-    endpoint_service_name   = null
-    endpoint_service_region = "us-east-1"
-    additional_cidr_blocks  = []
+    enabled                    = true
+    endpoint_service_name      = null
+    endpoint_service_region    = null
+    additional_cidr_blocks     = []
   }
-  description = "Configuration for Prometheus including privatelink settings and endpoint configuration"
+  description = "Configuration for Prometheus VPC endpoint to send data to"
 }
 
 ###############################

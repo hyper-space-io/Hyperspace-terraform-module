@@ -21,7 +21,7 @@ locals {
     data_node_ami_id              = data.aws_ami.fpga.id
     create_public_zone            = var.create_public_zone
     argocd_config                 = jsonencode(var.argocd_config)
-    prometheus_privatelink_config = jsonencode(var.prometheus_privatelink_config)
+    prometheus_endpoint_config    = jsonencode(var.prometheus_endpoint_config)
   }
   # Dynamic determine which VCS authentication method to use
   vcs_auth = {

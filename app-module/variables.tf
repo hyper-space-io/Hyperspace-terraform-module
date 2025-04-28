@@ -156,11 +156,11 @@ variable "local_iam_policies" {
 }
 
 ################################
-#### Prometheus Privatelink ####
+#### Prometheus Endpoint #######
 ################################
 
-variable "prometheus_privatelink_config" {
+variable "prometheus_endpoint_config" {
   type        = string
   default     = "{}"
-  description = "The prometheus privatelink config"
+  description = "Configuration for Prometheus VPC endpoint to send data to"
 }
