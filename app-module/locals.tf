@@ -165,8 +165,8 @@ locals {
   ))
 
   grafana_networking = {
-    ingress_enabled     = !local.grafana_privatelink_enabled
-    ingress_class_name  = local.grafana_privatelink_enabled ? "" : local.internal_ingress_class_name
+    ingress_enabled    = !local.grafana_privatelink_enabled
+    ingress_class_name = local.grafana_privatelink_enabled ? "" : local.internal_ingress_class_name
   }
 
   ###########################

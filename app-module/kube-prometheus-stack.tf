@@ -120,16 +120,14 @@ resource "helm_release" "grafana" {
   values = [
     yamlencode({
       adminPassword = random_password.grafana_admin_password.result
-      service = local.grafana_privatelink_enabled ? {
-        type = "LoadBalancer"
-        annotations = {
+      service = {
+        type = local.grafana_privatelink_enabled ? "LoadBalancer" : "ClusterIP"
+        annotations = local.grafana_privatelink_enabled ? {
           "service.beta.kubernetes.io/aws-load-balancer-internal"               = "true"
           "service.beta.kubernetes.io/aws-load-balancer-type"                   = "nlb-ip"
           "service.beta.kubernetes.io/aws-load-balancer-scheme"                 = "internal"
           "service.beta.kubernetes.io/aws-load-balancer-ssl-negotiation-policy" = "ELBSecurityPolicy-TLS13-1-2-2021-06"
-        }
-      } : {
-        type = "ClusterIP"
+        } : {}
       }
       ingress = {
         enabled          = local.grafana_networking.ingress_enabled
