@@ -166,6 +166,34 @@ resource "aws_iam_role_policy" "tfc_agent_iam_policy" {
           "acm:ListTagsForCertificate"
         ]
         Resource = "arn:aws:acm:*:*:certificate/*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "ec2:CreateVpcEndpoint",
+          "ec2:DeleteVpcEndpoints",
+          "ec2:DescribeVpcEndpoints",
+          "ec2:ModifyVpcEndpoint",
+          "ec2:CreateTags",
+          "ec2:DeleteTags",
+          "ec2:DescribeVpcs",
+          "ec2:DescribeSubnets",
+          "ec2:DescribeSecurityGroups",
+          "ec2:DescribeRouteTables",
+          "ec2:DescribeVpcEndpointServices",
+          "ec2:DescribeAvailabilityZones",
+          "ec2:DescribeVpcEndpointConnections",
+          "ec2:AcceptVpcEndpointConnections",
+          "ec2:RejectVpcEndpointConnections"
+        ]
+        Resource = [
+          "*",
+          "arn:aws:ec2:${var.aws_region}:${data.aws_caller_identity.current.account_id}:vpc-endpoint/*",
+          "arn:aws:ec2:${var.aws_region}:${data.aws_caller_identity.current.account_id}:vpc/*",
+          "arn:aws:ec2:${var.aws_region}:${data.aws_caller_identity.current.account_id}:subnet/*",
+          "arn:aws:ec2:${var.aws_region}:${data.aws_caller_identity.current.account_id}:security-group/*",
+          "arn:aws:ec2:${var.aws_region}:${data.aws_caller_identity.current.account_id}:route-table/*"
+        ]
       }
     ]
   })
