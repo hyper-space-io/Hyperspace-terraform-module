@@ -261,3 +261,7 @@ variable "prometheus_privatelink_config" {
   }
   description = "Configuration for Prometheus including privatelink settings and endpoint configuration"
 }
+
+###############################
+#### Grafana Privatelink ######
+###############################
