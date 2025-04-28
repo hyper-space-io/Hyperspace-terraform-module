@@ -65,7 +65,10 @@ locals {
             url = local.prometheus_remote_write_endpoint
           }
         ]
-      } : {})
+      } : {
+        externalLabels = {}
+        remoteWrite = []
+      })
     }
 
     alertmanager = {
