@@ -39,13 +39,13 @@ prometheus:
             requests:
               storage: 50Gi
     ${local.prometheus_privatelink_enabled ? yamlencode({
-      externalLabels: {
-        cluster: local.cluster_name
-      }
-      remoteWrite: [{
-        url: local.prometheus_remote_write_endpoint
-      }]
-    }) : ""}
+    externalLabels : {
+      cluster : local.cluster_name
+    }
+    remoteWrite : [{
+      url : local.prometheus_remote_write_endpoint
+    }]
+}) : ""}
     additionalScrapeConfigs:
       - job_name: "otel_collector"
         scrape_interval: "10s"
@@ -67,8 +67,8 @@ kubeControllerManager:
 kubeScheduler:
   enabled: false
 EOF
-  ]
-  depends_on = [module.eks]
+]
+depends_on = [module.eks]
 }
 
 resource "random_password" "grafana_admin_password" {
