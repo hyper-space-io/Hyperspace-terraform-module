@@ -156,21 +156,6 @@ variable "local_iam_policies" {
 }
 
 ################################
-###### ArgoCD Privatelink ######
-################################
-
-variable "argocd_endpoint_additional_aws_regions" {
-  type        = string
-  description = "The additional aws regions to enable for the argocd vpc endpoint"
-}
-
-variable "argocd_endpoint_allowed_principals" {
-  type        = string
-  default     = ""
-  description = "The allowed principals for the argocd vpc endpoint"
-}
-
-################################
 #### Prometheus Privatelink ####
 ################################
 
