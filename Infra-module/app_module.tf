@@ -1,27 +1,27 @@
 locals {
   app_module_variables = {
-    project                       = var.project
-    environment                   = var.environment
-    aws_region                    = var.aws_region
-    hyperspace_account_id         = var.hyperspace_account_id
-    tags                          = jsonencode(local.tags)
-    domain_name                   = var.domain_name
-    infra_workspace_name          = terraform.workspace
-    tfe_organization              = var.tfe_organization
-    organization                  = data.tfe_organizations.all.names[0]
-    vpc_module                    = jsonencode(module.vpc)
-    availability_zones            = jsonencode(local.availability_zones)
-    s3_buckets_arns               = jsonencode({ for k, v in module.s3_buckets : k => v.s3_bucket_arn })
-    s3_buckets_names              = jsonencode({ for k, v in module.s3_buckets : k => v.s3_bucket_id })
-    iam_policies                  = jsonencode({ for k, v in aws_iam_policy.policies : k => v })
-    local_iam_policies            = jsonencode({ for k, v in local.iam_policies : k => v })
-    create_eks                    = var.create_eks
-    worker_nodes_max              = var.worker_nodes_max
-    worker_instance_type          = jsonencode(var.worker_instance_type)
-    data_node_ami_id              = data.aws_ami.fpga.id
-    create_public_zone            = var.create_public_zone
-    argocd_config                 = jsonencode(var.argocd_config)
-    prometheus_endpoint_config    = jsonencode(var.prometheus_endpoint_config)
+    project                    = var.project
+    environment                = var.environment
+    aws_region                 = var.aws_region
+    hyperspace_account_id      = var.hyperspace_account_id
+    tags                       = jsonencode(local.tags)
+    domain_name                = var.domain_name
+    infra_workspace_name       = terraform.workspace
+    tfe_organization           = var.tfe_organization
+    organization               = data.tfe_organizations.all.names[0]
+    vpc_module                 = jsonencode(module.vpc)
+    availability_zones         = jsonencode(local.availability_zones)
+    s3_buckets_arns            = jsonencode({ for k, v in module.s3_buckets : k => v.s3_bucket_arn })
+    s3_buckets_names           = jsonencode({ for k, v in module.s3_buckets : k => v.s3_bucket_id })
+    iam_policies               = jsonencode({ for k, v in aws_iam_policy.policies : k => v })
+    local_iam_policies         = jsonencode({ for k, v in local.iam_policies : k => v })
+    create_eks                 = var.create_eks
+    worker_nodes_max           = var.worker_nodes_max
+    worker_instance_type       = jsonencode(var.worker_instance_type)
+    data_node_ami_id           = data.aws_ami.fpga.id
+    create_public_zone         = var.create_public_zone
+    argocd_config              = jsonencode(var.argocd_config)
+    prometheus_endpoint_config = jsonencode(var.prometheus_endpoint_config)
   }
   # Dynamic determine which VCS authentication method to use
   vcs_auth = {
@@ -39,13 +39,12 @@ resource "tfe_oauth_client" "github" {
 }
 
 resource "tfe_workspace" "app" {
-  name         = "hyperspace-app-module"
-  organization = data.tfe_organizations.all.names[0]
-  project_id   = data.tfe_workspace.current.project_id
-  # when file_triggers_enabled is false, any push will trigger a run regardless of which files changed
-  file_triggers_enabled = false
-  queue_all_runs        = false
-  working_directory     = "app-module"
+  name             = "hyperspace-app-module"
+  organization     = data.tfe_organizations.all.names[0]
+  project_id       = data.tfe_workspace.current.project_id
+  trigger_patterns = ["app-module/**/*"]
+  # Set to false as first run requires infra module variables. Initial run will have to be manual, subsequent runs are automatic via webhooks
+  queue_all_runs = false
   vcs_repo {
     identifier     = "${local.hyperspace_org_name}/Hyperspace-terraform-module"
     branch         = "simulation"

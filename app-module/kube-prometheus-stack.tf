@@ -43,7 +43,7 @@ locals {
         }
         additionalScrapeConfigs = [
           {
-            job_name       = "otel_collector"
+            job_name        = "otel_collector"
             scrape_interval = "10s"
             static_configs = [
               {
@@ -56,7 +56,7 @@ locals {
           }
         ]
         retention = "365d"
-      }, local.prometheus_endpoint_enabled ? {
+        }, local.prometheus_endpoint_enabled ? {
         externalLabels = {
           cluster = local.cluster_name
         }
@@ -65,9 +65,9 @@ locals {
             url = local.prometheus_remote_write_endpoint
           }
         ]
-      } : {
+        } : {
         externalLabels = {}
-        remoteWrite = []
+        remoteWrite    = []
       })
     }
 

@@ -86,15 +86,58 @@ resource "aws_iam_role_policy" "tfc_agent_iam_policy" {
       {
         Effect = "Allow"
         Action = [
+          "ec2:Describe*",
+          "ec2:CreateLaunchTemplate",
+          "ec2:DeleteLaunchTemplate",
+          "ec2:DeleteLaunchTemplateVersions",
+          "ec2:RunInstances",
+          "ec2:CreateTags",
+          "ec2:DeleteTags",
+          "ec2:CreateVpcEndpointServiceConfiguration",
+          "ec2:ModifyVpcEndpointServiceConfiguration",
+          "ec2:DeleteVpcEndpointServiceConfigurations",
+          "ec2:ModifyVpcEndpointServicePermissions",
+          "ec2:CreateVpcEndpoint",
+          "ec2:DeleteVpcEndpoints",
+          "ec2:ModifyVpcEndpoint",
+          "ec2:DescribeVpcEndpoints",
+          "ec2:DescribeVpcs",
+          "ec2:DescribeSubnets",
+          "ec2:DescribeSecurityGroups",
+          "ec2:DescribeRouteTables",
+          "ec2:DescribeVpcEndpointServices",
+          "ec2:DescribeAvailabilityZones",
+          "ec2:DescribeVpcEndpointConnections",
+          "ec2:AcceptVpcEndpointConnections",
+          "ec2:RejectVpcEndpointConnections",
+          "ec2:RevokeSecurityGroupEgress",
+          "ec2:RevokeSecurityGroupIngress",
+          "ec2:AuthorizeSecurityGroupEgress",
+          "ec2:AuthorizeSecurityGroupIngress",
+          "vpce:AllowMultiRegion"
+        ]
+        Resource = [
+          "*",
+          "arn:aws:ec2:${var.aws_region}:${data.aws_caller_identity.current.account_id}:vpc-endpoint/*",
+          "arn:aws:ec2:${var.aws_region}:${data.aws_caller_identity.current.account_id}:vpc/*",
+          "arn:aws:ec2:${var.aws_region}:${data.aws_caller_identity.current.account_id}:subnet/*",
+          "arn:aws:ec2:${var.aws_region}:${data.aws_caller_identity.current.account_id}:security-group/*",
+          "arn:aws:ec2:${var.aws_region}:${data.aws_caller_identity.current.account_id}:route-table/*"
+        ]
+      },
+      {
+        Effect = "Allow"
+        Action = [
           "eks:*",
-          "eks-auth:*"
+          "eks-auth:*",
+          "eks:DescribeAddonVersions"
         ]
         Resource = "*"
       },
       {
         Effect = "Allow"
         Action = [
-          "eks:DescribeAddonVersions"
+          "elasticloadbalancing:Describe*"
         ]
         Resource = "*"
       },
@@ -121,18 +164,13 @@ resource "aws_iam_role_policy" "tfc_agent_iam_policy" {
           "kms:CreateAlias",
           "kms:DeleteAlias",
           "kms:ListKeys",
-          "kms:ListAliases"
-        ]
-        Resource = "*"
-      },
-      {
-        Effect = "Allow"
-        Action = [
+          "kms:ListAliases",
           "kms:TagResource",
           "kms:DescribeKey",
           "kms:ScheduleKeyDeletion"
         ]
         Resource = [
+          "*",
           "arn:aws:kms:*:*:key/*",
           "arn:aws:kms:*:*:alias/*"
         ]
@@ -170,30 +208,17 @@ resource "aws_iam_role_policy" "tfc_agent_iam_policy" {
       {
         Effect = "Allow"
         Action = [
-          "ec2:CreateVpcEndpoint",
-          "ec2:DeleteVpcEndpoints",
-          "ec2:DescribeVpcEndpoints",
-          "ec2:ModifyVpcEndpoint",
-          "ec2:CreateTags",
-          "ec2:DeleteTags",
-          "ec2:DescribeVpcs",
-          "ec2:DescribeSubnets",
-          "ec2:DescribeSecurityGroups",
-          "ec2:DescribeRouteTables",
-          "ec2:DescribeVpcEndpointServices",
-          "ec2:DescribeAvailabilityZones",
-          "ec2:DescribeVpcEndpointConnections",
-          "ec2:AcceptVpcEndpointConnections",
-          "ec2:RejectVpcEndpointConnections"
+          "autoscaling:CreateAutoScalingGroup",
+          "autoscaling:DeleteAutoScalingGroup",
+          "autoscaling:DescribeAutoScalingGroups",
+          "autoscaling:DescribeAutoScalingInstances",
+          "autoscaling:DescribeLaunchConfigurations",
+          "autoscaling:UpdateAutoScalingGroup",
+          "autoscaling:SetDesiredCapacity",
+          "autoscaling:TerminateInstanceInAutoScalingGroup",
+          "autoscaling:DescribeScalingActivities"
         ]
-        Resource = [
-          "*",
-          "arn:aws:ec2:${var.aws_region}:${data.aws_caller_identity.current.account_id}:vpc-endpoint/*",
-          "arn:aws:ec2:${var.aws_region}:${data.aws_caller_identity.current.account_id}:vpc/*",
-          "arn:aws:ec2:${var.aws_region}:${data.aws_caller_identity.current.account_id}:subnet/*",
-          "arn:aws:ec2:${var.aws_region}:${data.aws_caller_identity.current.account_id}:security-group/*",
-          "arn:aws:ec2:${var.aws_region}:${data.aws_caller_identity.current.account_id}:route-table/*"
-        ]
+        Resource = "*"
       }
     ]
   })

@@ -246,7 +246,7 @@ locals {
 
   # Default ArgoCD RBAC policy rules for localusers
   argocd_rbac_policy_default = "role:readonly"
-  
+
   # Base role definitions
   base_rbac_rules = [
     "p, role:org-admin, applications, *, */*, allow",
@@ -266,7 +266,7 @@ locals {
   # SSO access rules
   sso_rbac_rules = try(local.argocd_config.rbac.sso_admin_group != null, false) ? [
     "g, ${try(local.argocd_config.rbac.sso_admin_group, "")}, role:org-admin"
-  ] : [
+    ] : [
     "g, ${try(local.argocd_config.vcs.organization, "")}:*, role:org-admin"
   ]
 
