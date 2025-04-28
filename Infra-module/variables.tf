@@ -223,12 +223,12 @@ variable "argocd_config" {
 ################################
 
 variable "prometheus_endpoint_config" {
-  type = object({
+  type = optional(object({
     enabled                    = optional(bool, true)
     endpoint_service_name      = optional(string)
     endpoint_service_region    = optional(string)
     additional_cidr_blocks     = optional(list(string), [])
-  })
+  }), {})
   description = "Configuration for Prometheus VPC endpoint to send data to"
 }
 
