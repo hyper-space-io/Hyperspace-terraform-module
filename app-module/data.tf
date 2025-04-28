@@ -82,7 +82,7 @@ data "aws_lb" "grafana_privatelink_nlb" {
   tags = {
     "elbv2.k8s.aws/cluster"    = module.eks.cluster_name
     "service.k8s.aws/resource" = "LoadBalancer"
-    "service.k8s.aws/stack"    = "grafana/grafana"
+    "service.k8s.aws/stack"    = "monitoring/grafana"
   }
 
   depends_on = [time_sleep.wait_for_grafana_privatelink_nlb]
