@@ -254,7 +254,7 @@ variable "prometheus_privatelink_config" {
     additional_cidr_blocks  = optional(list(string), [])
   })
   default = {
-    enabled                 = true
+    enabled                 = false
     endpoint_service_name   = null
     endpoint_service_region = "us-east-1"
     additional_cidr_blocks  = []

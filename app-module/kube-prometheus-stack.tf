@@ -38,14 +38,14 @@ prometheus:
           resources:
             requests:
               storage: 50Gi
-    ${local.prometheus_privatelink_config.enabled ? yamlencode({
-    externalLabels : {
-      cluster : "${local.cluster_name}"
-    }
-    remoteWrite : [{
-      url : "${local.prometheus_remote_write_endpoint}"
-    }]
-}) : ""}
+    ${local.prometheus_privatelink_enabled ? yamlencode({
+      externalLabels: {
+        cluster: local.cluster_name
+      }
+      remoteWrite: [{
+        url: local.prometheus_remote_write_endpoint
+      }]
+    }) : ""}
     additionalScrapeConfigs:
       - job_name: "otel_collector"
         scrape_interval: "10s"
@@ -67,8 +67,8 @@ kubeControllerManager:
 kubeScheduler:
   enabled: false
 EOF
-]
-depends_on = [module.eks]
+  ]
+  depends_on = [module.eks]
 }
 
 resource "random_password" "grafana_admin_password" {
@@ -144,7 +144,7 @@ resource "aws_vpc_endpoint" "prometheus" {
   service_name        = local.prometheus_privatelink_config.endpoint_service_name
   vpc_endpoint_type   = "Interface"
   subnet_ids          = local.vpc_module.private_subnets
-  security_group_ids  = [aws_security_group.prometheus_endpoint_service.id]
+  security_group_ids  = [aws_security_group.prometheus_endpoint_service[0].id]
   private_dns_enabled = true
   ip_address_type     = "ipv4"
   service_region      = local.prometheus_privatelink_config.endpoint_service_region

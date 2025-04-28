@@ -1,5 +1,5 @@
 resource "helm_release" "argocd" {
-  count            = var.create_eks && var.argocd_config.enabled ? 1 : 0
+  count            = local.argocd_enabled ? 1 : 0
   chart            = "argo-cd"
   namespace        = "argocd"
   name             = "argocd"
@@ -83,14 +83,14 @@ resource "aws_secretsmanager_secret" "argocd_readonly_password" {
 }
 
 resource "aws_secretsmanager_secret_version" "argocd_readonly_password" {
-  count         = var.create_eks && var.argocd_config.enabled ? 1 : 0
+  count         = local.argocd_enabled ? 1 : 0
   secret_id     = aws_secretsmanager_secret.argocd_readonly_password[0].id
   secret_string = random_password.argocd_readonly[0].result
 }
 
 # Execute ArgoCD CLI setup and password update
 resource "null_resource" "argocd_setup" {
-  count = var.create_eks && var.argocd_config.enabled ? 1 : 0
+  count = local.argocd_enabled ? 1 : 0
   provisioner "local-exec" {
     command = <<-EOT
       echo "Getting ArgoCD admin password..."
