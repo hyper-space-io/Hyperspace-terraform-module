@@ -158,7 +158,6 @@ locals {
   argocd_endpoint_default_allowed_principals = ["arn:aws:iam::${var.hyperspace_account_id}:root"]
 
   # Privatelink configuration
-  argocd_privatelink_endpoint_service_name = local.argocd_config.privatelink.endpoint_service_name
   argocd_privatelink_allowed_principals = distinct(concat(
     try(local.argocd_config.privatelink.allowed_principals, []),
     local.argocd_endpoint_default_allowed_principals
@@ -274,6 +273,6 @@ locals {
     ],
 
     # Custom rules for non-admin SSO users (if admin group is specified)
-    try(local.argocd_config.rbac.sso_admin_group != null, false) ? local.argocd_config.rbac.users_rbac_rules : [],
-  ], local.argocd_config.rbac.users_additional_rules))
+    try(local.argocd_config.rbac.sso_admin_group != null, false) ? try(local.argocd_config.rbac.users_rbac_rules, []) : [],
+  ], try(local.argocd_config.rbac.users_additional_rules, [])))
 }
