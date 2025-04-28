@@ -164,21 +164,9 @@ locals {
     ["eu-central-1", "us-east-1"]
   ))
 
-  grafana_networking = local.grafana_privatelink_enabled ? {
-    ingress_enabled    = false
-    ingress_class_name = ""
-    service_type       = "LoadBalancer"
-    service_annotations = {
-      "service.beta.kubernetes.io/aws-load-balancer-internal"               = "true"
-      "service.beta.kubernetes.io/aws-load-balancer-type"                   = "nlb-ip"
-      "service.beta.kubernetes.io/aws-load-balancer-scheme"                 = "internal"
-      "service.beta.kubernetes.io/aws-load-balancer-ssl-negotiation-policy" = "ELBSecurityPolicy-TLS13-1-2-2021-06"
-    }
-    } : {
-    ingress_enabled     = true
-    ingress_class_name  = local.internal_ingress_class_name
-    service_type        = "ClusterIP"
-    service_annotations = {}
+  grafana_networking = {
+    ingress_enabled     = !local.grafana_privatelink_enabled
+    ingress_class_name  = local.grafana_privatelink_enabled ? "" : local.internal_ingress_class_name
   }
 
   ###########################

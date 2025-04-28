@@ -109,6 +109,7 @@ resource "random_password" "grafana_admin_password" {
 }
 
 resource "helm_release" "grafana" {
+  count            = var.create_eks ? 1 : 0
   name             = "grafana"
   version          = "~> 8.8.0"
   namespace        = local.monitoring_namespace
@@ -116,20 +117,32 @@ resource "helm_release" "grafana" {
   repository       = "https://grafana.github.io/helm-charts"
   create_namespace = true
   cleanup_on_fail  = true
-  values = [<<EOF
-adminPassword: "${random_password.grafana_admin_password.result}"
-service:
-  type: ${local.grafana_networking.service_type}
-  annotations: ${yamlencode(local.grafana_networking.service_annotations)}
-ingress:
-  enabled: ${local.grafana_networking.ingress_enabled}
-  ingressClassName: ${local.grafana_networking.ingress_class_name}
-  hosts:
-    - "grafana.${local.internal_domain_name}"
-persistence:
-  enabled: true
-  size: 10Gi
-EOF
+  values = [
+    yamlencode({
+      adminPassword = random_password.grafana_admin_password.result
+      service = local.grafana_privatelink_enabled ? {
+        type = "LoadBalancer"
+        annotations = {
+          "service.beta.kubernetes.io/aws-load-balancer-internal"               = "true"
+          "service.beta.kubernetes.io/aws-load-balancer-type"                   = "nlb-ip"
+          "service.beta.kubernetes.io/aws-load-balancer-scheme"                 = "internal"
+          "service.beta.kubernetes.io/aws-load-balancer-ssl-negotiation-policy" = "ELBSecurityPolicy-TLS13-1-2-2021-06"
+        }
+      } : {
+        type = "ClusterIP"
+      }
+      ingress = {
+        enabled          = local.grafana_networking.ingress_enabled
+        ingressClassName = local.grafana_networking.ingress_class_name
+        hosts = [
+          "grafana.${local.internal_domain_name}"
+        ]
+      }
+      persistence = {
+        enabled = true
+        size    = "10Gi"
+      }
+    })
   ]
 
   set_sensitive {

@@ -116,6 +116,7 @@ resource "null_resource" "argocd_setup" {
   triggers = {
     helm_release_id   = helm_release.argocd[count.index].id
     readonly_password = random_password.argocd_readonly[count.index].result
+    timestamp         = timestamp()
   }
 }
 
