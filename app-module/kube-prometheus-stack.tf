@@ -39,13 +39,13 @@ prometheus:
             requests:
               storage: 50Gi
     ${local.prometheus_privatelink_enabled ? yamlencode({
-    externalLabels : {
-      cluster : local.cluster_name
-    }
-    remoteWrite : [{
-      url : local.prometheus_remote_write_endpoint
-    }]
-}) : ""}
+      externalLabels: {
+        cluster: local.cluster_name
+      }
+      remoteWrite: [{
+        url: local.prometheus_remote_write_endpoint
+      }]
+    }) : ""}
     additionalScrapeConfigs:
       - job_name: "otel_collector"
         scrape_interval: "10s"
