@@ -35,6 +35,14 @@ locals {
   }
 }
 
+resource "tfe_oauth_client" "github" {
+  organization     = "${local.hyperspace_org_name}"
+  api_url          = "https://api.github.com"
+  http_url         = "https://github.com"
+  service_provider = "github"
+  oauth_token      = data.aws_secretsmanager_secret_version.hyperspace_github_pat.secret_string
+}
+
 resource "tfe_workspace" "app" {
   name         = "hyperspace-app-module"
   organization = data.tfe_organizations.all.names[0]
@@ -46,8 +54,7 @@ resource "tfe_workspace" "app" {
   vcs_repo {
     identifier                 = "${local.hyperspace_org_name}/Hyperspace-terraform-module"
     branch                     = "simulation"
-    # oauth_token_id             = local.vcs_auth.oauth_token_id
-    # github_app_installation_id = local.vcs_auth.github_app_installation_id
+    oauth_token_id             = tfe_oauth_client.github.oauth_token_id
   }
 }
 

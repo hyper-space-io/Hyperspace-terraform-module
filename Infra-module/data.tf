@@ -25,8 +25,8 @@ data "tfe_workspace" "current" {
 ###### VCS ############
 #######################
 
-data "aws_secretsmanager_secret_version" "hyperspace_github_app" {
-  secret_id = "hyperspace/github_app"
+data "aws_secretsmanager_secret_version" "hyperspace_github_pat" {
+  secret_id = "hyperspace/github_pat"
 }
 
 #######################
