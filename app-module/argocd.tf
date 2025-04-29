@@ -76,11 +76,6 @@ resource "random_password" "argocd_readonly" {
   length = 16
 }
 
-resource "random_string" "argocd_readonly" {
-  count  = local.argocd_enabled ? 1 : 0
-  length = 16
-}
-
 resource "aws_secretsmanager_secret" "argocd_readonly_password" {
   count       = local.argocd_enabled ? 1 : 0
   name        = "argocd-readonly-password"
@@ -90,7 +85,7 @@ resource "aws_secretsmanager_secret" "argocd_readonly_password" {
 resource "aws_secretsmanager_secret_version" "argocd_readonly_password" {
   count         = local.argocd_enabled ? 1 : 0
   secret_id     = aws_secretsmanager_secret.argocd_readonly_password[0].id
-  secret_string = random_string.argocd_readonly[0].result
+  secret_string = random_password.argocd_readonly[0].result
 }
 
 # Execute ArgoCD CLI setup and password update
@@ -100,23 +95,27 @@ resource "null_resource" "argocd_create_user" {
     command = <<-EOT
       echo "Getting ArgoCD admin password..."
       aws eks update-kubeconfig --name ${local.cluster_name} --region ${var.aws_region}
-      ARGOCD_PASSWORD=$(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d)
-
-      echo "Logging in to ArgoCD..."
-      until argocd login argocd.${local.internal_domain_name} --username admin --password $ARGOCD_PASSWORD --insecure --grpc-web; do
-        echo "Login attempt failed. Waiting 10 seconds before retrying..."
-        sleep 10
-      done
-      
-      echo "Successfully logged in to ArgoCD!"
       
       # Get current hyperspace password from secret
       CURRENT_HYPERSPACE_PASSWORD=$(kubectl -n argocd get secret argocd-secret -o jsonpath="{.data.accounts\.hyperspace\.password}" | base64 -d)
-      NEW_PASSWORD="${random_string.argocd_readonly[count.index].result}"
+      NEW_PASSWORD="${random_password.argocd_readonly[count.index].result}"
       
-      # Only update if passwords are different
+      # Only proceed with login and password update if passwords are different
       if [ "$CURRENT_HYPERSPACE_PASSWORD" != "$NEW_PASSWORD" ]; then
         echo "Current password is different from desired password. Updating hyperspace user password..."
+        
+        # Get admin password and log in
+        ARGOCD_PASSWORD=$(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d)
+        
+        echo "Logging in to ArgoCD..."
+        until argocd login argocd.${local.internal_domain_name} --username admin --password $ARGOCD_PASSWORD --insecure --grpc-web; do
+          echo "Login attempt failed. Waiting 10 seconds before retrying..."
+          sleep 10
+        done
+        
+        echo "Successfully logged in to ArgoCD!"
+        
+        # Update the password
         argocd account update-password \
           --account hyperspace \
           --current-password $ARGOCD_PASSWORD \
@@ -130,7 +129,7 @@ resource "null_resource" "argocd_create_user" {
   depends_on = [helm_release.argocd, data.aws_lb.argocd_privatelink_nlb[0]]
   triggers = {
     helm_release_id   = helm_release.argocd[count.index].id
-    readonly_password = random_string.argocd_readonly[count.index].result
+    readonly_password = random_password.argocd_readonly[count.index].result
     timestamp         = timestamp()
   }
 }
