@@ -201,21 +201,23 @@ variable "argocd_config" {
     enable_ha = optional(bool, false)
     vcs = object({
       organization = string
+      repository   = optional(string, "hyperspace")
+      rbac = optional(object({
+        sso_admin_group        = optional(string)
+        users_rbac_rules       = optional(list(string))
+        users_additional_rules = optional(list(string))
+      }))
       github = optional(object({
-        enabled            = optional(bool, false)
-        app_secret_name    = optional(string, "argocd/githubapp")
-        private_key_secret = optional(string, "argocd/github-private-key")
+        enabled                   = optional(bool, false)
+        githubapp_secret_name     = optional(string, "argocd/github_app")
+        github_private_key_secret = optional(string, "argocd/github_app_private_key")
       }))
       gitlab = optional(object({
-        enabled         = optional(bool, false)
-        app_secret_name = optional(string, "argocd/gitlabapp")
+        enabled                 = optional(bool, false)
+        oauth_secret_name       = optional(string, "argocd/gitlab_oauth")
+        credentials_secret_name = optional(string, "argocd/gitlab_credentials")
       }))
     })
-    rbac = optional(object({
-      sso_admin_group        = optional(string)
-      users_rbac_rules       = optional(list(string))
-      users_additional_rules = optional(list(string))
-    }))
     privatelink = optional(object({
       enabled                     = optional(bool, true)
       endpoint_allowed_principals = optional(list(string), [])

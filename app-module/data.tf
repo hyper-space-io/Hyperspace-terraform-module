@@ -104,5 +104,10 @@ data "aws_secretsmanager_secret_version" "argocd_private_key" {
 
 data "aws_secretsmanager_secret_version" "argocd_gitlab_app" {
   count     = local.gitlab_vcs_enabled ? 1 : 0
-  secret_id = local.argocd_config.vcs.gitlab.app_secret_name
+  secret_id = local.argocd_config.vcs.gitlab.oauth_secret_name
+}
+
+data "aws_secretsmanager_secret_version" "argocd_gitlab_credentials" {
+  count     = local.gitlab_vcs_enabled ? 1 : 0
+  secret_id = local.argocd_config.vcs.gitlab.credentials_secret_name
 }

@@ -198,74 +198,49 @@ locals {
   github_vcs_enabled = local.argocd_enabled && try(local.argocd_config.vcs.github.enabled, false)
   gitlab_vcs_enabled = local.argocd_enabled && try(local.argocd_config.vcs.gitlab.enabled, false)
 
-  # Base VCS configuration
-  vcs_base_config = {
-    github = {
-      type     = "github"
-      id       = "github"
-      name     = "GitHub"
-      base_url = "https://github.com"
-    }
-    gitlab = {
-      type     = "gitlab"
-      id       = "gitlab"
-      name     = "GitLab"
-      base_url = "https://gitlab.com"
-    }
-  }
-
-  # VCS connector configuration
-  vcs_config = {
-    github = try(local.argocd_config.vcs.github.enabled, false) ? merge(
-      local.vcs_base_config.github,
-      {
-        config = {
-          clientID     = try(jsondecode(data.aws_secretsmanager_secret_version.argocd_github_app[0].secret_string).client_id, null)
-          clientSecret = try(jsondecode(data.aws_secretsmanager_secret_version.argocd_github_app[0].secret_string).client_secret, null)
-          orgs = [{
-            name = local.argocd_config.vcs.organization
-          }]
-        }
+  # VCS connector configuration for Dex
+  dex_connectors = concat(
+    local.github_vcs_enabled ? [{
+      type = "github"
+      id   = "github"
+      name = "GitHub"
+      config = {
+        clientID     = try(jsondecode(data.aws_secretsmanager_secret_version.argocd_github_app[0].secret_string).client_id, null)
+        clientSecret = try(jsondecode(data.aws_secretsmanager_secret_version.argocd_github_app[0].secret_string).client_secret, null)
+        orgs         = [{ name = local.argocd_config.vcs.organization }]
       }
-    ) : null,
-    gitlab = try(local.argocd_config.vcs.gitlab.enabled, false) ? merge(
-      local.vcs_base_config.gitlab,
-      {
-        config = {
-          clientID     = try(jsondecode(data.aws_secretsmanager_secret_version.argocd_gitlab_app[0].secret_string).application_id, null)
-          clientSecret = try(jsondecode(data.aws_secretsmanager_secret_version.argocd_gitlab_app[0].secret_string).secret, null)
-          baseURL      = local.vcs_base_config.gitlab.base_url
-          orgs = [{
-            name = local.argocd_config.vcs.organization
-          }]
-        }
+    }] : [],
+    local.gitlab_vcs_enabled ? [{
+      type = "gitlab"
+      id   = "gitlab"
+      name = "GitLab"
+      config = {
+        baseURL      = "https://gitlab.com"
+        clientID     = try(jsondecode(data.aws_secretsmanager_secret_version.gitlab_oauth[0].secret_string).application_id, null)
+        clientSecret = try(jsondecode(data.aws_secretsmanager_secret_version.gitlab_oauth[0].secret_string).secret, null)
+        orgs         = [{ name = local.argocd_config.vcs.organization }]
       }
-    ) : null
-  }
-
-  dex_connectors = [
-    for provider, config in local.vcs_config : config if config != null
-  ]
+    }] : []
+  )
 
   # ArgoCD credential templates
-  argocd_credential_templates = merge([
-    for provider, config in local.vcs_base_config :
-    try(local.argocd_config.vcs[provider].enabled, false) ? {
-      "${provider}-creds" = merge(
-        {
-          url = "${config.base_url}/${local.argocd_config.vcs.organization}/"
-        },
-        provider == "github" ? {
-          githubAppID             = try(jsondecode(data.aws_secretsmanager_secret_version.argocd_github_app[0].secret_string).github_app_id, null)
-          githubAppInstallationID = try(jsondecode(data.aws_secretsmanager_secret_version.argocd_github_app[0].secret_string).github_installation_id, null)
-          githubAppPrivateKey     = try(data.aws_secretsmanager_secret_version.argocd_private_key[0].secret_string, null)
-          } : {
-          applicationId = try(jsondecode(data.aws_secretsmanager_secret_version.argocd_gitlab_app[0].secret_string).application_id, null)
-          secret        = try(jsondecode(data.aws_secretsmanager_secret_version.argocd_gitlab_app[0].secret_string).secret, null)
-        }
-      )
+  argocd_credential_templates = merge(
+    local.github_vcs_enabled ? {
+      "github-creds" = {
+        url                     = "https://github.com/${local.argocd_config.vcs.organization}/${local.argocd_config.vcs.repository}"
+        githubAppID             = try(jsondecode(data.aws_secretsmanager_secret_version.argocd_github_app[0].secret_string).github_app_id, null)
+        githubAppInstallationID = try(jsondecode(data.aws_secretsmanager_secret_version.argocd_github_app[0].secret_string).github_installation_id, null)
+        githubAppPrivateKey     = try(data.aws_secretsmanager_secret_version.argocd_github_private_key[0].secret_string, null)
+      }
+    } : {},
+    local.gitlab_vcs_enabled ? {
+      "gitlab-creds" = {
+        url      = "https://gitlab.com/${local.argocd_config.vcs.organization}/${local.argocd_config.vcs.repository}.git"
+        username = try(jsondecode(data.aws_secretsmanager_secret_version.gitlab_credentials[0].secret_string).username, null)
+        password = try(jsondecode(data.aws_secretsmanager_secret_version.gitlab_credentials[0].secret_string).deploy_token, null)
+      }
     } : {}
-  ]...)
+  )
 
   # Default ArgoCD RBAC policy rules for localusers
   argocd_rbac_policy_default = "role:readonly"
