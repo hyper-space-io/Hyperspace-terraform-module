@@ -89,7 +89,7 @@ resource "aws_secretsmanager_secret_version" "argocd_readonly_password" {
 }
 
 # Execute ArgoCD CLI setup and password update
-resource "null_resource" "argocd_setup" {
+resource "null_resource" "argocd_create_user" {
   count = local.argocd_enabled ? 1 : 0
   provisioner "local-exec" {
     command = <<-EOT
