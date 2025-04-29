@@ -54,13 +54,13 @@ data "aws_ami" "fpga" {
 
 #### ArgoCD Privatelink ####
 resource "time_sleep" "wait_for_argocd_privatelink_nlb" {
-  count           = local.argocd_enabled ? 1 : 0
+  count           = local.argocd_privatelink_enabled ? 1 : 0
   create_duration = "180s"
   depends_on      = [helm_release.argocd]
 }
 
 data "aws_lb" "argocd_privatelink_nlb" {
-  count = local.argocd_enabled ? 1 : 0
+  count = local.argocd_privatelink_enabled ? 1 : 0
   tags = {
     "elbv2.k8s.aws/cluster"    = module.eks.cluster_name
     "service.k8s.aws/resource" = "LoadBalancer"
