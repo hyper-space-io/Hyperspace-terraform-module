@@ -35,7 +35,7 @@ resource "helm_release" "argocd" {
         credentialTemplates = sensitive(local.argocd_credential_templates)
       }
       server = {
-        service = "${local.argocd_privatelink_enabled}" ? {
+        service = local.argocd_privatelink_enabled ? {
           type = "LoadBalancer"
           annotations = {
             "service.beta.kubernetes.io/aws-load-balancer-internal"               = "true"
@@ -43,7 +43,10 @@ resource "helm_release" "argocd" {
             "service.beta.kubernetes.io/aws-load-balancer-scheme"                 = "internal"
             "service.beta.kubernetes.io/aws-load-balancer-ssl-negotiation-policy" = "ELBSecurityPolicy-TLS13-1-2-2021-06"
           }
-        } : null
+        } : {
+          type = "ClusterIP"
+          annotations = {}
+        }
         autoscaling = {
           enabled     = true
           minReplicas = "1"

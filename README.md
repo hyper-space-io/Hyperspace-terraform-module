@@ -26,6 +26,7 @@
   - [ACM Certificate Validation](#acm-certificate-validation)
   - [Privatelink](#privatelink)
   - [Access Your Infrastructure](#access-your-infrastructure)
+  - [ArgoCD and Grafana Privatelink](#argocd-and-grafana-privatelink)
 
 ## Overview
 
@@ -296,3 +297,21 @@ After successful deployment, you can access:
    kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
    ```
 For detailed configuration options, refer to the [Infrastructure Module Variables](#Infrastructure-Module-Variables).
+
+### ArgoCD and Grafana Privatelink
+When using ArgoCD or Grafana with privatelink enabled, there are some important considerations:
+
+1. **Privatelink Configuration**:
+   - Both ArgoCD and Grafana can be configured to use AWS Privatelink for secure access
+   - This is controlled by the `argocd_config.privatelink.enabled` and `grafana_privatelink_config.enabled` variables
+   - When enabled, the services will be accessible through consumer VPC endpoints in allowed accounts controlled by `argocd_config.privatelink.endpoint_allowed_principals` and `grafana_privatelink_config.endpoint_allowed_principals`
+
+2. **Deletion Process**:
+   - Before deleting changing argocd_config.privatelink.enabled or grafana_privatelink_config.enabled to false, you must first remove all active VPC endpoint connections
+   - To delete the endpoint services:
+     1. Go to AWS VPC Console > Endpoint Services
+     2. Find the ArgoCD or Grafana endpoint service
+     3. Select all endpoint connections
+     4. Click "Reject" to deny the connections
+     5. After all connections are rejected, you can delete the endpoint service
+   - This is required because AWS prevents deletion of endpoint services that have active connections

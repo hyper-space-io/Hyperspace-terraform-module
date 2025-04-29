@@ -231,6 +231,20 @@ variable "argocd_config" {
   description = "Configuration for ArgoCD including VCS authentication, RBAC settings, and privatelink configuration"
 }
 
+###############################
+#### Grafana Privatelink ######
+###############################
+
+variable "grafana_privatelink_config" {
+  type = object({
+    enabled                     = optional(bool, true)
+    endpoint_allowed_principals = optional(list(string), [])
+    additional_aws_regions      = optional(list(string), [])
+  })
+  default     = { enabled = true }
+  description = "Configuration for Grafana VPC endpoint Service (Privatelink) configuration"
+}
+
 ################################
 #### Prometheus Endpoint #######
 ################################
@@ -244,18 +258,4 @@ variable "prometheus_endpoint_config" {
   })
   default     = { enabled = false }
   description = "Configuration for Prometheus VPC endpoint to send data to"
-}
-
-###############################
-#### Grafana Privatelink ######
-###############################
-
-variable "grafana_privatelink_config" {
-  type = object({
-    enabled                     = optional(bool, true)
-    endpoint_allowed_principals = optional(list(string), [])
-    additional_aws_regions      = optional(list(string), [])
-  })
-  default     = { enabled = true }
-  description = "Configuration for Grafana VPC endpoint Service (Privatelink) configuration"
 }
