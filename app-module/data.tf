@@ -91,18 +91,19 @@ data "aws_lb" "grafana_privatelink_nlb" {
 #######################
 ###### ArgoCD #########
 #######################
-
+# GitHub
 data "aws_secretsmanager_secret_version" "argocd_github_app" {
   count     = local.github_vcs_enabled ? 1 : 0
-  secret_id = local.argocd_config.vcs.github.app_secret_name
+  secret_id = local.argocd_config.vcs.github.githubapp_secret_name
 }
 
-data "aws_secretsmanager_secret_version" "argocd_private_key" {
+data "aws_secretsmanager_secret_version" "argocd_github_app_private_key" {
   count     = local.github_vcs_enabled ? 1 : 0
-  secret_id = local.argocd_config.vcs.github.private_key_secret
+  secret_id = local.argocd_config.vcs.github.github_private_key_secret
 }
 
-data "aws_secretsmanager_secret_version" "argocd_gitlab_app" {
+# GitLab
+data "aws_secretsmanager_secret_version" "argocd_gitlab_oauth" {
   count     = local.gitlab_vcs_enabled ? 1 : 0
   secret_id = local.argocd_config.vcs.gitlab.oauth_secret_name
 }
