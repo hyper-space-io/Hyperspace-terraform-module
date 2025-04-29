@@ -20,15 +20,21 @@ EOF
   depends_on = [module.eks]
 }
 
-resource "helm_release" "secret_manager_manifests" {
-  name            = "secret-manager-manifests"
-  chart           = "${path.module}/secrets-manager-manifests"
-  wait            = true
-  force_update    = true
-  cleanup_on_fail = true
-  values = [<<EOT
-  awsRegion: "${var.aws_region}"
-  EOT
-  ]
+resource "kubernetes_manifest" "cluster_secret_store" {
+  manifest = {
+    apiVersion = "external-secrets.io/v1beta1"
+    kind       = "ClusterSecretStore"
+    metadata = {
+      name = "cluster-secret-store"
+    }
+    spec = {
+      provider = {
+        aws = {
+          region  = var.aws_region
+          service = "SecretsManager"
+        }
+      }
+    }
+  }
   depends_on = [helm_release.secrets_manager, module.eks]
 }

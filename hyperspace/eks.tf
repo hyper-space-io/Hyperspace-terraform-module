@@ -262,3 +262,36 @@ module "boto3_irsa" {
   }
   depends_on = [module.eks]
 }
+
+
+resource "null_resource" "eks_endpoint_visibility" {
+  triggers = {
+    always_run = timestamp()
+  }
+
+  provisioner "local-exec" {
+    command = <<EOT
+      aws eks update-cluster-config \
+        --region ${var.aws_region} \
+        --name ${module.eks.cluster_id} \
+        --resources-vpc-config endpointPublicAccess=true,endpointPrivateAccess=true
+    EOT
+  }
+}
+
+resource "null_resource" "eks_endpoint_visibility_private" {
+  depends_on = [null_resource.eks_endpoint_visibility]
+
+  triggers = {
+    always_run = timestamp()
+  }
+
+  provisioner "local-exec" {
+    command = <<EOT
+      aws eks update-cluster-config \
+        --region ${var.aws_region} \
+        --name ${module.eks.cluster_id} \
+        --resources-vpc-config endpointPublicAccess=false,endpointPrivateAccess=true
+    EOT
+  }
+}

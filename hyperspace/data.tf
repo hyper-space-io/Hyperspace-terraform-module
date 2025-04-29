@@ -1,4 +1,119 @@
 #######################
+#### Terraform Cloud ##
+#######################
+
+data "terraform_remote_state" "infra" {
+  backend = "remote"
+
+  config = {
+    organization = var.tfe_organization
+    workspaces = {
+      name = var.infra_workspace_name
+    }
+  }
+}
+
+#######################
+######## EKS ##########
+#######################
+
+data "kubernetes_storage_class" "name" {
+  metadata { name = "gp2" }
+  depends_on = [module.eks]
+}
+
+data "kubernetes_ingress_v1" "internal_ingress" {
+  metadata {
+    name      = "internal-ingress"
+    namespace = "ingress"
+  }
+  depends_on = [time_sleep.wait_for_internal_ingress, module.eks, kubernetes_ingress_v1.nginx_ingress]
+}
+
+data "kubernetes_ingress_v1" "external_ingress" {
+  metadata {
+    name      = "external-ingress"
+    namespace = "ingress"
+  }
+  depends_on = [time_sleep.wait_for_external_ingress, module.eks, kubernetes_ingress_v1.nginx_ingress]
+}
+
+data "aws_eks_cluster_auth" "eks" {
+  name       = local.cluster_name
+  depends_on = [module.eks]
+}
+
+data "aws_ami" "fpga" {
+  owners     = ["${var.hyperspace_account_id}"]
+  name_regex = "eks-1\\.31-fpga-prod"
+}
+
+#######################
+### Load Balancer #####
+#######################
+
+#### ArgoCD Privatelink ####
+resource "time_sleep" "wait_for_argocd_privatelink_nlb" {
+  count           = local.argocd_privatelink_enabled ? 1 : 0
+  create_duration = "180s"
+  depends_on      = [helm_release.argocd]
+}
+
+data "aws_lb" "argocd_privatelink_nlb" {
+  count = local.argocd_privatelink_enabled ? 1 : 0
+  tags = {
+    "elbv2.k8s.aws/cluster"    = module.eks.cluster_name
+    "service.k8s.aws/resource" = "LoadBalancer"
+    "service.k8s.aws/stack"    = "argocd/argocd-server"
+  }
+
+  depends_on = [time_sleep.wait_for_argocd_privatelink_nlb]
+}
+
+#### Grafana Privatelink ####
+resource "time_sleep" "wait_for_grafana_privatelink_nlb" {
+  count           = local.grafana_privatelink_enabled ? 1 : 0
+  create_duration = "180s"
+  depends_on      = [helm_release.grafana]
+}
+
+data "aws_lb" "grafana_privatelink_nlb" {
+  count = local.grafana_privatelink_enabled ? 1 : 0
+  tags = {
+    "elbv2.k8s.aws/cluster"    = module.eks.cluster_name
+    "service.k8s.aws/resource" = "LoadBalancer"
+    "service.k8s.aws/stack"    = "monitoring/grafana"
+  }
+
+  depends_on = [time_sleep.wait_for_grafana_privatelink_nlb]
+}
+
+#######################
+###### ArgoCD #########
+#######################
+# GitHub
+data "aws_secretsmanager_secret_version" "argocd_github_app" {
+  count     = local.github_vcs_enabled ? 1 : 0
+  secret_id = local.argocd_config.vcs.github.githubapp_secret_name
+}
+
+data "aws_secretsmanager_secret_version" "argocd_github_app_private_key" {
+  count     = local.github_vcs_enabled ? 1 : 0
+  secret_id = local.argocd_config.vcs.github.github_private_key_secret
+}
+
+# GitLab
+data "aws_secretsmanager_secret_version" "argocd_gitlab_oauth" {
+  count     = local.gitlab_vcs_enabled ? 1 : 0
+  secret_id = local.argocd_config.vcs.gitlab.oauth_secret_name
+}
+
+data "aws_secretsmanager_secret_version" "argocd_gitlab_credentials" {
+  count     = local.gitlab_vcs_enabled ? 1 : 0
+  secret_id = local.argocd_config.vcs.gitlab.credentials_secret_name
+}
+
+#######################
 ######## AWS ##########
 #######################
 
@@ -9,21 +124,6 @@ data "aws_availability_zones" "available" {
 data "aws_caller_identity" "current" {}
 
 data "aws_region" "current" {}
-
-#######################
-### Terraform Cloud ###
-#######################
-
-data "tfe_organizations" "all" {}
-
-data "tfe_workspace" "current" {
-  name         = terraform.workspace
-  organization = data.tfe_organizations.all.names[0]
-}
-
-#######################
-###### VCS ############
-#######################
 
 data "aws_secretsmanager_secret_version" "hyperspace_github_pat" {
   secret_id = "hyperspace/github_pat"
@@ -317,4 +417,19 @@ data "aws_iam_policy_document" "kms" {
       values   = ["true"]
     }
   }
+}
+
+data "aws_vpc" "existing" {
+  count = var.create_vpc ? 0 : 1
+  id    = var.existing_vpc_config.vpc_id
+}
+
+data "aws_subnet" "existing_private" {
+  count = var.create_vpc ? 0 : length(var.existing_vpc_config.private_subnets)
+  id    = var.existing_vpc_config.private_subnets[count.index]
+}
+
+data "aws_subnet" "existing_public" {
+  count = var.create_vpc ? 0 : length(var.existing_vpc_config.public_subnets)
+  id    = var.existing_vpc_config.public_subnets[count.index]
 }

@@ -7,11 +7,6 @@ resource "aws_iam_policy" "policies" {
   policy      = each.value.policy
 }
 
-# KMS
-data "aws_kms_key" "by_alias" {
-  key_id = local.hyperspace_ami_key_alias
-}
-
 # Create the KMS grant
 resource "aws_kms_grant" "asg_grant" {
   name              = "asg-cross-account-grant"

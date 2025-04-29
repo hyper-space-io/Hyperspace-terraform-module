@@ -37,3 +37,24 @@ terraform {
     }
   }
 }
+
+terraform {
+  required_providers {
+    tfe = {
+      source = "hashicorp/tfe"
+    }
+    aws = {
+      source = "hashicorp/aws"
+    }
+  }
+}
+
+provider "aws" {
+  region = var.aws_region
+  assume_role {
+    role_arn     = "arn:aws:iam::${var.hyperspace_account_id}:role/PlatformAdmin"
+    session_name = "terraform"
+  }
+}
+
+data "aws_caller_identity" "current" {} 

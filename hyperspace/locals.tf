@@ -1,18 +1,100 @@
 locals {
-  tags                             = jsondecode(var.tags)
-  vpc_module                       = jsondecode(var.vpc_module)
-  s3_bucket_names                  = jsondecode(var.s3_buckets_names)
-  s3_bucket_arns                   = jsondecode(var.s3_buckets_arns)
-  iam_policies                     = jsondecode(var.iam_policies)
-  local_iam_policies               = jsondecode(var.local_iam_policies)
-  availability_zones               = jsondecode(var.availability_zones)
-  worker_instance_type             = jsondecode(var.worker_instance_type)
-  eks_additional_admin_roles       = jsondecode(var.eks_additional_admin_roles)
-  prometheus_endpoint_config       = jsondecode(var.prometheus_endpoint_config)
+  # General
+  tags = merge(var.tags, {
+    project     = "hyperspace"
+    environment = var.environment
+    terraform   = "true"
+  })
+
+  ##################
+  ##### VPC ########
+  ##################
+  availability_zones = length(var.availability_zones) == 0 ? slice(data.aws_availability_zones.available.names, 0, var.num_zones) : var.availability_zones
+  private_subnets    = [for azs_count in local.availability_zones : cidrsubnet(var.vpc_cidr, 4, index(local.availability_zones, azs_count))]
+  public_subnets     = [for azs_count in local.availability_zones : cidrsubnet(var.vpc_cidr, 4, index(local.availability_zones, azs_count) + 5)]
+
+  # EKS
+  cluster_name = "${var.project}-${var.environment}"
+
+  # KMS
+  hyperspace_ami_key_alias = "arn:aws:kms:${var.aws_region}:${var.hyperspace_account_id}:alias/HYPERSPACE_AMI_KEY"
+
+  # IAM Policies
+  iam_policies = {
+    fpga_pull = {
+      name        = "${local.cluster_name}-FpgaPullAccessPolicy"
+      path        = "/"
+      description = "Policy for loading AFI in eks"
+      policy      = data.aws_iam_policy_document.fpga_pull_access.json
+    }
+    ec2_tags = {
+      name                     = "${local.cluster_name}-EC2TagsPolicy"
+      path                     = "/"
+      description              = "Policy for controling EC2 resources tags"
+      policy                   = data.aws_iam_policy_document.ec2_tags_control.json
+      create_cluster_wide_role = true
+    }
+    cluster-autoscaler = {
+      name                  = "${local.cluster_name}-cluster-autoscaler"
+      path                  = "/"
+      description           = "Policy for cluster-autoscaler service"
+      policy                = data.aws_iam_policy_document.cluster_autoscaler.json
+      create_assumable_role = true
+      sa_namespace          = "cluster-autoscaler"
+    }
+    core-dump = {
+      name                  = "${local.cluster_name}-core-dump"
+      path                  = "/"
+      description           = "Policy for core-dump service"
+      policy                = data.aws_iam_policy_document.core_dump_s3_full_access.json
+      create_assumable_role = true
+      sa_namespace          = "core-dump"
+    }
+    velero = {
+      name                  = "${local.cluster_name}-velero"
+      path                  = "/"
+      description           = "Policy for velero service"
+      policy                = data.aws_iam_policy_document.velero_s3_full_access.json
+      create_assumable_role = true
+      sa_namespace          = "velero"
+    }
+    loki = {
+      name                  = "${local.cluster_name}-loki"
+      path                  = "/"
+      description           = "Policy for loki service"
+      policy                = data.aws_iam_policy_document.loki_s3_dynamodb_full_access.json
+      create_assumable_role = true
+      sa_namespace          = "monitoring"
+    }
+    external-secrets = {
+      name                  = "${local.cluster_name}-external-secrets"
+      path                  = "/"
+      description           = "Policy for external-secrets service"
+      policy                = data.aws_iam_policy_document.secrets_manager.json
+      create_assumable_role = true
+      sa_namespace          = "external-secrets"
+    }
+    kms = {
+      name        = "${local.cluster_name}-kms"
+      path        = "/"
+      description = "Policy for using Hyperspace's KMS key for AMI encryption"
+      policy      = data.aws_iam_policy_document.kms.json
+    }
+  }
+
+  # Other configurations
+  vpc_module                       = var.vpc_module
+  s3_bucket_names                  = var.s3_buckets_names
+  s3_bucket_arns                   = var.s3_buckets_arns
+  local_iam_policies               = var.local_iam_policies
+  worker_instance_type             = var.worker_instance_type
+  eks_additional_admin_roles       = var.eks_additional_admin_roles
+  prometheus_endpoint_config       = var.prometheus_endpoint_config
   prometheus_endpoint_enabled      = var.create_eks && local.prometheus_endpoint_config.enabled
-  argocd_config                    = jsondecode(var.argocd_config)
+  argocd_config                    = var.argocd_config
   prometheus_remote_write_endpoint = "https://prometheus.internal.devops-dev.hyper-space.xyz/api/v1/write"
   internal_ingress_class_name      = "nginx-internal"
+  hyperspace_org_name              = "hyper-space-io"
 
   alb_values = <<EOT
   vpcId: ${local.vpc_module.vpc_id}
@@ -22,8 +104,6 @@ locals {
   #################
   ##### EKS #######
   #################
-  cluster_name = "${var.project}-${var.environment}"
-
   default_node_pool_tags = {
     "k8s.io/cluster-autoscaler/enabled"               = "True"
     "k8s.io/cluster-autoscaler/${local.cluster_name}" = "True"
@@ -152,7 +232,7 @@ locals {
   ### Grafana Privatelink ###
   ###########################
 
-  grafana_privatelink_config       = jsondecode(var.grafana_privatelink_config)
+  grafana_privatelink_config       = var.grafana_privatelink_config
   grafana_privatelink_enabled      = var.create_eks && local.grafana_privatelink_config.enabled
 
   grafana_privatelink_allowed_principals = distinct(concat(
@@ -206,8 +286,8 @@ locals {
       id   = "github"
       name = "GitHub"
       config = {
-        clientID     = try(jsondecode(data.aws_secretsmanager_secret_version.argocd_github_app[0].secret_string).client_id, null)
-        clientSecret = try(jsondecode(data.aws_secretsmanager_secret_version.argocd_github_app[0].secret_string).client_secret, null)
+        clientID     = try(data.aws_secretsmanager_secret_version.argocd_github_app[0].secret_string.client_id, null)
+        clientSecret = try(data.aws_secretsmanager_secret_version.argocd_github_app[0].secret_string.client_secret, null)
         orgs         = [{ name = local.argocd_config.vcs.organization }]
       }
     }] : [],
@@ -217,8 +297,8 @@ locals {
       name = "GitLab"
       config = {
         baseURL      = "https://gitlab.com"
-        clientID     = try(jsondecode(data.aws_secretsmanager_secret_version.argocd_gitlab_oauth[0].secret_string).application_id, null)
-        clientSecret = try(jsondecode(data.aws_secretsmanager_secret_version.argocd_gitlab_oauth[0].secret_string).secret, null)
+        clientID     = try(data.aws_secretsmanager_secret_version.argocd_gitlab_oauth[0].secret_string.application_id, null)
+        clientSecret = try(data.aws_secretsmanager_secret_version.argocd_gitlab_oauth[0].secret_string.secret, null)
         orgs         = [{ name = local.argocd_config.vcs.organization }]
       }
     }] : []
@@ -229,16 +309,16 @@ locals {
     local.github_vcs_enabled ? {
       "github-creds" = {
         url                     = "https://github.com/${local.argocd_config.vcs.organization}/${local.argocd_config.vcs.repository}"
-        githubAppID             = try(jsondecode(data.aws_secretsmanager_secret_version.argocd_github_app[0].secret_string).github_app_id, null)
-        githubAppInstallationID = try(jsondecode(data.aws_secretsmanager_secret_version.argocd_github_app[0].secret_string).github_installation_id, null)
+        githubAppID             = try(data.aws_secretsmanager_secret_version.argocd_github_app[0].secret_string.github_app_id, null)
+        githubAppInstallationID = try(data.aws_secretsmanager_secret_version.argocd_github_app[0].secret_string.github_installation_id, null)
         githubAppPrivateKey     = try(data.aws_secretsmanager_secret_version.argocd_github_app_private_key[0].secret_string, null)
       }
     } : {},
     local.gitlab_vcs_enabled ? {
       "gitlab-creds" = {
         url      = "https://gitlab.com/${local.argocd_config.vcs.organization}/${local.argocd_config.vcs.repository}.git"
-        username = try(jsondecode(data.aws_secretsmanager_secret_version.argocd_gitlab_credentials[0].secret_string).username, null)
-        password = try(jsondecode(data.aws_secretsmanager_secret_version.argocd_gitlab_credentials[0].secret_string).deploy_token, null)
+        username = try(data.aws_secretsmanager_secret_version.argocd_gitlab_credentials[0].secret_string.username, null)
+        password = try(data.aws_secretsmanager_secret_version.argocd_gitlab_credentials[0].secret_string.deploy_token, null)
       }
     } : {}
   )
