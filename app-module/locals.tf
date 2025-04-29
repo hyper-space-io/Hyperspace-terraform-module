@@ -12,8 +12,6 @@ locals {
   prometheus_endpoint_enabled      = var.create_eks && local.prometheus_endpoint_config.enabled
   argocd_config                    = jsondecode(var.argocd_config)
   prometheus_remote_write_endpoint = "https://prometheus.internal.devops-dev.hyper-space.xyz/api/v1/write"
-  grafana_privatelink_config       = jsondecode(var.grafana_privatelink_config)
-  grafana_privatelink_enabled      = var.create_eks && local.grafana_privatelink_config.enabled
   internal_ingress_class_name      = "nginx-internal"
 
   alb_values = <<EOT
@@ -153,6 +151,9 @@ locals {
   ###########################
   ### Grafana Privatelink ###
   ###########################
+
+  grafana_privatelink_config       = jsondecode(var.grafana_privatelink_config)
+  grafana_privatelink_enabled      = var.create_eks && local.grafana_privatelink_config.enabled
 
   grafana_privatelink_allowed_principals = distinct(concat(
     try(local.grafana_privatelink_config.endpoint_allowed_principals, []),

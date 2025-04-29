@@ -3,11 +3,11 @@
 ########################
 
 output "argocd_vpc_endpoint_service_domain_verification_name" {
-  value = aws_vpc_endpoint_service.argocd_server[0].private_dns_name_configuration[0].name
+  value = local.argocd_privatelink_enabled ? aws_vpc_endpoint_service.argocd_server[0].private_dns_name_configuration[0].name : null
 }
 
 output "argocd_vpc_endpoint_service_domain_verification_value" {
-  value = aws_vpc_endpoint_service.argocd_server[0].private_dns_name_configuration[0].value
+  value = local.argocd_privatelink_enabled ? aws_vpc_endpoint_service.argocd_server[0].private_dns_name_configuration[0].value : null
 }
 
 ########################
@@ -15,11 +15,11 @@ output "argocd_vpc_endpoint_service_domain_verification_value" {
 ########################
 
 output "grafana_vpc_endpoint_service_domain_verification_name" {
-  value = aws_vpc_endpoint_service.grafana[0].private_dns_name_configuration[0].name
+  value = local.grafana_privatelink_enabled ? aws_vpc_endpoint_service.grafana[0].private_dns_name_configuration[0].name : null
 }
 
 output "grafana_vpc_endpoint_service_domain_verification_value" {
-  value = aws_vpc_endpoint_service.grafana[0].private_dns_name_configuration[0].value
+  value = local.grafana_privatelink_enabled ? aws_vpc_endpoint_service.grafana[0].private_dns_name_configuration[0].value : null
 }
 
 #######################
