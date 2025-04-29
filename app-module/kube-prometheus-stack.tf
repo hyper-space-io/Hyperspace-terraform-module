@@ -130,8 +130,8 @@ resource "helm_release" "grafana" {
         } : {}
       }
       ingress = {
-        enabled          = local.grafana_networking.ingress_enabled
-        ingressClassName = local.grafana_networking.ingress_class_name
+        enabled          = true
+        ingressClassName = local.internal_ingress_class_name
         hosts = [
           "grafana.${local.internal_domain_name}"
         ]
