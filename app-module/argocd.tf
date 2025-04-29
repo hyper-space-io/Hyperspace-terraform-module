@@ -104,12 +104,22 @@ resource "null_resource" "argocd_create_user" {
       done
       
       echo "Successfully logged in to ArgoCD!"
-      echo "Updating hyperspace user password..."
-      argocd account update-password \
-        --account hyperspace \
-        --current-password $ARGOCD_PASSWORD \
-        --new-password ${random_password.argocd_readonly[count.index].result}
-      echo "Hyperspace User password updated successfully!"
+      
+      # Get current hyperspace password from secret
+      CURRENT_HYPERSPACE_PASSWORD=$(kubectl -n argocd get secret argocd-secret -o jsonpath="{.data.accounts\.hyperspace\.password}" | base64 -d)
+      NEW_PASSWORD="${random_password.argocd_readonly[count.index].result}"
+      
+      # Only update if passwords are different
+      if [ "$CURRENT_HYPERSPACE_PASSWORD" != "$NEW_PASSWORD" ]; then
+        echo "Current password is different from desired password. Updating hyperspace user password..."
+        argocd account update-password \
+          --account hyperspace \
+          --current-password $ARGOCD_PASSWORD \
+          --new-password $NEW_PASSWORD
+        echo "Hyperspace User password updated successfully!"
+      else
+        echo "Current password matches desired password. No update needed."
+      fi
     EOT
   }
   depends_on = [helm_release.argocd, data.aws_lb.argocd_privatelink_nlb[0]]
