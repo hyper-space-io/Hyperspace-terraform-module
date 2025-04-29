@@ -269,13 +269,13 @@ locals {
   ]
 
   # User rules
-  user_rbac_rules = try(local.argocd_config.rbac.sso_admin_group != null, false) ? try(local.argocd_config.rbac.users_rbac_rules, []) : []
+  user_rbac_rules = try(local.argocd_config.rbac.sso_admin_group != "", false) ? try(local.argocd_config.rbac.users_rbac_rules, []) : []
 
   # Additional rules
   additional_rbac_rules = try(local.argocd_config.rbac.users_additional_rules, [])
 
   # Combined rules
-  default_argocd_rbac_policy_rules = distinct(concat(
+  argocd_rbac_policy_rules = distinct(concat(
     local.base_rbac_rules,
     local.sso_rbac_rules,
     local.user_rbac_rules,
