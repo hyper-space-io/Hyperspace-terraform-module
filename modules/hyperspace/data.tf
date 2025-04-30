@@ -1,31 +1,42 @@
 #######################
-######## EKS ##########
+######## AWS ##########
 #######################
 
-data "kubernetes_storage_class" "name" {
-  metadata { name = "gp2" }
-  depends_on = [module.eks]
+data "aws_availability_zones" "available" {
+  state = "available"
 }
 
-data "kubernetes_ingress_v1" "internal_ingress" {
-  metadata {
-    name      = "internal-ingress"
-    namespace = "ingress"
-  }
-  depends_on = [time_sleep.wait_for_internal_ingress, module.eks, kubernetes_ingress_v1.nginx_ingress]
+data "aws_region" "current" {}
+
+data "aws_secretsmanager_secret_version" "hyperspace_github_pat" {
+  secret_id = "hyperspace/github_pat"
 }
 
-data "kubernetes_ingress_v1" "external_ingress" {
-  metadata {
-    name      = "external-ingress"
-    namespace = "ingress"
-  }
-  depends_on = [time_sleep.wait_for_external_ingress, module.eks, kubernetes_ingress_v1.nginx_ingress]
+#######################
+####### VPC ###########
+#######################
+
+data "aws_vpc" "existing" {
+  count = var.create_vpc ? 0 : 1
+  id    = var.existing_vpc_config.vpc_id
 }
 
-data "aws_eks_cluster_auth" "eks" {
-  name       = local.cluster_name
-  depends_on = [module.eks]
+data "aws_subnet" "existing_private" {
+  count = var.create_vpc ? 0 : length(var.existing_vpc_config.private_subnets)
+  id    = var.existing_vpc_config.private_subnets[count.index]
+}
+
+data "aws_subnet" "existing_public" {
+  count = var.create_vpc ? 0 : length(var.existing_vpc_config.public_subnets)
+  id    = var.existing_vpc_config.public_subnets[count.index]
+}
+
+#######################
+######## KMS ##########
+#######################
+
+data "aws_kms_key" "by_alias" {
+  key_id = local.hyperspace_ami_key_alias
 }
 
 #######################
@@ -94,20 +105,6 @@ data "aws_secretsmanager_secret_version" "argocd_gitlab_credentials" {
 }
 
 #######################
-######## AWS ##########
-#######################
-
-data "aws_availability_zones" "available" {
-  state = "available"
-}
-
-data "aws_region" "current" {}
-
-data "aws_secretsmanager_secret_version" "hyperspace_github_pat" {
-  secret_id = "hyperspace/github_pat"
-}
-
-#######################
 ######## EC2 ##########
 #######################
 
@@ -167,6 +164,32 @@ data "aws_iam_policy_document" "fpga_pull_access" {
 #######################
 ######### EKS #########
 #######################
+
+data "kubernetes_storage_class" "name" {
+  metadata { name = "gp2" }
+  depends_on = [module.eks]
+}
+
+data "kubernetes_ingress_v1" "internal_ingress" {
+  metadata {
+    name      = "internal-ingress"
+    namespace = "ingress"
+  }
+  depends_on = [time_sleep.wait_for_internal_ingress, module.eks, kubernetes_ingress_v1.nginx_ingress]
+}
+
+data "kubernetes_ingress_v1" "external_ingress" {
+  metadata {
+    name      = "external-ingress"
+    namespace = "ingress"
+  }
+  depends_on = [time_sleep.wait_for_external_ingress, module.eks, kubernetes_ingress_v1.nginx_ingress]
+}
+
+data "aws_eks_cluster_auth" "eks" {
+  name       = local.cluster_name
+  depends_on = [module.eks]
+}
 
 data "aws_iam_policy_document" "cluster_autoscaler" {
   statement {
@@ -395,19 +418,4 @@ data "aws_iam_policy_document" "kms" {
       values   = ["true"]
     }
   }
-}
-
-data "aws_vpc" "existing" {
-  count = var.create_vpc ? 0 : 1
-  id    = var.existing_vpc_config.vpc_id
-}
-
-data "aws_subnet" "existing_private" {
-  count = var.create_vpc ? 0 : length(var.existing_vpc_config.private_subnets)
-  id    = var.existing_vpc_config.private_subnets[count.index]
-}
-
-data "aws_subnet" "existing_public" {
-  count = var.create_vpc ? 0 : length(var.existing_vpc_config.public_subnets)
-  id    = var.existing_vpc_config.public_subnets[count.index]
 }

@@ -57,8 +57,8 @@ variable "vpc_module" {
 }
 
 variable "availability_zones" {
-  type        = string
-  default     = ""
+  type        = list(string)
+  default     = []
   description = "List of availability zones to deploy the resources. Leave empty to automatically select based on the region and the variable num_zones."
 }
 

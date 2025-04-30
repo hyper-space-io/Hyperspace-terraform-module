@@ -1,13 +1,19 @@
+resource "random_string" "suffix" {
+  length  = 8
+  upper   = false
+  special = false
+}
+
 resource "aws_s3_bucket" "terraform_state" {
-  bucket = "hyperspace-terraform-state"
+  bucket = "hyperspace-terraform-state-${random_string.suffix.result}"
 
   # Prevent accidental deletion of this S3 bucket
   lifecycle {
-    prevent_destroy = true
+    prevent_destroy = false
   }
 
   tags = {
-    Terraform = "true"
+    Terraform = "True"
   }
 }
 
