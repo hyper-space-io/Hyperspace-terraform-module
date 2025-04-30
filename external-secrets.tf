@@ -1,6 +1,7 @@
 locals {
   external_secrets_release_name = "external-secrets"
 }
+
 resource "helm_release" "secrets_manager" {
   count            = var.create_eks ? 1 : 0
   namespace        = local.external_secrets_release_name
@@ -20,21 +21,17 @@ EOF
   depends_on = [module.eks]
 }
 
-resource "kubernetes_manifest" "cluster_secret_store" {
-  manifest = {
-    apiVersion = "external-secrets.io/v1beta1"
-    kind       = "ClusterSecretStore"
-    metadata = {
-      name = "cluster-secret-store"
-    }
-    spec = {
-      provider = {
-        aws = {
-          region  = var.aws_region
-          service = "SecretsManager"
-        }
-      }
-    }
-  }
+resource "kubectl_manifest" "cluster_secret_store" {
+  yaml_body = <<-EOF
+    apiVersion: external-secrets.io/v1beta1
+    kind: ClusterSecretStore
+    metadata:
+      name: cluster-secret-store
+    spec:
+      provider:
+        aws:
+          region: ${var.aws_region}
+          service: SecretsManager
+  EOF
   depends_on = [helm_release.secrets_manager, module.eks]
 }
