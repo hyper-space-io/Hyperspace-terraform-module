@@ -4,7 +4,7 @@ module "eks" {
   create          = var.create_eks
   cluster_name    = local.cluster_name
   cluster_version = "1.31"
-  subnet_ids      = local.private_subnets
+  subnet_ids      = module.vpc.private_subnets
   vpc_id          = module.vpc.vpc_id
   tags            = local.tags
 
@@ -179,7 +179,6 @@ module "eks" {
 
   cloudwatch_log_group_retention_in_days = "7"
   cluster_enabled_log_types              = ["api", "audit", "controllerManager", "scheduler", "authenticator"]
-  depends_on                             = [aws_iam_policy.policies]
 }
 
 # EBS CSI Driver IRSA 
