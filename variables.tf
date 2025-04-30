@@ -30,6 +30,7 @@ variable "tags" {
   default     = {}
 }
 
+
 ########################
 #### Hyperspace ########
 ########################
@@ -39,9 +40,21 @@ variable "hyperspace_account_id" {
   description = "The account ID of the hyperspace account, used to pull resources from Hyperspace like AMIs"
 }
 
+variable "hyperspace_aws_region" {
+  type        = string
+  default     = "us-east-1"
+  description = "The region of the hyperspace account"
+}
+
 ###############################
 ########### VPC ###############
 ###############################
+
+variable "availability_zones" {
+  type        = list(string)
+  default     = []
+  description = "List of availability zones to deploy the resources. Leave empty to automatically select based on the region and the variable num_zones."
+}
 
 variable "create_vpc" {
   description = "Controls if VPC should be created"
@@ -49,16 +62,26 @@ variable "create_vpc" {
   default     = true
 }
 
+variable "existing_vpc_config" {
+  description = "Configuration for using an existing VPC"
+  type = object({
+    vpc_id          = string
+    vpc_cidr        = string
+    private_subnets = list(string)
+    public_subnets  = list(string)
+  })
+  default = {
+    vpc_id          = null
+    vpc_cidr        = null
+    private_subnets = []
+    public_subnets  = []
+  }
+}
+
 variable "vpc_cidr" {
   type        = string
   description = "CIDR block for the VPC"
   default     = "10.0.0.0/16"
-}
-
-variable "availability_zones" {
-  type        = list(string)
-  default     = []
-  description = "List of availability zones to deploy the resources. Leave empty to automatically select based on the region and the variable num_zones."
 }
 
 variable "num_zones" {
@@ -81,22 +104,6 @@ variable "single_nat_gateway" {
   type        = bool
   description = "Use single NAT Gateway OR one per AZ"
   default     = false
-}
-
-variable "existing_vpc_config" {
-  description = "Configuration for using an existing VPC"
-  type = object({
-    vpc_id          = string
-    vpc_cidr        = string
-    private_subnets = list(string)
-    public_subnets  = list(string)
-  })
-  default = {
-    vpc_id          = null
-    vpc_cidr        = null
-    private_subnets = []
-    public_subnets  = []
-  }
 }
 
 variable "create_vpc_flow_logs" {
@@ -300,7 +307,7 @@ variable "prometheus_endpoint_config" {
 }
 
 ################################
-#### Grafana Privatelink ######
+#### Grafana Privatelink #######
 ################################
 
 variable "grafana_privatelink_config" {
