@@ -27,6 +27,3 @@ provider "aws" {
     session_name = "terraform"
   }
 }
-
-data "aws_caller_identity" "current" {}
-
