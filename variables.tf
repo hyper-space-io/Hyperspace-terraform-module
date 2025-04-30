@@ -282,12 +282,12 @@ variable "prometheus_endpoint_config" {
 variable "grafana_privatelink_config" {
   type = object({
     enabled                     = bool
-    endpoint_allowed_principals = list(string, [])
-    additional_aws_regions      = list(string, [])
+    endpoint_allowed_principals = optional(list(string), [])
+    additional_aws_regions      = optional(list(string), [])
   })
   description = "Grafana privatelink configuration"
   default = {
-    enabled                     = false
+    enabled = false
     endpoint_allowed_principals = []
     additional_aws_regions      = []
   }
