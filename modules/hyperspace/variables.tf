@@ -70,12 +70,12 @@ variable "create_vpc" {
 
 variable "existing_vpc_config" {
   description = "Configuration for using an existing VPC"
-  type = optional(object({
+  type = object({
     vpc_id            = string
     vpc_cidr          = string
     private_subnets   = list(string)
     public_subnets    = list(string)
-  }))
+  })
   default = {
     vpc_id          = null
     vpc_cidr        = null
