@@ -8,6 +8,11 @@ variable "terraform_role" {
   default     = "PlatformAdmin"
 }
 
+variable "aws_account_id" {
+  type        = string
+  description = "AWS account ID"
+}
+
 variable "project" {
   type        = string
   description = "Name of the project"
