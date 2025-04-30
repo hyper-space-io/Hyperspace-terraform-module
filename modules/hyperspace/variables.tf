@@ -240,27 +240,27 @@ variable "argocd_config" {
   type = object({
     enabled = bool
     privatelink = object({
-      enabled                 = bool
+      enabled                     = bool
       endpoint_allowed_principals = list(string)
-      additional_aws_regions  = list(string)
+      additional_aws_regions      = list(string)
     })
     vcs = object({
       organization = string
-      repository  = string
+      repository   = string
       github = optional(object({
-        enabled            = bool
-        githubapp_secret_name = string
+        enabled                   = bool
+        githubapp_secret_name     = string
         github_private_key_secret = string
       }))
       gitlab = optional(object({
-        enabled            = bool
-        oauth_secret_name  = string
+        enabled                 = bool
+        oauth_secret_name       = string
         credentials_secret_name = string
       }))
     })
     rbac = object({
-      sso_admin_group = string
-      users_rbac_rules = list(string)
+      sso_admin_group        = string
+      users_rbac_rules       = list(string)
       users_additional_rules = list(string)
     })
   })
@@ -268,17 +268,17 @@ variable "argocd_config" {
   default = {
     enabled = true
     privatelink = {
-      enabled                 = false
+      enabled                     = false
       endpoint_allowed_principals = []
-      additional_aws_regions  = []
+      additional_aws_regions      = []
     }
     vcs = {
       organization = ""
-      repository  = ""
+      repository   = ""
     }
     rbac = {
-      sso_admin_group = ""
-      users_rbac_rules = []
+      sso_admin_group        = ""
+      users_rbac_rules       = []
       users_additional_rules = []
     }
   }
@@ -310,14 +310,14 @@ variable "prometheus_endpoint_config" {
 
 variable "grafana_privatelink_config" {
   type = object({
-    enabled                 = bool
+    enabled                     = bool
     endpoint_allowed_principals = list(string)
-    additional_aws_regions  = list(string)
+    additional_aws_regions      = list(string)
   })
   description = "Grafana privatelink configuration"
   default = {
-    enabled                 = false
+    enabled                     = false
     endpoint_allowed_principals = []
-    additional_aws_regions  = []
+    additional_aws_regions      = []
   }
 }

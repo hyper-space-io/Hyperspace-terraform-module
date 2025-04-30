@@ -22,35 +22,6 @@ provider "helm" {
 
 provider "aws" {
   region = var.aws_region
-}
-
-terraform {
-  required_version = ">= 1.0.0"
-  required_providers {
-    kubernetes = {
-      source  = "hashicorp/kubernetes"
-      version = "~> 2.0"
-    }
-    helm = {
-      source  = "hashicorp/helm"
-      version = "~> 2.0"
-    }
-  }
-}
-
-terraform {
-  required_providers {
-    tfe = {
-      source = "hashicorp/tfe"
-    }
-    aws = {
-      source = "hashicorp/aws"
-    }
-  }
-}
-
-provider "aws" {
-  region = var.aws_region
   assume_role {
     role_arn     = "arn:aws:iam::${var.hyperspace_account_id}:role/PlatformAdmin"
     session_name = "terraform"
