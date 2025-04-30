@@ -6,7 +6,20 @@ locals {
     terraform   = "true"
   })
 
+  worker_instance_type             = var.worker_instance_type
+  eks_additional_admin_roles       = var.eks_additional_admin_roles
+  prometheus_endpoint_config       = var.prometheus_endpoint_config
+  prometheus_endpoint_enabled      = var.create_eks && local.prometheus_endpoint_config.enabled
+  argocd_config                    = var.argocd_config
+  prometheus_remote_write_endpoint = "https://prometheus.internal.devops-dev.hyper-space.xyz/api/v1/write"
+  internal_ingress_class_name      = "nginx-internal"
+  hyperspace_org_name              = "hyper-space-io"
+  hyperspace_ecr_registry_region   = "eu-west-1"
 
+  alb_values = <<EOT
+  vpcId: ${module.vpc.vpc_id}
+  region: ${var.aws_region}
+  EOT
 
   ##################
   ##### VPC ########
@@ -85,23 +98,6 @@ locals {
       policy      = data.aws_iam_policy_document.kms.json
     }
   }
-
-  s3_bucket_names                  = var.s3_buckets_names
-  s3_bucket_arns                   = var.s3_buckets_arns
-  worker_instance_type             = var.worker_instance_type
-  eks_additional_admin_roles       = var.eks_additional_admin_roles
-  prometheus_endpoint_config       = var.prometheus_endpoint_config
-  prometheus_endpoint_enabled      = var.create_eks && local.prometheus_endpoint_config.enabled
-  argocd_config                    = var.argocd_config
-  prometheus_remote_write_endpoint = "https://prometheus.internal.devops-dev.hyper-space.xyz/api/v1/write"
-  internal_ingress_class_name      = "nginx-internal"
-  hyperspace_org_name              = "hyper-space-io"
-  hyperspace_ecr_registry_region   = "eu-west-1"
-
-  alb_values = <<EOT
-  vpcId: ${module.vpc.vpc_id}
-  region: ${var.aws_region}
-  EOT
 
   #################
   ##### EKS #######

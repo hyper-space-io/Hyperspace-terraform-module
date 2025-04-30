@@ -93,4 +93,7 @@ locals {
     loki   = {}
   }
   s3_buckets = { for name, config in local.s3_config : name => merge(local.s3_default_config, config) }
+  s3_bucket_names = {
+    for k, v in module.s3_buckets : k => v.s3_bucket_id
+  }
 }
