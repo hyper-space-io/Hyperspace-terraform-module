@@ -71,10 +71,10 @@ variable "create_vpc" {
 variable "existing_vpc_config" {
   description = "Configuration for using an existing VPC"
   type = object({
-    vpc_id            = string
-    vpc_cidr          = string
-    private_subnets   = list(string)
-    public_subnets    = list(string)
+    vpc_id          = string
+    vpc_cidr        = string
+    private_subnets = list(string)
+    public_subnets  = list(string)
   })
   default = {
     vpc_id          = null
@@ -241,27 +241,27 @@ variable "argocd_config" {
     enabled = optional(bool, true)
     privatelink = optional(object({
       enabled                     = bool
-      endpoint_allowed_principals = list(string)
-      additional_aws_regions      = list(string)
+      endpoint_allowed_principals = optional(list(string), [])
+      additional_aws_regions      = optional(list(string), [])
     }))
     vcs = optional(object({
       organization = string
       repository   = string
       github = optional(object({
         enabled                   = bool
-        githubapp_secret_name     = string
-        github_private_key_secret = string
+        github_app_secret_name    = optional(string, "argocd/github_app")
+        github_private_key_secret = optional(string, "argocd/github_app_private_key")
       }))
       gitlab = optional(object({
         enabled                 = bool
-        oauth_secret_name       = string
-        credentials_secret_name = string
+        oauth_secret_name       = optional(string, "argocd/gitlab_oauth")
+        credentials_secret_name = optional(string, "argocd/gitlab_credentials")
       }))
     }))
     rbac = optional(object({
-      sso_admin_group        = string
-      users_rbac_rules       = list(string)
-      users_additional_rules = list(string)
+      sso_admin_group        = optional(string)
+      users_rbac_rules       = optional(list(string), [])
+      users_additional_rules = optional(list(string), [])
     }))
   })
   validation {
@@ -324,7 +324,7 @@ variable "grafana_privatelink_config" {
   })
   description = "Grafana privatelink configuration"
   default = {
-    enabled = false
+    enabled                     = false
     endpoint_allowed_principals = []
     additional_aws_regions      = []
   }
