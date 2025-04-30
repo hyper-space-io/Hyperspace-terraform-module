@@ -1,19 +1,4 @@
 #######################
-#### Terraform Cloud ##
-#######################
-
-data "terraform_remote_state" "infra" {
-  backend = "remote"
-
-  config = {
-    organization = var.tfe_organization
-    workspaces = {
-      name = var.infra_workspace_name
-    }
-  }
-}
-
-#######################
 ######## EKS ##########
 #######################
 
