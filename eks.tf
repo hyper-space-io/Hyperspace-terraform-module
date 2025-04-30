@@ -4,7 +4,7 @@ module "eks" {
   create          = var.create_eks
   cluster_name    = local.cluster_name
   cluster_version = "1.31"
-  subnet_ids      = module.vpc.private_subnet_ids
+  subnet_ids      = local.private_subnets
   vpc_id          = module.vpc.vpc_id
   tags            = local.tags
 
@@ -171,6 +171,7 @@ module "eks" {
 
   cloudwatch_log_group_retention_in_days = "7"
   cluster_enabled_log_types              = ["api", "audit", "controllerManager", "scheduler", "authenticator"]
+  depends_on                             = [aws_iam_policy.policies]
 }
 
 # EBS CSI Driver IRSA 
@@ -238,7 +239,7 @@ resource "kubernetes_storage_class" "ebs_sc_gp3" {
 module "iam_iam-assumable-role-with-oidc" {
   source                        = "terraform-aws-modules/iam/aws//modules/iam-assumable-role-with-oidc"
   version                       = "~> 5.48.0"
-  for_each                      = { for k, v in local.local_iam_policies : k => v if lookup(v, "create_assumable_role", false) == true }
+  for_each                      = { for k, v in local.iam_policies : k => v if lookup(v, "create_assumable_role", false) == true }
   create_role                   = true
   role_name                     = each.value.name
   provider_url                  = module.eks.cluster_oidc_issuer_url
@@ -248,7 +249,7 @@ module "iam_iam-assumable-role-with-oidc" {
 
 module "boto3_irsa" {
   source    = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
-  for_each  = { for k, v in local.local_iam_policies : k => v if lookup(v, "create_cluster_wide_role", false) == true }
+  for_each  = { for k, v in local.iam_policies : k => v if lookup(v, "create_cluster_wide_role", false) == true }
   role_name = each.value.name
   role_policy_arns = {
     policy = local.iam_policies["${each.key}"].arn

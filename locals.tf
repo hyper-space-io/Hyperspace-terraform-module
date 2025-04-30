@@ -81,7 +81,6 @@ locals {
 
   s3_bucket_names                  = var.s3_buckets_names
   s3_bucket_arns                   = var.s3_buckets_arns
-  local_iam_policies               = var.local_iam_policies
   worker_instance_type             = var.worker_instance_type
   eks_additional_admin_roles       = var.eks_additional_admin_roles
   prometheus_endpoint_config       = var.prometheus_endpoint_config
@@ -152,23 +151,22 @@ locals {
   ###########################
   ### Grafana Privatelink ###
   ###########################
-  grafana_private_link_config = var.grafana_privatelink_config
-  grafana_enabled             = var.create_eks && local.grafana_private_link_config.enabled
-  grafana_privatelink_enabled = local.grafana_enabled && var.grafana_privatelink_config.enabled
+  grafana_privatelink_enabled = var.create_eks && var.grafana_privatelink_config.enabled
 
   grafana_privatelink_allowed_principals = distinct(concat(
-    try(local.grafana_privatelink_config.endpoint_allowed_principals, []),
+    var.grafana_privatelink_config.endpoint_allowed_principals,
     ["arn:aws:iam::${var.hyperspace_account_id}:root"]
   ))
+
   grafana_privatelink_supported_regions = distinct(concat(
     [var.aws_region],
-    try(local.grafana_privatelink_config.additional_aws_regions, []),
+    var.grafana_privatelink_config.additional_aws_regions,
     ["eu-central-1", "us-east-1"]
   ))
 
   grafana_networking = {
-    ingress_enabled    = !local.grafana_privatelink_enabled
-    ingress_class_name = local.grafana_privatelink_enabled ? "" : local.internal_ingress_class_name
+    ingress_enabled    = !var.grafana_privatelink_config.enabled
+    ingress_class_name = var.grafana_privatelink_config.enabled ? "" : local.internal_ingress_class_name
   }
 
   ###########################

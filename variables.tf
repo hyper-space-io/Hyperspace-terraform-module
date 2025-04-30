@@ -211,22 +211,6 @@ variable "s3_buckets_arns" {
 }
 
 ###############################
-############ IAM ##############
-###############################
-
-variable "iam_policies" {
-  type        = string
-  default     = ""
-  description = "The IAM policies to use for the resources"
-}
-
-variable "local_iam_policies" {
-  type        = string
-  default     = ""
-  description = "The IAM policies to use for the resources"
-}
-
-###############################
 ########## ArgoCD #############
 ###############################
 
