@@ -167,11 +167,6 @@ data "aws_iam_policy_document" "fpga_pull_access" {
 ######### EKS #########
 #######################
 
-data "kubernetes_storage_class" "name" {
-  metadata { name = "gp2" }
-  depends_on = [module.eks]
-}
-
 data "kubernetes_ingress_v1" "internal_ingress" {
   metadata {
     name      = "internal-ingress"

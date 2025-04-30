@@ -215,7 +215,7 @@ resource "kubernetes_annotations" "default_storageclass" {
   force       = "true"
 
   metadata {
-    name = data.kubernetes_storage_class.name.metadata[0].name
+    name = "gp2"  # This is the default storage class name in EKS
   }
   annotations = {
     "storageclass.kubernetes.io/is-default-class" = "false"
