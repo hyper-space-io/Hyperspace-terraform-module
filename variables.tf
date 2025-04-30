@@ -229,11 +229,11 @@ variable "argocd_config" {
         credentials_secret_name = string
       }))
     })
-    rbac = object({
+    rbac = optional(object({
       sso_admin_group        = string
       users_rbac_rules       = list(string)
       users_additional_rules = list(string)
-    })
+    }))
   })
   description = "ArgoCD configuration"
   default = {

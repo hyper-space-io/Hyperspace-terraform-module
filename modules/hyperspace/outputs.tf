@@ -3,11 +3,11 @@
 ########################
 
 output "argocd_vpc_endpoint_service_domain_verification_name" {
-  value = local.argocd_privatelink_enabled ? aws_vpc_endpoint_service.argocd_server[0].private_dns_name_configuration[0].name : null
+  value = local.argocd_privatelink_enabled ? aws_vpc_endpoint_service.argocd[0].private_dns_name_configuration[0].name : null
 }
 
 output "argocd_vpc_endpoint_service_domain_verification_value" {
-  value = local.argocd_privatelink_enabled ? aws_vpc_endpoint_service.argocd_server[0].private_dns_name_configuration[0].value : null
+  value = local.argocd_privatelink_enabled ? aws_vpc_endpoint_service.argocd[0].private_dns_name_configuration[0].value : null
 }
 
 ########################

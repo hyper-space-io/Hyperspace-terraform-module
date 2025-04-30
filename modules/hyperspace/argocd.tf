@@ -158,7 +158,7 @@ resource "null_resource" "argocd_privatelink_nlb_active" {
   }
 }
 
-resource "aws_vpc_endpoint_service" "argocd_server" {
+resource "aws_vpc_endpoint_service" "argocd" {
   count                      = local.argocd_privatelink_enabled ? 1 : 0
   acceptance_required        = false
   network_load_balancer_arns = [data.aws_lb.argocd_privatelink_nlb[0].arn]

@@ -154,9 +154,8 @@ locals {
   ###########################
   ### Grafana Privatelink ###
   ###########################
-
-  grafana_privatelink_config  = var.grafana_privatelink_config
-  grafana_privatelink_enabled = var.create_eks && local.grafana_privatelink_config.enabled
+  grafana_enabled             = var.create_eks && local.grafana_config.enabled
+  grafana_privatelink_enabled = local.grafana_enabled && var.grafana_privatelink_config.enabled
 
   grafana_privatelink_allowed_principals = distinct(concat(
     try(local.grafana_privatelink_config.endpoint_allowed_principals, []),
@@ -178,7 +177,7 @@ locals {
   ###########################
 
   argocd_enabled             = var.create_eks && local.argocd_config.enabled
-  argocd_privatelink_enabled = var.create_eks && try(local.argocd_config.enabled, true) && try(local.argocd_config.privatelink.enabled, true)
+  argocd_privatelink_enabled = local.argocd_enabled && local.argocd_config.privatelink.enabled 
 
   # Default values for Privatelink configuration
   argocd_endpoint_default_aws_regions        = ["eu-central-1", "us-east-1"]

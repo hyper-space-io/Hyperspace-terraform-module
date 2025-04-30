@@ -239,11 +239,11 @@ variable "local_iam_policies" {
 variable "argocd_config" {
   type = object({
     enabled = bool
-    privatelink = object({
+    privatelink = optional(object({
       enabled                     = bool
       endpoint_allowed_principals = list(string)
       additional_aws_regions      = list(string)
-    })
+    }))
     vcs = object({
       organization = string
       repository   = string
@@ -258,11 +258,11 @@ variable "argocd_config" {
         credentials_secret_name = string
       }))
     })
-    rbac = object({
+    rbac = optional(object({
       sso_admin_group        = string
       users_rbac_rules       = list(string)
       users_additional_rules = list(string)
-    })
+    }))
   })
   description = "ArgoCD configuration"
   default = {
@@ -305,7 +305,7 @@ variable "prometheus_endpoint_config" {
 }
 
 ################################
-#### Grafana Privatelink ######
+#### Grafana Privatelink #######
 ################################
 
 variable "grafana_privatelink_config" {
