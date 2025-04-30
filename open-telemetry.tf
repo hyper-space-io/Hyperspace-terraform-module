@@ -1,3 +1,9 @@
+resource "time_sleep" "wait_for_cluster_ready" {
+  count           = var.create_eks ? 1 : 0
+  create_duration = "30s"
+  depends_on      = [module.eks]
+}
+
 resource "helm_release" "opentelemetry-collector" {
   count            = var.create_eks ? 1 : 0
   name             = "opentelemetry-collector"
@@ -42,5 +48,5 @@ image:
 useGOMEMLIMIT: true
 EOT
   ]
-  depends_on = [module.eks]
+  depends_on = [time_sleep.wait_for_cluster_ready]
 }
