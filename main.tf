@@ -9,15 +9,15 @@ module "hyperspace" {
   tags                  = var.tags
 
   # VPC Configuration
-  create_vpc            = var.create_vpc
-  vpc_cidr              = var.vpc_cidr
-  availability_zones    = local.availability_zones
-  enable_nat_gateway    = var.enable_nat_gateway
-  single_nat_gateway    = var.single_nat_gateway
-  create_vpc_flow_logs  = var.create_vpc_flow_logs
-  flow_logs_retention   = var.flow_logs_retention
-  flow_log_group_class  = var.flow_log_group_class
-  flow_log_file_format  = var.flow_log_file_format
+  create_vpc           = var.create_vpc
+  vpc_cidr             = var.vpc_cidr
+  availability_zones   = local.availability_zones
+  enable_nat_gateway   = var.enable_nat_gateway
+  single_nat_gateway   = var.single_nat_gateway
+  create_vpc_flow_logs = var.create_vpc_flow_logs
+  flow_logs_retention  = var.flow_logs_retention
+  flow_log_group_class = var.flow_log_group_class
+  flow_log_file_format = var.flow_log_file_format
   num_zones            = var.num_zones
 
   # EKS Configuration
