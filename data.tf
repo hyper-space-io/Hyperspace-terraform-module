@@ -87,7 +87,7 @@ data "aws_lb" "grafana_privatelink_nlb" {
 # GitHub
 data "aws_secretsmanager_secret_version" "argocd_github_app" {
   count     = local.github_vcs_enabled ? 1 : 0
-  secret_id = local.argocd_config.vcs.github.githubapp_secret_name
+  secret_id = local.argocd_config.vcs.github.github_app_secret_name
 }
 
 data "aws_secretsmanager_secret_version" "argocd_github_app_private_key" {
