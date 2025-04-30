@@ -22,7 +22,7 @@ EOF
 }
 
 resource "kubectl_manifest" "cluster_secret_store" {
-  yaml_body = <<-EOF
+  yaml_body  = <<-EOF
     apiVersion: external-secrets.io/v1beta1
     kind: ClusterSecretStore
     metadata:

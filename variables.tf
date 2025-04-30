@@ -242,8 +242,8 @@ variable "argocd_config" {
     error_message = "When ArgoCD is enabled, vcs configuration must be provided with non-empty organization and repository"
   }
   validation {
-    condition     = !var.argocd_config.enabled || (var.argocd_config.vcs != null && (
-      (try(var.argocd_config.vcs.github.enabled, false)) || 
+    condition = !var.argocd_config.enabled || (var.argocd_config.vcs != null && (
+      (try(var.argocd_config.vcs.github.enabled, false)) ||
       (try(var.argocd_config.vcs.gitlab.enabled, false))
     ))
     error_message = "When ArgoCD is enabled, either GitHub or GitLab Dex configuration must be provided"

@@ -80,9 +80,10 @@ resource "random_password" "argocd_readonly" {
 }
 
 resource "aws_secretsmanager_secret" "argocd_readonly_password" {
-  count       = local.argocd_enabled ? 1 : 0
-  name        = "argocd-readonly-password"
-  description = "Password for ArgoCD readonly hyperspace user"
+  count                   = local.argocd_enabled ? 1 : 0
+  name                    = "argocd-readonly-password"
+  recovery_window_in_days = 0
+  description             = "Password for ArgoCD readonly hyperspace user"
 }
 
 resource "aws_secretsmanager_secret_version" "argocd_readonly_password" {

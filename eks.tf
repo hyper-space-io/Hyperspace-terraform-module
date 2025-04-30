@@ -68,17 +68,17 @@ module "eks" {
   # Sperating the self managed nodegroups to az's ( 1 AZ : 1 ASG )
   self_managed_node_groups = merge([
     for idx, subnet in slice(module.vpc.private_subnets, 0, length(local.availability_zones)) : {
-      for pool_name, pool_config in local.additional_self_managed_node_pools : 
+      for pool_name, pool_config in local.additional_self_managed_node_pools :
       "${var.environment}-az${idx + 1}-${pool_name}" => merge(
         pool_config,
         {
-          name = "${pool_name}-az${idx + 1}"
+          name       = "${pool_name}-az${idx + 1}"
           subnet_ids = [subnet]
           tags = merge(
             local.tags,
-            { 
+            {
               nodegroup = "${pool_name}-az${idx + 1}",
-              az = "az${idx + 1}"
+              az        = "az${idx + 1}"
             },
             pool_config.tags
           )
