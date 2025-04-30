@@ -79,8 +79,6 @@ locals {
     }
   }
 
-  # Other configurations
-  vpc_module                       = var.vpc_module
   s3_bucket_names                  = var.s3_buckets_names
   s3_bucket_arns                   = var.s3_buckets_arns
   local_iam_policies               = var.local_iam_policies
@@ -95,7 +93,7 @@ locals {
   hyperspace_ecr_registry_region   = "eu-west-1"
 
   alb_values = <<EOT
-  vpcId: ${local.vpc_module.vpc_id}
+  vpcId: ${module.vpc.vpc_id}
   region: ${var.aws_region}
   EOT
 
@@ -154,7 +152,8 @@ locals {
   ###########################
   ### Grafana Privatelink ###
   ###########################
-  grafana_enabled             = var.create_eks && local.grafana_config.enabled
+  grafana_private_link_config = var.grafana_privatelink_config
+  grafana_enabled             = var.create_eks && local.grafana_private_link_config.enabled
   grafana_privatelink_enabled = local.grafana_enabled && var.grafana_privatelink_config.enabled
 
   grafana_privatelink_allowed_principals = distinct(concat(

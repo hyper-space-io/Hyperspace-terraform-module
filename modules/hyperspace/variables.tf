@@ -50,12 +50,6 @@ variable "hyperspace_aws_region" {
 ########### VPC ###############
 ###############################
 
-variable "vpc_module" {
-  type        = string
-  default     = ""
-  description = "The VPC module to use for the resources"
-}
-
 variable "availability_zones" {
   type        = list(string)
   default     = []

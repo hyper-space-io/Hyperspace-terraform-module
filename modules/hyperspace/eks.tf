@@ -4,8 +4,8 @@ module "eks" {
   create          = var.create_eks
   cluster_name    = local.cluster_name
   cluster_version = "1.31"
-  subnet_ids      = local.vpc_module.private_subnets
-  vpc_id          = local.vpc_module.vpc_id
+  subnet_ids      = module.vpc.private_subnet_ids
+  vpc_id          = module.vpc.vpc_id
   tags            = local.tags
 
   cluster_addons = {
@@ -51,7 +51,7 @@ module "eks" {
       AmazonSSMManagedInstanceCore = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore",
       AmazonEBSCSIDriverPolicy     = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
     }
-    subnets = local.vpc_module.private_subnets
+    subnets = module.vpc.private_subnets
 
     tags = {
       "k8s.io/cluster-autoscaler/enabled"               = "True"
@@ -67,7 +67,7 @@ module "eks" {
 
   # Sperating the self managed nodegroups to az's ( 1 AZ : 1 ASG )
   self_managed_node_groups = merge([
-    for subnet in slice(local.vpc_module.private_subnets, 0, length(local.availability_zones)) : {
+    for subnet in slice(module.vpc.private_subnets, 0, length(local.availability_zones)) : {
       for pool_name, pool_values in local.additional_self_managed_node_pools :
       "${var.environment}-${subnet}-${pool_name}" => merge(
         pool_values,
@@ -111,8 +111,8 @@ module "eks" {
       from_port        = 0
       to_port          = 0
       type             = "ingress"
-      cidr_blocks      = [local.vpc_module.vpc_cidr_block]
-      ipv6_cidr_blocks = length(local.vpc_module.vpc_ipv6_cidr_block) > 0 ? [local.vpc_module.vpc_ipv6_cidr_block] : []
+      cidr_blocks      = [module.vpc.vpc_cidr_block]
+      ipv6_cidr_blocks = length(module.vpc.vpc_ipv6_cidr_block) > 0 ? [module.vpc.vpc_ipv6_cidr_block] : []
     }
 
     egress_vpc_only = {
@@ -121,8 +121,8 @@ module "eks" {
       from_port        = 0
       to_port          = 0
       type             = "egress"
-      cidr_blocks      = [local.vpc_module.vpc_cidr_block]
-      ipv6_cidr_blocks = length(local.vpc_module.vpc_ipv6_cidr_block) > 0 ? [local.vpc_module.vpc_ipv6_cidr_block] : []
+      cidr_blocks      = [module.vpc.vpc_cidr_block]
+      ipv6_cidr_blocks = length(module.vpc.vpc_ipv6_cidr_block) > 0 ? [module.vpc.vpc_ipv6_cidr_block] : []
     }
 
     cluster_nodes_incoming = {
@@ -142,8 +142,8 @@ module "eks" {
       from_port        = 0
       to_port          = 0
       type             = "ingress"
-      cidr_blocks      = [local.vpc_module.vpc_cidr_block]
-      ipv6_cidr_blocks = length(local.vpc_module.vpc_ipv6_cidr_block) > 0 ? [local.vpc_module.vpc_ipv6_cidr_block] : []
+      cidr_blocks      = [module.vpc.vpc_cidr_block]
+      ipv6_cidr_blocks = length(module.vpc.vpc_ipv6_cidr_block) > 0 ? [module.vpc.vpc_ipv6_cidr_block] : []
     }
   }
 
