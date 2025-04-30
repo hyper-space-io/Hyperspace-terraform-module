@@ -68,21 +68,21 @@ variable "create_vpc" {
   default     = true
 }
 
-# variable "existing_vpc_config" {
-#   description = "Configuration for using an existing VPC"
-#   type = object({
-#     vpc_id            = string
-#     vpc_cidr          = string
-#     private_subnets   = list(string)
-#     public_subnets    = list(string)
-#   })
-#   default = {
-#     vpc_id          = null
-#     vpc_cidr        = null
-#     private_subnets = []
-#     public_subnets  = []
-#   }
-# }
+variable "existing_vpc_config" {
+  description = "Configuration for using an existing VPC"
+  type = optional(object({
+    vpc_id            = string
+    vpc_cidr          = string
+    private_subnets   = list(string)
+    public_subnets    = list(string)
+  }))
+  default = {
+    vpc_id          = null
+    vpc_cidr        = null
+    private_subnets = []
+    public_subnets  = []
+  }
+}
 
 variable "vpc_cidr" {
   type        = string
@@ -238,13 +238,13 @@ variable "local_iam_policies" {
 
 variable "argocd_config" {
   type = object({
-    enabled = bool
+    enabled = optional(bool, true)
     privatelink = optional(object({
       enabled                     = bool
       endpoint_allowed_principals = list(string)
       additional_aws_regions      = list(string)
     }))
-    vcs = object({
+    vcs = optional(object({
       organization = string
       repository   = string
       github = optional(object({
@@ -257,13 +257,21 @@ variable "argocd_config" {
         oauth_secret_name       = string
         credentials_secret_name = string
       }))
-    })
+    }))
     rbac = optional(object({
       sso_admin_group        = string
       users_rbac_rules       = list(string)
       users_additional_rules = list(string)
     }))
   })
+  validation {
+    condition     = !var.argocd_config.enabled || (var.argocd_config.vcs != null && var.argocd_config.vcs.organization != "" && var.argocd_config.vcs.repository != "")
+    error_message = "When ArgoCD is enabled, vcs configuration must be provided with non-empty organization and repository"
+  }
+  validation {
+    condition     = !var.argocd_config.enabled || (var.argocd_config.vcs != null && ((var.argocd_config.vcs.github != null && var.argocd_config.vcs.github.enabled) || (var.argocd_config.vcs.gitlab != null && var.argocd_config.vcs.gitlab.enabled)))
+    error_message = "When ArgoCD is enabled, either GitHub or GitLab Dex configuration must be provided"
+  }
   description = "ArgoCD configuration"
   default = {
     enabled = true
