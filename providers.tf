@@ -5,7 +5,7 @@ terraform {
       version = "~> 5.0"
     }
   }
-} 
+}
 
 provider "kubernetes" {
   host                   = module.eks.cluster_endpoint

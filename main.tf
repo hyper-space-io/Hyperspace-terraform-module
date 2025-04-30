@@ -11,7 +11,7 @@ module "hyperspace" {
   # VPC Configuration
   create_vpc           = var.create_vpc
   vpc_cidr             = var.vpc_cidr
-  availability_zones   = local.availability_zones
+  availability_zones   = var.availability_zones
   enable_nat_gateway   = var.enable_nat_gateway
   single_nat_gateway   = var.single_nat_gateway
   create_vpc_flow_logs = var.create_vpc_flow_logs
