@@ -67,13 +67,21 @@ module "eks" {
 
   # Sperating the self managed nodegroups to az's ( 1 AZ : 1 ASG )
   self_managed_node_groups = merge([
-    for subnet in slice(module.vpc.private_subnets, 0, length(local.availability_zones)) : {
-      for pool_name, pool_values in local.additional_self_managed_node_pools :
-      "${var.environment}-${subnet}-${pool_name}" => merge(
-        pool_values,
+    for idx, subnet in slice(module.vpc.private_subnets, 0, length(local.availability_zones)) : {
+      for pool_name, pool_config in local.additional_self_managed_node_pools : 
+      "${var.environment}-az${idx + 1}-${pool_name}" => merge(
+        pool_config,
         {
-          name       = pool_name,
+          name = "${pool_name}-az${idx + 1}"
           subnet_ids = [subnet]
+          tags = merge(
+            local.tags,
+            { 
+              nodegroup = "${pool_name}-az${idx + 1}",
+              az = "az${idx + 1}"
+            },
+            pool_config.tags
+          )
         }
       )
     }
@@ -243,7 +251,7 @@ module "iam_iam-assumable-role-with-oidc" {
   create_role                   = true
   role_name                     = each.value.name
   provider_url                  = module.eks.cluster_oidc_issuer_url
-  role_policy_arns              = [local.iam_policies["${each.key}"].arn]
+  role_policy_arns              = [local.iam_policy_arns[each.key]]
   oidc_fully_qualified_subjects = ["system:serviceaccount:${each.value.sa_namespace}:${each.key}"]
 }
 
@@ -252,7 +260,7 @@ module "boto3_irsa" {
   for_each  = { for k, v in local.iam_policies : k => v if lookup(v, "create_cluster_wide_role", false) == true }
   role_name = each.value.name
   role_policy_arns = {
-    policy = local.iam_policies["${each.key}"].arn
+    policy = local.iam_policy_arns[each.key]
   }
   assume_role_condition_test = "StringLike"
   oidc_providers = {

@@ -177,7 +177,7 @@ locals {
   ###########################
 
   argocd_enabled             = var.create_eks && local.argocd_config.enabled
-  argocd_privatelink_enabled = local.argocd_enabled && local.argocd_config.privatelink.enabled
+  argocd_privatelink_enabled = local.argocd_enabled && try(local.argocd_config.privatelink.enabled, false)
 
   # Default values for Privatelink configuration
   argocd_endpoint_default_aws_regions        = ["eu-central-1", "us-east-1"]
