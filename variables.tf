@@ -2,6 +2,12 @@
 ########## Global #############
 ###############################
 
+variable "terraform_role" {
+  type        = string
+  description = "Terraform role to assume"
+  default     = "PlatformAdmin"
+}
+
 variable "project" {
   type        = string
   description = "Name of the project"
@@ -247,7 +253,10 @@ variable "argocd_config" {
     error_message = "When ArgoCD is enabled, vcs configuration must be provided with non-empty organization and repository"
   }
   validation {
-    condition     = !var.argocd_config.enabled || (var.argocd_config.vcs != null && ((var.argocd_config.vcs.github != null && var.argocd_config.vcs.github.enabled) || (var.argocd_config.vcs.gitlab != null && var.argocd_config.vcs.gitlab.enabled)))
+    condition     = !var.argocd_config.enabled || (var.argocd_config.vcs != null && (
+      (var.argocd_config.vcs.github != null && var.argocd_config.vcs.github.enabled) || 
+      (var.argocd_config.vcs.gitlab != null && var.argocd_config.vcs.gitlab.enabled)
+    ))
     error_message = "When ArgoCD is enabled, either GitHub or GitLab Dex configuration must be provided"
   }
   description = "ArgoCD configuration"

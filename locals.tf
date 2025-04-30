@@ -6,6 +6,8 @@ locals {
     terraform   = "true"
   })
 
+
+
   ##################
   ##### VPC ########
   ##################
@@ -15,6 +17,11 @@ locals {
 
   # KMS
   hyperspace_ami_key_alias = "arn:aws:kms:${var.aws_region}:${var.hyperspace_account_id}:alias/HYPERSPACE_AMI_KEY"
+
+  # IAM Policy ARNs
+  iam_policy_arns = {
+    for k, v in local.iam_policies : k => aws_iam_policy.policies[k].arn
+  }
 
   # IAM Policies
   iam_policies = {

@@ -23,7 +23,7 @@ provider "helm" {
 provider "aws" {
   region = var.aws_region
   assume_role {
-    role_arn     = "arn:aws:iam::${var.hyperspace_account_id}:role/PlatformAdmin"
+    role_arn     = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.terraform_role}"
     session_name = "terraform"
   }
 }
