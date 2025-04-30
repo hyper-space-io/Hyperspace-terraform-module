@@ -208,8 +208,8 @@ locals {
       id   = "github"
       name = "GitHub"
       config = {
-        clientID     = try(data.aws_secretsmanager_secret_version.argocd_github_app[0].secret_string.client_id, null)
-        clientSecret = try(data.aws_secretsmanager_secret_version.argocd_github_app[0].secret_string.client_secret, null)
+        clientID     = try(jsondecode(data.aws_secretsmanager_secret_version.argocd_github_app[0].secret_string).client_id, null)
+        clientSecret = try(jsondecode(data.aws_secretsmanager_secret_version.argocd_github_app[0].secret_string).client_secret, null)
         orgs         = [{ name = local.argocd_config.vcs.organization }]
       }
     }] : [],
@@ -219,8 +219,8 @@ locals {
       name = "GitLab"
       config = {
         baseURL      = "https://gitlab.com"
-        clientID     = try(data.aws_secretsmanager_secret_version.argocd_gitlab_oauth[0].secret_string.application_id, null)
-        clientSecret = try(data.aws_secretsmanager_secret_version.argocd_gitlab_oauth[0].secret_string.secret, null)
+        clientID     = try(jsondecode(data.aws_secretsmanager_secret_version.argocd_gitlab_oauth[0].secret_string).application_id, null)
+        clientSecret = try(jsondecode(data.aws_secretsmanager_secret_version.argocd_gitlab_oauth[0].secret_string).secret, null)
         orgs         = [{ name = local.argocd_config.vcs.organization }]
       }
     }] : []
@@ -231,16 +231,16 @@ locals {
     local.github_vcs_enabled ? {
       "github-creds" = {
         url                     = "https://github.com/${local.argocd_config.vcs.organization}/${local.argocd_config.vcs.repository}"
-        githubAppID             = try(data.aws_secretsmanager_secret_version.argocd_github_app[0].secret_string.github_app_id, null)
-        githubAppInstallationID = try(data.aws_secretsmanager_secret_version.argocd_github_app[0].secret_string.github_installation_id, null)
+        githubAppID             = try(jsondecode(data.aws_secretsmanager_secret_version.argocd_github_app[0].secret_string).github_app_id, null)
+        githubAppInstallationID = try(jsondecode(data.aws_secretsmanager_secret_version.argocd_github_app[0].secret_string).github_installation_id, null)
         githubAppPrivateKey     = try(data.aws_secretsmanager_secret_version.argocd_github_app_private_key[0].secret_string, null)
       }
     } : {},
     local.gitlab_vcs_enabled ? {
       "gitlab-creds" = {
         url      = "https://gitlab.com/${local.argocd_config.vcs.organization}/${local.argocd_config.vcs.repository}.git"
-        username = try(data.aws_secretsmanager_secret_version.argocd_gitlab_credentials[0].secret_string.username, null)
-        password = try(data.aws_secretsmanager_secret_version.argocd_gitlab_credentials[0].secret_string.deploy_token, null)
+        username = try(jsondecode(data.aws_secretsmanager_secret_version.argocd_gitlab_credentials[0].secret_string).username, null)
+        password = try(jsondecode(data.aws_secretsmanager_secret_version.argocd_gitlab_credentials[0].secret_string).deploy_token, null)
       }
     } : {}
   )
