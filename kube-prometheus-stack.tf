@@ -220,9 +220,29 @@ resource "null_resource" "grafana_privatelink_nlb_active" {
   count = local.grafana_privatelink_enabled ? 1 : 0
   provisioner "local-exec" {
     command = <<EOF
-      export AWS_ACCESS_KEY_ID=$(aws sts assume-role --role-arn arn:aws:iam::${var.aws_account_id}:role/${var.terraform_role} --role-session-name terraform-local-exec --query 'Credentials.AccessKeyId' --output text)
-      export AWS_SECRET_ACCESS_KEY=$(aws sts assume-role --role-arn arn:aws:iam::${var.aws_account_id}:role/${var.terraform_role} --role-session-name terraform-local-exec --query 'Credentials.SecretAccessKey' --output text)
-      export AWS_SESSION_TOKEN=$(aws sts assume-role --role-arn arn:aws:iam::${var.aws_account_id}:role/${var.terraform_role} --role-session-name terraform-local-exec --query 'Credentials.SessionToken' --output text)
+      # First try to use existing credentials
+      if ! aws sts get-caller-identity >/dev/null 2>&1; then
+        echo "No valid AWS credentials found, assuming role..."
+        # Get AWS credentials
+        CREDS=$(aws sts assume-role --role-arn arn:aws:iam::${var.aws_account_id}:role/${var.terraform_role} --role-session-name terraform-local-exec)
+        if [ $? -ne 0 ]; then
+          echo "Failed to assume role"
+          exit 1
+        fi
+        
+        # Set AWS credentials
+        export AWS_ACCESS_KEY_ID=$(echo $CREDS | jq -r '.Credentials.AccessKeyId')
+        export AWS_SECRET_ACCESS_KEY=$(echo $CREDS | jq -r '.Credentials.SecretAccessKey')
+        export AWS_SESSION_TOKEN=$(echo $CREDS | jq -r '.Credentials.SessionToken')
+        
+        # Verify AWS credentials
+        if ! aws sts get-caller-identity >/dev/null 2>&1; then
+          echo "Failed to verify AWS credentials"
+          exit 1
+        fi
+      else
+        echo "Using existing AWS credentials"
+      fi
       
       NLB_ARN="${data.aws_lb.grafana_privatelink_nlb[0].arn}"
       if [ -z "$NLB_ARN" ]; then

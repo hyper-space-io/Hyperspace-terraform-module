@@ -101,15 +101,47 @@ resource "aws_secretsmanager_secret_version" "argocd_readonly_password" {
 resource "null_resource" "argocd_create_user" {
   count = local.argocd_enabled ? 1 : 0
   provisioner "local-exec" {
-    command = <<-EOT
+    command = <<EOT
       echo "Getting ArgoCD admin password..."
-      export AWS_ACCESS_KEY_ID=$(aws sts assume-role --role-arn arn:aws:iam::${var.aws_account_id}:role/${var.terraform_role} --role-session-name terraform-local-exec --query 'Credentials.AccessKeyId' --output text)
-      export AWS_SECRET_ACCESS_KEY=$(aws sts assume-role --role-arn arn:aws:iam::${var.aws_account_id}:role/${var.terraform_role} --role-session-name terraform-local-exec --query 'Credentials.SecretAccessKey' --output text)
-      export AWS_SESSION_TOKEN=$(aws sts assume-role --role-arn arn:aws:iam::${var.aws_account_id}:role/${var.terraform_role} --role-session-name terraform-local-exec --query 'Credentials.SessionToken' --output text)
       
+      # First try to use existing credentials
+      if ! aws sts get-caller-identity >/dev/null 2>&1; then
+        echo "No valid AWS credentials found, assuming role..."
+        # Get AWS credentials
+        CREDS=$(aws sts assume-role --role-arn arn:aws:iam::${var.aws_account_id}:role/${var.terraform_role} --role-session-name terraform-local-exec)
+        if [ $? -ne 0 ]; then
+          echo "Failed to assume role"
+          exit 1
+        fi
+        
+        # Set AWS credentials
+        export AWS_ACCESS_KEY_ID=$(echo $CREDS | jq -r '.Credentials.AccessKeyId')
+        export AWS_SECRET_ACCESS_KEY=$(echo $CREDS | jq -r '.Credentials.SecretAccessKey')
+        export AWS_SESSION_TOKEN=$(echo $CREDS | jq -r '.Credentials.SessionToken')
+        
+        # Verify AWS credentials
+        if ! aws sts get-caller-identity >/dev/null 2>&1; then
+          echo "Failed to verify AWS credentials"
+          exit 1
+        fi
+      else
+        echo "Using existing AWS credentials"
+      fi
+      
+      # Update kubeconfig
       aws eks update-kubeconfig --name ${local.cluster_name} --region ${var.aws_region}
+      if [ $? -ne 0 ]; then
+        echo "Failed to update kubeconfig"
+        exit 1
+      fi
       
+      # Get current password
       CURRENT_HYPERSPACE_PASSWORD=$(kubectl -n argocd get secret argocd-secret -o jsonpath="{.data.accounts\\.hyperspace\\.password}" | base64 -d)
+      if [ $? -ne 0 ]; then
+        echo "Failed to get current password"
+        exit 1
+      fi
+      
       NEW_PASSWORD="${random_string.argocd_readonly[count.index].result}"
       
       if [ "$CURRENT_HYPERSPACE_PASSWORD" = "$NEW_PASSWORD" ]; then
@@ -117,7 +149,12 @@ resource "null_resource" "argocd_create_user" {
         exit 0
       fi
       
+      # Get ArgoCD admin password
       ARGOCD_PASSWORD=$(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d)
+      if [ $? -ne 0 ]; then
+        echo "Failed to get ArgoCD admin password"
+        exit 1
+      fi
       
       # Try internal DNS first
       LOGIN_SUCCESS=0
@@ -162,7 +199,7 @@ resource "null_resource" "argocd_create_user" {
       fi
     EOT
   }
-  depends_on = [helm_release.argocd, data.aws_lb.argocd_privatelink_nlb[0], module.eks_blueprints_addons]
+  depends_on = [helm_release.argocd, data.aws_lb.argocd_privatelink_nlb[0]]
   triggers = {
     helm_release_id   = helm_release.argocd[count.index].id
     readonly_password = random_string.argocd_readonly[count.index].result
