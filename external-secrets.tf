@@ -18,7 +18,7 @@ serviceAccount:
 installCRDs: true
 EOF
   ]
-  depends_on = [module.eks]
+  depends_on = [time_sleep.wait_for_cluster_ready]
 }
 
 resource "kubectl_manifest" "cluster_secret_store" {
@@ -33,5 +33,5 @@ resource "kubectl_manifest" "cluster_secret_store" {
           region: ${var.aws_region}
           service: SecretsManager
   EOF
-  depends_on = [helm_release.secrets_manager, module.eks]
+  depends_on = [helm_release.secrets_manager]
 }

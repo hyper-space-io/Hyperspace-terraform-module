@@ -252,7 +252,7 @@ variable "argocd_config" {
   default = {
     enabled = true
     privatelink = {
-      enabled                     = false
+      enabled                     = true
       endpoint_allowed_principals = []
       additional_aws_regions      = []
     }
@@ -300,7 +300,7 @@ variable "grafana_privatelink_config" {
   })
   description = "Grafana privatelink configuration"
   default = {
-    enabled                     = false
+    enabled                     = true
     endpoint_allowed_principals = []
     additional_aws_regions      = []
   }

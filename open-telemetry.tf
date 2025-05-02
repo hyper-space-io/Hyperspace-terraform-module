@@ -1,7 +1,7 @@
 resource "time_sleep" "wait_for_cluster_ready" {
   count           = var.create_eks ? 1 : 0
-  create_duration = "30s"
-  depends_on      = [module.eks]
+  create_duration = "90s"
+  depends_on      = [module.eks, time_sleep.wait_for_internal_ingress]
 }
 
 resource "helm_release" "opentelemetry-collector" {

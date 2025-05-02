@@ -220,7 +220,7 @@ resource "null_resource" "grafana_privatelink_nlb_active" {
   count = local.grafana_privatelink_enabled ? 1 : 0
   provisioner "local-exec" {
     command = <<EOF
-      until STATE=$(aws elbv2 describe-load-balancers --load-balancer-arns ${data.aws_lb.grafana_privatelink_nlb[0].arn} --query 'LoadBalancers[0].State.Code' --output text) && [ "$STATE" = "active" ]; do
+      until STATE=$(aws elbv2 describe-load-balancers --load-balancer-arns ${data.aws_lb.grafana_privatelink_nlb[0].arn} --region ${var.aws_region} --query 'LoadBalancers[0].State.Code' --output text) && [ "$STATE" = "active" ]; do
         echo "Waiting for Grafana NLB to become active... Current state: $STATE"
         sleep 10
       done
