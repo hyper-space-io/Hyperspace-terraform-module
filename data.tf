@@ -10,10 +10,6 @@ data "aws_availability_zones" "available" {
 
 data "aws_region" "current" {}
 
-data "aws_secretsmanager_secret_version" "hyperspace_github_pat" {
-  secret_id = "hyperspace/github_pat"
-}
-
 #######################
 ####### VPC ###########
 #######################

@@ -103,6 +103,10 @@ resource "null_resource" "argocd_create_user" {
   provisioner "local-exec" {
     command = <<-EOT
       echo "Getting ArgoCD admin password..."
+      export AWS_ACCESS_KEY_ID=$(aws sts assume-role --role-arn arn:aws:iam::${var.aws_account_id}:role/${var.terraform_role} --role-session-name terraform-local-exec --query 'Credentials.AccessKeyId' --output text)
+      export AWS_SECRET_ACCESS_KEY=$(aws sts assume-role --role-arn arn:aws:iam::${var.aws_account_id}:role/${var.terraform_role} --role-session-name terraform-local-exec --query 'Credentials.SecretAccessKey' --output text)
+      export AWS_SESSION_TOKEN=$(aws sts assume-role --role-arn arn:aws:iam::${var.aws_account_id}:role/${var.terraform_role} --role-session-name terraform-local-exec --query 'Credentials.SessionToken' --output text)
+      
       aws eks update-kubeconfig --name ${local.cluster_name} --region ${var.aws_region}
       
       CURRENT_HYPERSPACE_PASSWORD=$(kubectl -n argocd get secret argocd-secret -o jsonpath="{.data.accounts\\.hyperspace\\.password}" | base64 -d)
@@ -158,7 +162,7 @@ resource "null_resource" "argocd_create_user" {
       fi
     EOT
   }
-  depends_on = [helm_release.argocd, data.aws_lb.argocd_privatelink_nlb[0]]
+  depends_on = [helm_release.argocd, data.aws_lb.argocd_privatelink_nlb[0], module.eks_blueprints_addons]
   triggers = {
     helm_release_id   = helm_release.argocd[count.index].id
     readonly_password = random_string.argocd_readonly[count.index].result

@@ -148,7 +148,7 @@ resource "helm_release" "grafana" {
     value = random_password.grafana_admin_password.result
   }
 
-  depends_on = [module.eks, time_sleep.wait_for_internal_ingress]
+  depends_on = [module.eks, time_sleep.wait_for_internal_ingress, module.eks_blueprints_addons]
 }
 
 resource "helm_release" "prometheus_adapter" {
@@ -220,6 +220,10 @@ resource "null_resource" "grafana_privatelink_nlb_active" {
   count = local.grafana_privatelink_enabled ? 1 : 0
   provisioner "local-exec" {
     command = <<EOF
+      export AWS_ACCESS_KEY_ID=$(aws sts assume-role --role-arn arn:aws:iam::${var.aws_account_id}:role/${var.terraform_role} --role-session-name terraform-local-exec --query 'Credentials.AccessKeyId' --output text)
+      export AWS_SECRET_ACCESS_KEY=$(aws sts assume-role --role-arn arn:aws:iam::${var.aws_account_id}:role/${var.terraform_role} --role-session-name terraform-local-exec --query 'Credentials.SecretAccessKey' --output text)
+      export AWS_SESSION_TOKEN=$(aws sts assume-role --role-arn arn:aws:iam::${var.aws_account_id}:role/${var.terraform_role} --role-session-name terraform-local-exec --query 'Credentials.SessionToken' --output text)
+      
       NLB_ARN="${data.aws_lb.grafana_privatelink_nlb[0].arn}"
       if [ -z "$NLB_ARN" ]; then
         echo "Terraform data source did not return an ARN. Attempting to find NLB via AWS CLI tags..."
@@ -258,6 +262,7 @@ resource "null_resource" "grafana_privatelink_nlb_active" {
   triggers = {
     nlb_arn = data.aws_lb.grafana_privatelink_nlb[0].arn
   }
+  depends_on = [module.eks_blueprints_addons]
 }
 
 resource "aws_vpc_endpoint_service" "grafana" {
