@@ -220,11 +220,39 @@ resource "null_resource" "grafana_privatelink_nlb_active" {
   count = local.grafana_privatelink_enabled ? 1 : 0
   provisioner "local-exec" {
     command = <<EOF
-      until STATE=$(aws elbv2 describe-load-balancers --load-balancer-arns ${data.aws_lb.grafana_privatelink_nlb[0].arn} --region ${var.aws_region} --query 'LoadBalancers[0].State.Code' --output text) && [ "$STATE" = "active" ]; do
+      NLB_ARN="${data.aws_lb.grafana_privatelink_nlb[0].arn}"
+      if [ -z "$NLB_ARN" ]; then
+        echo "Terraform data source did not return an ARN. Attempting to find NLB via AWS CLI tags..."
+        NLB_ARN=$(aws resourcegroupstaggingapi get-resources \
+          --region ${var.aws_region} \
+          --resource-type-filters elasticloadbalancing:loadbalancer \
+          --tag-filters Key=elbv2.k8s.aws/cluster,Values=${local.cluster_name} \
+                        Key=service.k8s.aws/resource,Values=LoadBalancer \
+                        Key=service.k8s.aws/stack,Values=monitoring/grafana \
+          --query 'ResourceTagMappingList[0].ResourceARN' \
+          --output text)
+        if [ -z "$NLB_ARN" ]; then
+          echo "Could not find Grafana NLB via AWS CLI tag lookup either. Exiting."
+          exit 1
+        else
+          echo "Found NLB ARN via AWS CLI tag lookup: $NLB_ARN"
+        fi
+      fi
+      TIMEOUT=300
+      START_TIME=$(date +%s)
+      while true; do
+        STATE=$(aws elbv2 describe-load-balancers --region ${var.aws_region} --load-balancer-arns $NLB_ARN --query 'LoadBalancers[0].State.Code' --output text 2>/dev/null)
+        if [ "$STATE" = "active" ]; then
+          echo "Grafana NLB is now active"
+          break
+        fi
+        if [ $(( $(date +%s) - $START_TIME )) -ge $TIMEOUT ]; then
+          echo "Timed out waiting for Grafana NLB to become active"
+          exit 1
+        fi
         echo "Waiting for Grafana NLB to become active... Current state: $STATE"
         sleep 10
       done
-      echo "Grafana NLB is now active"
     EOF
   }
   triggers = {

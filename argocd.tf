@@ -120,7 +120,7 @@ resource "null_resource" "argocd_create_user" {
         LOGIN_SUCCESS=0
         START_TIME=$(date +%s)
         while [ $(( $(date +%s) - $START_TIME )) -lt 60 ]; do
-          if argocd login argocd.${local.internal_domain_name} --username admin --password $ARGOCD_PASSWORD --insecure --grpc-web; then
+          if argocd login argocd.${local.internal_domain_name} --username admin --password $ARGOCD_PASSWORD --insecure --plaintext --grpc-web; then
             LOGIN_SUCCESS=1
             break
           else
@@ -137,7 +137,7 @@ resource "null_resource" "argocd_create_user" {
           PORT_FORWARD_LOGIN_SUCCESS=0
           PORT_FORWARD_START_TIME=$(date +%s)
           while [ $(( $(date +%s) - $PORT_FORWARD_START_TIME )) -lt 60 ]; do
-            if argocd login localhost:8080 --username admin --password $ARGOCD_PASSWORD --insecure --grpc-web; then
+            if argocd login localhost:8080 --username admin --password $ARGOCD_PASSWORD --insecure --plaintext --grpc-web; then
               PORT_FORWARD_LOGIN_SUCCESS=1
               break
             else
@@ -181,14 +181,41 @@ resource "null_resource" "argocd_privatelink_nlb_active" {
   count = local.argocd_privatelink_enabled ? 1 : 0
   provisioner "local-exec" {
     command = <<EOF
-      until STATE=$(aws elbv2 describe-load-balancers --load-balancer-arns ${data.aws_lb.argocd_privatelink_nlb[0].arn} --query 'LoadBalancers[0].State.Code' --output text) && [ "$STATE" = "active" ]; do
+      NLB_ARN="${data.aws_lb.argocd_privatelink_nlb[0].arn}"
+      if [ -z "$NLB_ARN" ]; then
+        echo "Terraform data source did not return an ARN. Attempting to find NLB via AWS CLI tags..."
+        NLB_ARN=$(aws resourcegroupstaggingapi get-resources \
+          --region ${var.aws_region} \
+          --resource-type-filters elasticloadbalancing:loadbalancer \
+          --tag-filters Key=elbv2.k8s.aws/cluster,Values=${local.cluster_name} \
+                        Key=service.k8s.aws/resource,Values=LoadBalancer \
+                        Key=service.k8s.aws/stack,Values=argocd/argocd-server \
+          --query 'ResourceTagMappingList[0].ResourceARN' \
+          --output text)
+        if [ -z "$NLB_ARN" ]; then
+          echo "Could not find ArgoCD NLB via AWS CLI tag lookup either. Exiting."
+          exit 1
+        else
+          echo "Found NLB ARN via AWS CLI tag lookup: $NLB_ARN"
+        fi
+      fi
+      TIMEOUT=300
+      START_TIME=$(date +%s)
+      while true; do
+        STATE=$(aws elbv2 describe-load-balancers --region ${var.aws_region} --load-balancer-arns $NLB_ARN --query 'LoadBalancers[0].State.Code' --output text 2>/dev/null)
+        if [ "$STATE" = "active" ]; then
+          echo "NLB is now active"
+          break
+        fi
+        if [ $(( $(date +%s) - $START_TIME )) -ge $TIMEOUT ]; then
+          echo "Timed out waiting for NLB to become active"
+          exit 1
+        fi
         echo "Waiting for NLB to become active... Current state: $STATE"
         sleep 10
       done
-      echo "NLB is now active"
     EOF
   }
-
   triggers = {
     nlb_arn = data.aws_lb.argocd_privatelink_nlb[0].arn
   }
