@@ -4,7 +4,7 @@ resource "helm_release" "argocd" {
   namespace        = "argocd"
   name             = "argocd"
   version          = "7.7.11"
-  depends_on       = [helm_release.nginx-ingress]
+  depends_on       = [helm_release.nginx-ingress, module.eks_blueprints_addons, module.eks]
   create_namespace = true
   cleanup_on_fail  = true
   repository       = "https://argoproj.github.io/argo-helm"
@@ -104,28 +104,22 @@ resource "null_resource" "argocd_create_user" {
     command = <<EOT
       echo "Getting ArgoCD admin password..."
       
-      # First try to use existing credentials
+      # Always assume the role to ensure consistent permissions
+      CREDS=$(aws sts assume-role --role-arn arn:aws:iam::${var.aws_account_id}:role/${var.terraform_role} --role-session-name terraform-local-exec)
+      if [ $? -ne 0 ]; then
+        echo "Failed to assume role"
+        exit 1
+      fi
+      
+      # Set AWS credentials
+      export AWS_ACCESS_KEY_ID=$(echo $CREDS | jq -r '.Credentials.AccessKeyId')
+      export AWS_SECRET_ACCESS_KEY=$(echo $CREDS | jq -r '.Credentials.SecretAccessKey')
+      export AWS_SESSION_TOKEN=$(echo $CREDS | jq -r '.Credentials.SessionToken')
+      
+      # Verify AWS credentials
       if ! aws sts get-caller-identity >/dev/null 2>&1; then
-        echo "No valid AWS credentials found, assuming role..."
-        # Get AWS credentials
-        CREDS=$(aws sts assume-role --role-arn arn:aws:iam::${var.aws_account_id}:role/${var.terraform_role} --role-session-name terraform-local-exec)
-        if [ $? -ne 0 ]; then
-          echo "Failed to assume role"
-          exit 1
-        fi
-        
-        # Set AWS credentials
-        export AWS_ACCESS_KEY_ID=$(echo $CREDS | jq -r '.Credentials.AccessKeyId')
-        export AWS_SECRET_ACCESS_KEY=$(echo $CREDS | jq -r '.Credentials.SecretAccessKey')
-        export AWS_SESSION_TOKEN=$(echo $CREDS | jq -r '.Credentials.SessionToken')
-        
-        # Verify AWS credentials
-        if ! aws sts get-caller-identity >/dev/null 2>&1; then
-          echo "Failed to verify AWS credentials"
-          exit 1
-        fi
-      else
-        echo "Using existing AWS credentials"
+        echo "Failed to verify AWS credentials"
+        exit 1
       fi
       
       # Update kubeconfig
