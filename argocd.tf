@@ -99,29 +99,58 @@ resource "aws_secretsmanager_secret_version" "argocd_readonly_password" {
 
 # Execute ArgoCD CLI setup and password update
 resource "null_resource" "argocd_create_user" {
-  # count = local.argocd_enabled ? 1 : 0
-  count = 0
+  count = local.argocd_enabled ? 1 : 0
   provisioner "local-exec" {
     command = <<-EOT
       echo "Getting ArgoCD admin password..."
       aws eks update-kubeconfig --name ${local.cluster_name} --region ${var.aws_region}
       
       # Get current hyperspace password from secret
-      CURRENT_HYPERSPACE_PASSWORD=$(kubectl -n argocd get secret argocd-secret -o jsonpath="{.data.accounts\.hyperspace\.password}" | base64 -d)
+      CURRENT_HYPERSPACE_PASSWORD=$(kubectl -n argocd get secret argocd-secret -o jsonpath="{.data.accounts\\.hyperspace\\.password}" | base64 -d)
       NEW_PASSWORD="${random_string.argocd_readonly[count.index].result}"
       
       # Only proceed with login and password update if passwords are different
       if [ "$CURRENT_HYPERSPACE_PASSWORD" != "$NEW_PASSWORD" ]; then
         echo "Current password is different from desired password. Updating hyperspace user password..."
         
-        # Get admin password and log in
+        # Get admin password
         ARGOCD_PASSWORD=$(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d)
         
-        echo "Logging in to ArgoCD..."
-        until argocd login argocd.${local.internal_domain_name} --username admin --password $ARGOCD_PASSWORD --insecure --grpc-web; do
-          echo "Login attempt failed. Waiting 10 seconds before retrying..."
-          sleep 10
+        echo "Logging in to ArgoCD (internal DNS) for up to 1 minute..."
+        LOGIN_SUCCESS=0
+        START_TIME=$(date +%s)
+        while [ $(( $(date +%s) - $START_TIME )) -lt 60 ]; do
+          if argocd login argocd.${local.internal_domain_name} --username admin --password $ARGOCD_PASSWORD --insecure --grpc-web; then
+            LOGIN_SUCCESS=1
+            break
+          else
+            echo "Login attempt failed. Waiting 10 seconds before retrying..."
+            sleep 10
+          fi
         done
+        
+        if [ $LOGIN_SUCCESS -eq 0 ]; then
+          echo "Login via internal DNS failed after 1 minute. Trying port-forwarding..."
+          kubectl -n argocd port-forward svc/argocd-server 8080:443 &
+          PORT_FORWARD_PID=$!
+          sleep 5
+          PORT_FORWARD_LOGIN_SUCCESS=0
+          PORT_FORWARD_START_TIME=$(date +%s)
+          while [ $(( $(date +%s) - $PORT_FORWARD_START_TIME )) -lt 60 ]; do
+            if argocd login localhost:8080 --username admin --password $ARGOCD_PASSWORD --insecure --grpc-web; then
+              PORT_FORWARD_LOGIN_SUCCESS=1
+              break
+            else
+              echo "Port-forward login attempt failed. Waiting 10 seconds before retrying..."
+              sleep 10
+            fi
+          done
+          kill $PORT_FORWARD_PID
+          if [ $PORT_FORWARD_LOGIN_SUCCESS -eq 0 ]; then
+            echo "Login via port-forwarding also failed after 1 minute. Exiting gracefully."
+            exit 0
+          fi
+        fi
         
         echo "Successfully logged in to ArgoCD!"
         
