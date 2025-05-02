@@ -9,7 +9,7 @@ locals {
   worker_instance_type             = var.worker_instance_type
   eks_additional_admin_roles       = var.eks_additional_admin_roles
   prometheus_endpoint_config       = var.prometheus_endpoint_config
-  prometheus_endpoint_enabled      = var.create_eks && local.prometheus_endpoint_config.enabled
+  prometheus_endpoint_enabled      = var.create_eks && coalesce(try(local.prometheus_endpoint_config.enabled, false), false)
   argocd_config                    = var.argocd_config
   prometheus_remote_write_endpoint = "https://prometheus.internal.devops-dev.hyper-space.xyz/api/v1/write"
   internal_ingress_class_name      = "nginx-internal"
@@ -154,7 +154,7 @@ locals {
   ###########################
   ### Grafana Privatelink ###
   ###########################
-  grafana_privatelink_enabled = var.create_eks && var.grafana_privatelink_config.enabled
+  grafana_privatelink_enabled = var.create_eks && coalesce(try(var.grafana_privatelink_config.enabled, true), true)
 
   grafana_privatelink_allowed_principals = distinct(concat(
     var.grafana_privatelink_config.endpoint_allowed_principals,
@@ -176,8 +176,8 @@ locals {
   ### ArgoCD Privatelink ####
   ###########################
 
-  argocd_enabled             = var.create_eks && local.argocd_config.enabled
-  argocd_privatelink_enabled = local.argocd_enabled && try(local.argocd_config.privatelink.enabled, false)
+  argocd_enabled             = var.create_eks && coalesce(try(local.argocd_config.enabled, true), true)
+  argocd_privatelink_enabled = local.argocd_enabled && coalesce(try(local.argocd_config.privatelink.enabled, true), true)
 
   # Default values for Privatelink configuration
   argocd_endpoint_default_aws_regions        = ["eu-central-1", "us-east-1"]
@@ -198,8 +198,8 @@ locals {
   ### ArgoCD VCS ####
   ###################
 
-  github_vcs_enabled = local.argocd_enabled && try(local.argocd_config.vcs.github.enabled, false)
-  gitlab_vcs_enabled = local.argocd_enabled && try(local.argocd_config.vcs.gitlab.enabled, false)
+  github_vcs_enabled = local.argocd_enabled && coalesce(try(local.argocd_config.vcs.github.enabled, false), false)
+  gitlab_vcs_enabled = local.argocd_enabled && coalesce(try(local.argocd_config.vcs.gitlab.enabled, false), false)
 
   # VCS connector configuration for Dex
   dex_connectors = concat(

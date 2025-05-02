@@ -1,6 +1,6 @@
 resource "time_sleep" "wait_for_cluster_ready" {
   count           = var.create_eks ? 1 : 0
-  create_duration = "90s"
+  create_duration = "120s"
   depends_on      = [module.eks, time_sleep.wait_for_internal_ingress]
 }
 
