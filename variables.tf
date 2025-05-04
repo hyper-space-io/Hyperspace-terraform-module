@@ -85,6 +85,18 @@ variable "existing_vpc_id" {
   default     = null
 }
 
+variable "existing_private_subnets" {
+  description = "The private subnets for the existing VPC"
+  type        = list(string)
+  default     = []
+}
+
+variable "existing_public_subnets" {
+  description = "The public subnets for the existing VPC"
+  type        = list(string)
+  default     = []
+}
+
 variable "num_zones" {
   type    = number
   default = 2

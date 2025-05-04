@@ -19,38 +19,6 @@ data "aws_vpc" "existing" {
   id    = var.existing_vpc_id
 }
 
-data "aws_subnets" "private" {
-  count = local.create_vpc ? 0 : 1
-  filter {
-    name   = "vpc-id"
-    values = [var.existing_vpc_id]
-  }
-  filter {
-    name   = "map-public-ip-on-launch"
-    values = ["false"]
-  }
-  filter {
-    name   = "state"
-    values = ["available"]
-  }
-}
-
-data "aws_subnets" "public" {
-  count = local.create_vpc ? 0 : 1
-  filter {
-    name   = "vpc-id"
-    values = [var.existing_vpc_id]
-  }
-  filter {
-    name   = "map-public-ip-on-launch"
-    values = ["true"]
-  }
-  filter {
-    name   = "state"
-    values = ["available"]
-  }
-}
-
 #######################
 ######## KMS ##########
 #######################
