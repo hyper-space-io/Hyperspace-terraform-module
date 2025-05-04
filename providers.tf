@@ -23,9 +23,12 @@ terraform {
 
 provider "aws" {
   region = var.aws_region
-  assume_role {
-    role_arn     = "arn:aws:iam::${var.aws_account_id}:role/${var.terraform_role}"
-    session_name = "terraform"
+  dynamic "assume_role" {
+    for_each = var.terraform_role != null ? [1] : []
+    content {
+      role_arn     = "arn:aws:iam::${var.aws_account_id}:role/${var.terraform_role}"
+      session_name = "terraform"
+    }
   }
 }
 
