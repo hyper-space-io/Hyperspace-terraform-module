@@ -26,8 +26,12 @@ data "aws_subnets" "private" {
     values = [var.existing_vpc_id]
   }
   filter {
-    name   = "tag:Type"
-    values = ["private"]
+    name   = "map-public-ip-on-launch"
+    values = ["false"]
+  }
+  filter {
+    name   = "state"
+    values = ["available"]
   }
 }
 
@@ -38,8 +42,12 @@ data "aws_subnets" "public" {
     values = [var.existing_vpc_id]
   }
   filter {
-    name   = "tag:Type"
-    values = ["public"]
+    name   = "map-public-ip-on-launch"
+    values = ["true"]
+  }
+  filter {
+    name   = "state"
+    values = ["available"]
   }
 }
 
