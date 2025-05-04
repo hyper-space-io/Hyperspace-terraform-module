@@ -176,10 +176,10 @@ EOF
 
 resource "aws_vpc_endpoint" "prometheus" {
   count               = local.prometheus_endpoint_enabled ? 1 : 0
-  vpc_id              = module.vpc.vpc_id
+  vpc_id              = local.vpc_id
   service_name        = local.prometheus_endpoint_config.endpoint_service_name
   vpc_endpoint_type   = "Interface"
-  subnet_ids          = module.vpc.private_subnets
+  subnet_ids          = local.private_subnets
   security_group_ids  = [aws_security_group.prometheus_endpoint[0].id]
   private_dns_enabled = true
   ip_address_type     = "ipv4"
@@ -194,13 +194,13 @@ resource "aws_security_group" "prometheus_endpoint" {
   count       = local.prometheus_endpoint_enabled ? 1 : 0
   name        = "prometheus-endpoint"
   description = "Security group for prometheus endpoint"
-  vpc_id      = module.vpc.vpc_id
+  vpc_id      = local.vpc_id
 
   ingress {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = distinct(concat([module.vpc.vpc_cidr_block], local.prometheus_endpoint_config.additional_cidr_blocks))
+    cidr_blocks = distinct(concat([local.vpc_cidr_block], local.prometheus_endpoint_config.additional_cidr_blocks))
   }
 
   egress {

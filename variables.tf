@@ -73,26 +73,16 @@ variable "create_vpc" {
   default     = true
 }
 
-variable "existing_vpc_config" {
-  description = "Configuration for using an existing VPC"
-  type = object({
-    vpc_id          = string
-    vpc_cidr        = string
-    private_subnets = list(string)
-    public_subnets  = list(string)
-  })
-  default = {
-    vpc_id          = null
-    vpc_cidr        = null
-    private_subnets = []
-    public_subnets  = []
-  }
+variable "vpc_cidr" {
+  description = "The CIDR block for the VPC"
+  type        = string
+  default     = "10.0.0.0/16"
 }
 
-variable "vpc_cidr" {
+variable "existing_vpc_id" {
+  description = "ID of an existing VPC to use instead of creating a new one"
   type        = string
-  description = "CIDR block for the VPC"
-  default     = "10.0.0.0/16"
+  default     = null
 }
 
 variable "num_zones" {
@@ -149,6 +139,12 @@ variable "create_eks" {
   type        = bool
   default     = true
   description = "Should we create the eks cluster?"
+}
+
+variable "cluster_endpoint_public_access" {
+  description = "Whether to enable public access to the EKS cluster endpoint"
+  type        = bool
+  default     = false
 }
 
 variable "enable_cluster_autoscaler" {

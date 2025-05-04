@@ -17,18 +17,29 @@ locals {
   hyperspace_ecr_registry_region   = "eu-west-1"
 
   alb_values = <<EOT
-  vpcId: ${module.vpc.vpc_id}
+  vpcId: ${local.vpc_id}
   region: ${var.aws_region}
   EOT
 
   ##################
   ##### VPC ########
   ##################
+  existing_vpc_enabled = (var.existing_vpc_id != null) && (var.create_vpc == false)
+  existing_vpc = {
+    id              = local.existing_vpc_enabled ? data.aws_vpc.existing[0].id : null
+    cidr_block      = local.existing_vpc_enabled ? data.aws_vpc.existing[0].cidr_block : null
+    private_subnets = local.existing_vpc_enabled ? data.aws_subnets.private[0].ids : []
+    public_subnets  = local.existing_vpc_enabled ? data.aws_subnets.public[0].ids : []
+  }
   availability_zones = length(var.availability_zones) == 0 ? slice(data.aws_availability_zones.available.names, 0, var.num_zones) : var.availability_zones
-  private_subnets    = [for azs_count in local.availability_zones : cidrsubnet(var.vpc_cidr, 4, index(local.availability_zones, azs_count))]
-  public_subnets     = [for azs_count in local.availability_zones : cidrsubnet(var.vpc_cidr, 4, index(local.availability_zones, azs_count) + 5)]
+  private_subnets    = local.existing_vpc_enabled ? local.existing_vpc.private_subnets : [for azs_count in local.availability_zones : cidrsubnet(var.vpc_cidr, 4, index(local.availability_zones, azs_count))]
+  public_subnets     = local.existing_vpc_enabled ? local.existing_vpc.public_subnets : [for azs_count in local.availability_zones : cidrsubnet(var.vpc_cidr, 4, index(local.availability_zones, azs_count) + 5)]
+  vpc_id             = local.existing_vpc_enabled ? local.existing_vpc.id : module.vpc[0].vpc_id
+  vpc_cidr_block     = local.existing_vpc_enabled ? local.existing_vpc.cidr_block : module.vpc[0].vpc_cidr_block
 
-  # KMS
+  ##################
+  ##### VPC ########
+  ##################
   hyperspace_ami_key_alias = "arn:aws:kms:${var.aws_region}:${var.hyperspace_account_id}:alias/HYPERSPACE_AMI_KEY"
 
   # IAM Policy ARNs
