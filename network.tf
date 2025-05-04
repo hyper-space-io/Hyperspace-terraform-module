@@ -1,6 +1,6 @@
 # NETWORKING
 module "vpc" {
-  count                                           = var.create_vpc ? 1 : 0
+  count                                           = local.create_vpc ? 1 : 0
   source                                          = "terraform-aws-modules/vpc/aws"
   version                                         = "~>5.13.0"
   name                                            = "${var.project}-${var.environment}-vpc"
