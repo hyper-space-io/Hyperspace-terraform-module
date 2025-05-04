@@ -32,10 +32,10 @@ locals {
     public_subnets  = local.create_vpc ? [] : data.aws_subnets.public[0].ids
   }
   availability_zones = length(var.availability_zones) == 0 ? slice(data.aws_availability_zones.available.names, 0, var.num_zones) : var.availability_zones
-  private_subnets    = local.create_vpc ? [for azs_count in local.availability_zones : cidrsubnet(var.vpc_cidr, 4, index(local.availability_zones, azs_count))] : local.existing_vpc.private_subnets
-  public_subnets     = local.create_vpc ? [for azs_count in local.availability_zones : cidrsubnet(var.vpc_cidr, 4, index(local.availability_zones, azs_count) + 5)] : local.existing_vpc.public_subnets
-  vpc_id             = local.create_vpc ? module.vpc[0].vpc_id : local.existing_vpc.id
-  vpc_cidr_block     = local.create_vpc ? module.vpc[0].vpc_cidr_block : local.existing_vpc.cidr_block
+  private_subnets    = local.create_vpc ? [for azs_count in local.availability_zones : cidrsubnet(var.vpc_cidr, 4, index(local.availability_zones, azs_count))] : data.aws_subnets.private[0].ids
+  public_subnets     = local.create_vpc ? [for azs_count in local.availability_zones : cidrsubnet(var.vpc_cidr, 4, index(local.availability_zones, azs_count) + 5)] : data.aws_subnets.public[0].ids
+  vpc_id             = local.create_vpc ? module.vpc[0].vpc_id : data.aws_vpc.existing[0].id
+  vpc_cidr_block     = local.create_vpc ? module.vpc[0].vpc_cidr_block : data.aws_vpc.existing[0].cidr_block
 
   ##################
   ##### VPC ########

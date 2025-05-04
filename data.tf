@@ -25,8 +25,9 @@ data "aws_subnets" "private" {
     name   = "vpc-id"
     values = [var.existing_vpc_id]
   }
-  tags = {
-    "Type" = "private"
+  filter {
+    name   = "tag:Type"
+    values = ["private"]
   }
 }
 
@@ -36,8 +37,9 @@ data "aws_subnets" "public" {
     name   = "vpc-id"
     values = [var.existing_vpc_id]
   }
-  tags = {
-    "Type" = "public"
+  filter {
+    name   = "tag:Type"
+    values = ["public"]
   }
 }
 
