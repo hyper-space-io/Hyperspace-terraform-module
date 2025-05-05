@@ -52,12 +52,7 @@ module "eks" {
       AmazonEBSCSIDriverPolicy     = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
     }
     subnets = local.private_subnets
-
-    subnet_tags = {
-      "kubernetes.io/role/internal-elb" = "1"
-      "Type"                            = "private"
-    }
-
+    
     tags = {
       "k8s.io/cluster-autoscaler/enabled"               = "True"
       "k8s.io/cluster-autoscaler/${local.cluster_name}" = "True"
