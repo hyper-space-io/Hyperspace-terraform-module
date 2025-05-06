@@ -4,7 +4,7 @@
 
 variable "terraform_role" {
   type        = string
-  description = "Terraform role to assume"
+  description = "Terraform role to assume. If not set (null), no role will be assumed"
   default     = "PlatformAdmin"
 }
 
@@ -67,32 +67,28 @@ variable "availability_zones" {
   description = "List of availability zones to deploy the resources. Leave empty to automatically select based on the region and the variable num_zones."
 }
 
-variable "create_vpc" {
-  description = "Controls if VPC should be created"
-  type        = bool
-  default     = true
-}
-
-variable "existing_vpc_config" {
-  description = "Configuration for using an existing VPC"
-  type = object({
-    vpc_id          = string
-    vpc_cidr        = string
-    private_subnets = list(string)
-    public_subnets  = list(string)
-  })
-  default = {
-    vpc_id          = null
-    vpc_cidr        = null
-    private_subnets = []
-    public_subnets  = []
-  }
-}
-
 variable "vpc_cidr" {
+  description = "The CIDR block for the VPC"
   type        = string
-  description = "CIDR block for the VPC"
   default     = "10.0.0.0/16"
+}
+
+variable "existing_vpc_id" {
+  description = "ID of an existing VPC to use instead of creating a new one"
+  type        = string
+  default     = null
+}
+
+variable "existing_private_subnets" {
+  description = "The private subnets for the existing VPC"
+  type        = list(string)
+  default     = []
+}
+
+variable "existing_public_subnets" {
+  description = "The public subnets for the existing VPC"
+  type        = list(string)
+  default     = []
 }
 
 variable "num_zones" {
@@ -151,6 +147,12 @@ variable "create_eks" {
   description = "Should we create the eks cluster?"
 }
 
+variable "cluster_endpoint_public_access" {
+  description = "Whether to enable public access to the EKS cluster endpoint"
+  type        = bool
+  default     = false
+}
+
 variable "enable_cluster_autoscaler" {
   description = "should we enable and install cluster-autoscaler"
   type        = bool
@@ -172,10 +174,10 @@ variable "worker_instance_type" {
   type        = list(string)
   default     = ["m5n.xlarge"]
 
-  validation {
-    condition     = alltrue([for instance in var.worker_instance_type : contains(["m5n.xlarge", "m5n.large", "m5d.xlarge", "m5d.large"], instance)])
-    error_message = "Worker instance type must be one of: m5n.xlarge, m5n.large, m5d.xlarge, m5d.large"
-  }
+  # validation {
+  #   condition     = alltrue([for instance in var.worker_instance_type : contains(["m5n.xlarge", "m5n.large", "m5d.xlarge", "m5d.large"], instance)])
+  #   error_message = "Worker instance type must be one of: m5n.xlarge, m5n.large, m5d.xlarge, m5d.large"
+  # }
 }
 
 variable "eks_additional_admin_roles" {
@@ -184,8 +186,19 @@ variable "eks_additional_admin_roles" {
   default     = []
 
   validation {
-    condition     = alltrue([for arn in var.eks_additional_admin_roles : can(regex("^arn:aws:iam::[0-9]{12}:role/[a-zA-Z0-9+=,.@_-]+$", arn))])
-    error_message = "All role ARNs must be valid IAM role ARNs in the format: arn:aws:iam::<account-id>:role/<role-name>"
+    condition     = alltrue([for arn in var.eks_additional_admin_roles : can(regex("^arn:aws:iam::[0-9]{12}:role/(service-role/)?[a-zA-Z0-9+=,.@_-]+$", arn))])
+    error_message = "All role ARNs must be valid IAM role ARNs in the format: arn:aws:iam::<account-id>:role/<role-name> or arn:aws:iam::<account-id>:role/service-role/<role-name>"
+  }
+}
+
+variable "eks_additional_admin_roles_policy" {
+  type        = string
+  description = "IAM policy for the EKS additional admin roles"
+  default     = "arn:aws:iam::aws:policy/AmazonEKSClusterAdminPolicy"
+
+  validation {
+    condition     = var.eks_additional_admin_roles_policy == "" || can(regex("^arn:aws:iam::[0-9]{12}:policy/[a-zA-Z0-9+=,.@_-]+$", var.eks_additional_admin_roles_policy))
+    error_message = "The policy ARN must be empty or a valid IAM policy ARN in the format: arn:aws:iam::<account-id>:policy/<policy-name>"
   }
 }
 

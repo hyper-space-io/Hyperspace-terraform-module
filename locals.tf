@@ -7,7 +7,6 @@ locals {
   })
 
   worker_instance_type             = var.worker_instance_type
-  eks_additional_admin_roles       = var.eks_additional_admin_roles
   prometheus_endpoint_config       = var.prometheus_endpoint_config
   prometheus_endpoint_enabled      = var.create_eks && coalesce(try(local.prometheus_endpoint_config.enabled, false), false)
   argocd_config                    = var.argocd_config
@@ -17,21 +16,34 @@ locals {
   hyperspace_ecr_registry_region   = "eu-west-1"
 
   alb_values = <<EOT
-  vpcId: ${module.vpc.vpc_id}
+  vpcId: ${local.vpc_id}
   region: ${var.aws_region}
   EOT
 
   ##################
   ##### VPC ########
   ##################
+  create_vpc = var.existing_vpc_id == null ? true : false
+  existing_vpc = {
+    id              = local.create_vpc ? null : data.aws_vpc.existing[0].id
+    cidr_block      = local.create_vpc ? null : data.aws_vpc.existing[0].cidr_block
+    private_subnets = local.create_vpc ? [] : var.existing_private_subnets
+    public_subnets  = local.create_vpc ? [] : var.existing_public_subnets
+  }
   availability_zones = length(var.availability_zones) == 0 ? slice(data.aws_availability_zones.available.names, 0, var.num_zones) : var.availability_zones
-  private_subnets    = [for azs_count in local.availability_zones : cidrsubnet(var.vpc_cidr, 4, index(local.availability_zones, azs_count))]
-  public_subnets     = [for azs_count in local.availability_zones : cidrsubnet(var.vpc_cidr, 4, index(local.availability_zones, azs_count) + 5)]
+  private_subnets    = local.create_vpc ? [for azs_count in local.availability_zones : cidrsubnet(var.vpc_cidr, 4, index(local.availability_zones, azs_count))] : var.existing_private_subnets
+  public_subnets     = local.create_vpc ? [for azs_count in local.availability_zones : cidrsubnet(var.vpc_cidr, 4, index(local.availability_zones, azs_count) + 5)] : var.existing_public_subnets
+  vpc_id             = local.create_vpc ? module.vpc[0].vpc_id : var.existing_vpc_id
+  vpc_cidr_block     = local.create_vpc ? module.vpc[0].vpc_cidr_block : local.existing_vpc.cidr_block
 
-  # KMS
+  ##################
+  ##### KMS ########
+  ##################
   hyperspace_ami_key_alias = "arn:aws:kms:${var.aws_region}:${var.hyperspace_account_id}:alias/HYPERSPACE_AMI_KEY"
 
-  # IAM Policy ARNs
+  ##################
+  ### IAM Policy ###
+  ##################
   iam_policy_arns = {
     for k, v in local.iam_policies : k => aws_iam_policy.policies[k].arn
   }

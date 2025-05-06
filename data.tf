@@ -15,18 +15,8 @@ data "aws_region" "current" {}
 #######################
 
 data "aws_vpc" "existing" {
-  count = var.create_vpc ? 0 : 1
-  id    = var.existing_vpc_config.vpc_id
-}
-
-data "aws_subnet" "existing_private" {
-  count = var.create_vpc ? 0 : length(var.existing_vpc_config.private_subnets)
-  id    = var.existing_vpc_config.private_subnets[count.index]
-}
-
-data "aws_subnet" "existing_public" {
-  count = var.create_vpc ? 0 : length(var.existing_vpc_config.public_subnets)
-  id    = var.existing_vpc_config.public_subnets[count.index]
+  count = local.create_vpc ? 0 : 1
+  id    = var.existing_vpc_id
 }
 
 #######################
