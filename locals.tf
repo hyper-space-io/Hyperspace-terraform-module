@@ -266,7 +266,7 @@ locals {
       "gitlab-creds" = {
         url      = "https://gitlab.com/${local.argocd_config.vcs.organization}/${local.argocd_config.vcs.repository}.git"
         username = try(jsondecode(data.aws_secretsmanager_secret_version.argocd_gitlab_credentials[0].secret_string).username, null)
-        password = try(jsondecode(data.aws_secretsmanager_secret_version.argocd_gitlab_credentials[0].secret_string).deploy_token, null)
+        password = try(jsondecode(data.aws_secretsmanager_secret_version.argocd_gitlab_credentials[0].secret_string).password, null)
       }
     } : {}
   )
