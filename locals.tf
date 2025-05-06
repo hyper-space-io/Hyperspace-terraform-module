@@ -206,16 +206,30 @@ locals {
     local.argocd_endpoint_default_aws_regions
   ))
 
+  # ArgoCD ConfigMap values
+  argocd_configmap_values = merge({
+    "exec.enabled"           = "false"
+    "timeout.reconciliation" = "5s"
+    "dex.config" = yamlencode({
+      connectors = local.dex_connectors
+    })
+  }, local.argocd_privatelink_enabled ? {
+    "accounts.hyperspace" = "login"
+  } : {})
+
   ###################
   ### ArgoCD VCS ####
   ###################
 
-  github_vcs_enabled = local.argocd_enabled && coalesce(try(local.argocd_config.vcs.github.enabled, false), false)
-  gitlab_vcs_enabled = local.argocd_enabled && coalesce(try(local.argocd_config.vcs.gitlab.enabled, false), false)
+  github_vcs_enabled     = local.argocd_enabled && coalesce(try(local.argocd_config.vcs.github.enabled, false), false)
+  github_vcs_app_enabled = local.github_vcs_enabled && try(local.argocd_config.vcs.github.github_app_enabled, false)
 
+  gitlab_vcs_enabled = local.argocd_enabled && coalesce(try(local.argocd_config.vcs.gitlab.enabled, false), false)
+  gitlab_vcs_oauth_enabled = local.gitlab_vcs_enabled && try(local.argocd_config.vcs.gitlab.oauth_enabled, false)
+    
   # VCS connector configuration for Dex
   dex_connectors = concat(
-    local.github_vcs_enabled ? [{
+    local.github_vcs_app_enabled ? [{
       type = "github"
       id   = "github"
       name = "GitHub"
@@ -225,7 +239,7 @@ locals {
         orgs         = [{ name = local.argocd_config.vcs.organization }]
       }
     }] : [],
-    local.gitlab_vcs_enabled ? [{
+    local.gitlab_vcs_oauth_enabled ? [{
       type = "gitlab"
       id   = "gitlab"
       name = "GitLab"
@@ -240,7 +254,7 @@ locals {
 
   # ArgoCD credential templates
   argocd_credential_templates = merge(
-    local.github_vcs_enabled ? {
+    local.github_vcs_app_enabled ? {
       "github-creds" = {
         url                     = "https://github.com/${local.argocd_config.vcs.organization}/${local.argocd_config.vcs.repository}"
         githubAppID             = try(jsondecode(data.aws_secretsmanager_secret_version.argocd_github_app[0].secret_string).github_app_id, null)

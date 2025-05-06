@@ -24,14 +24,7 @@ resource "helm_release" "argocd" {
           "policy.default" = "${local.argocd_rbac_policy_default}"
           "policy.csv"     = join("\n", local.argocd_rbac_policy_rules)
         }
-        cm = {
-          "exec.enabled"           = "false"
-          "timeout.reconciliation" = "5s"
-          "accounts.hyperspace"    = "login"
-          "dex.config" = yamlencode({
-            connectors = local.dex_connectors
-          })
-        }
+        cm = local.argocd_configmap_values
         credentialTemplates = sensitive(local.argocd_credential_templates)
       }
       server = {
@@ -94,7 +87,7 @@ resource "aws_secretsmanager_secret_version" "argocd_readonly_password" {
 
 # Execute ArgoCD CLI setup and password update
 resource "null_resource" "argocd_create_user" {
-  count = local.argocd_enabled ? 1 : 0
+  count = local.argocd_privatelink_enabled ? 1 : 0
   provisioner "local-exec" {
     command = <<EOT
       echo "Getting ArgoCD admin password..."

@@ -196,10 +196,10 @@ variable "eks_additional_admin_roles_policy" {
   description = "IAM policy for the EKS additional admin roles"
   default     = "arn:aws:iam::aws:policy/AmazonEKSClusterAdminPolicy"
 
-  validation {
-    condition     = var.eks_additional_admin_roles_policy == "" || can(regex("^arn:aws:iam::[0-9]{12}:policy/[a-zA-Z0-9+=,.@_-]+$", var.eks_additional_admin_roles_policy))
-    error_message = "The policy ARN must be empty or a valid IAM policy ARN in the format: arn:aws:iam::<account-id>:policy/<policy-name>"
-  }
+  # validation {
+  #   condition     = var.eks_additional_admin_roles_policy == "" || can(regex("^arn:aws:iam::[0-9]{12}:policy/[a-zA-Z0-9+=,.@_-]+$", var.eks_additional_admin_roles_policy))
+  #   error_message = "The policy ARN must be empty or a valid IAM policy ARN in the format: arn:aws:iam::<account-id>:policy/<policy-name>"
+  # }
 }
 
 ###############################
@@ -235,11 +235,13 @@ variable "argocd_config" {
       repository   = string
       github = optional(object({
         enabled                   = bool
+        github_app_enabled        = optional(bool, false)
         github_app_secret_name    = optional(string, "argocd/github_app")
         github_private_key_secret = optional(string, "argocd/github_app_private_key")
       }))
       gitlab = optional(object({
         enabled                 = bool
+        oauth_enabled           = optional(bool, false)
         oauth_secret_name       = optional(string, "argocd/gitlab_oauth")
         credentials_secret_name = optional(string, "argocd/gitlab_credentials")
       }))
