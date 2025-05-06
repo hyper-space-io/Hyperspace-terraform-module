@@ -52,7 +52,7 @@ module "eks" {
       AmazonEBSCSIDriverPolicy     = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
     }
     subnets = local.private_subnets
-    
+
     tags = {
       "k8s.io/cluster-autoscaler/enabled"               = "True"
       "k8s.io/cluster-autoscaler/${local.cluster_name}" = "True"
@@ -162,8 +162,8 @@ module "eks" {
   access_entries = {
     for role in var.eks_additional_admin_roles : role => {
       principal_arn = role
-      type         = "STANDARD"
-      policy_arn   = var.eks_additional_admin_roles_policy
+      type          = "STANDARD"
+      policy_arn    = var.eks_additional_admin_roles_policy
     }
   }
 

@@ -235,11 +235,13 @@ variable "argocd_config" {
       repository   = string
       github = optional(object({
         enabled                   = bool
+        github_app_enabled        = optional(bool, false)
         github_app_secret_name    = optional(string, "argocd/github_app")
         github_private_key_secret = optional(string, "argocd/github_app_private_key")
       }))
       gitlab = optional(object({
         enabled                 = bool
+        oauth_enabled           = optional(bool, false)
         oauth_secret_name       = optional(string, "argocd/gitlab_oauth")
         credentials_secret_name = optional(string, "argocd/gitlab_credentials")
       }))
