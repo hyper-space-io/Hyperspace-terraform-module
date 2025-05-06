@@ -7,7 +7,6 @@ locals {
   })
 
   worker_instance_type             = var.worker_instance_type
-  eks_additional_admin_roles       = var.eks_additional_admin_roles
   prometheus_endpoint_config       = var.prometheus_endpoint_config
   prometheus_endpoint_enabled      = var.create_eks && coalesce(try(local.prometheus_endpoint_config.enabled, false), false)
   argocd_config                    = var.argocd_config

@@ -191,6 +191,17 @@ variable "eks_additional_admin_roles" {
   }
 }
 
+variable "eks_additional_admin_roles_policy" {
+  type        = string
+  description = "IAM policy for the EKS additional admin roles"
+  default     = "arn:aws:iam::aws:policy/AmazonEKSClusterAdminPolicy"
+
+  validation {
+    condition     = var.eks_additional_admin_role_policy == "" || can(regex("^arn:aws:iam::[0-9]{12}:policy/[a-zA-Z0-9+=,.@_-]+$", var.eks_additional_admin_role_policy))
+    error_message = "The policy ARN must be empty or a valid IAM policy ARN in the format: arn:aws:iam::<account-id>:policy/<policy-name>"
+  }
+}
+
 ###############################
 ######### Route53 #############
 ###############################

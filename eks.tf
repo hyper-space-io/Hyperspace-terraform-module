@@ -160,10 +160,10 @@ module "eks" {
 
   # Add access entries for additional admin roles
   access_entries = {
-    for role in local.eks_additional_admin_roles : role => {
+    for role in var.eks_additional_admin_roles : role => {
       principal_arn = role
       type         = "STANDARD"
-      policy_arn   = "arn:aws:iam::aws:policy/AmazonEKSClusterAdminPolicy"
+      policy_arn   = var.eks_additional_admin_roles_policy
     }
   }
 
