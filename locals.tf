@@ -38,11 +38,13 @@ locals {
   vpc_cidr_block     = local.create_vpc ? module.vpc[0].vpc_cidr_block : local.existing_vpc.cidr_block
 
   ##################
-  ##### VPC ########
+  ##### KMS ########
   ##################
   hyperspace_ami_key_alias = "arn:aws:kms:${var.aws_region}:${var.hyperspace_account_id}:alias/HYPERSPACE_AMI_KEY"
 
-  # IAM Policy ARNs
+  ##################
+  ### IAM Policy ###
+  ##################
   iam_policy_arns = {
     for k, v in local.iam_policies : k => aws_iam_policy.policies[k].arn
   }

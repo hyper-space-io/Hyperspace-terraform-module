@@ -67,12 +67,6 @@ variable "availability_zones" {
   description = "List of availability zones to deploy the resources. Leave empty to automatically select based on the region and the variable num_zones."
 }
 
-variable "create_vpc" {
-  description = "Controls if VPC should be created"
-  type        = bool
-  default     = true
-}
-
 variable "vpc_cidr" {
   description = "The CIDR block for the VPC"
   type        = string
