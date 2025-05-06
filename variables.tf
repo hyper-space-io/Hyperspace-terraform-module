@@ -186,8 +186,8 @@ variable "eks_additional_admin_roles" {
   default     = []
 
   validation {
-    condition     = alltrue([for arn in var.eks_additional_admin_roles : can(regex("^arn:aws:iam::[0-9]{12}:role/[a-zA-Z0-9+=,.@_-]+$", arn))])
-    error_message = "All role ARNs must be valid IAM role ARNs in the format: arn:aws:iam::<account-id>:role/<role-name>"
+    condition     = alltrue([for arn in var.eks_additional_admin_roles : can(regex("^arn:aws:iam::[0-9]{12}:role/(service-role/)?[a-zA-Z0-9+=,.@_-]+$", arn))])
+    error_message = "All role ARNs must be valid IAM role ARNs in the format: arn:aws:iam::<account-id>:role/<role-name> or arn:aws:iam::<account-id>:role/service-role/<role-name>"
   }
 }
 
