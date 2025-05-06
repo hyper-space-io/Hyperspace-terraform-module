@@ -5,7 +5,7 @@
 variable "terraform_role" {
   type        = string
   description = "Terraform role to assume. If not set (null), no role will be assumed"
-  default     = "PlatformAdmin"
+  default     = ""
 }
 
 variable "aws_account_id" {
