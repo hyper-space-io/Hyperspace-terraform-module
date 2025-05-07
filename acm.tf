@@ -1,21 +1,21 @@
 locals {
   create_acm = var.domain_name != "" ? true : false
-  acm_config = {
+  acm_config = nonsensitive({
     external_acm = (var.create_public_zone && local.public_domain_name != "") ? {
-      domain_name = nonsensitive(local.public_domain_name)
+      domain_name = local.public_domain_name
       subject_alternative_names = [
-        "*.${nonsensitive(local.public_domain_name)}",
+        "*.${local.public_domain_name}",
       ]
       create_certificate = local.create_acm
     } : null,
     internal_acm = local.internal_domain_name != "" ? {
-      domain_name = nonsensitive(local.internal_domain_name)
+      domain_name = local.internal_domain_name
       subject_alternative_names = [
-        "*.${nonsensitive(local.internal_domain_name)}",
+        "*.${local.internal_domain_name}",
       ]
       create_certificate = local.create_acm
     } : null
-  }
+  })
 }
 
 module "acm" {
