@@ -25,7 +25,7 @@ module "eks" {
       desired_size   = 1
       instance_types = local.worker_instance_type
       capacity_type  = "ON_DEMAND"
-      labels         = { Environment = "${var.environment}" }
+      labels         = { Environment = var.environment }
       tags           = merge(local.tags, { nodegroup = "workers", Name = "${local.cluster_name}-eks-medium" })
       ami_type       = "BOTTLEROCKET_x86_64"
 
@@ -56,7 +56,7 @@ module "eks" {
     tags = {
       "k8s.io/cluster-autoscaler/enabled"               = "True"
       "k8s.io/cluster-autoscaler/${local.cluster_name}" = "True"
-      "Name"                                            = "${local.cluster_name}"
+      "Name"                                            = local.cluster_name
     }
   }
 
@@ -110,7 +110,7 @@ module "eks" {
       from_port   = 443
       to_port     = 443
       type        = "ingress"
-      cidr_blocks = local.auth0_ingress_cidr_blocks["${split("-", var.aws_region)[0]}"]
+      cidr_blocks = local.auth0_ingress_cidr_blocks[split("-", var.aws_region)[0]]
     }
 
     ingress_self_all = {

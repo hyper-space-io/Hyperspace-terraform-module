@@ -12,8 +12,6 @@ locals {
   argocd_config                    = var.argocd_config
   prometheus_remote_write_endpoint = "https://prometheus.internal.devops-dev.hyper-space.xyz/api/v1/write"
   internal_ingress_class_name      = "nginx-internal"
-  hyperspace_org_name              = "hyper-space-io"
-  hyperspace_ecr_registry_region   = "eu-west-1"
 
   alb_values = <<EOT
   vpcId: ${local.vpc_id}
@@ -25,7 +23,7 @@ locals {
   ##################
   # Determine if we need to create a new VPC or use existing one
   create_vpc = var.existing_vpc_id == null ? true : false
-  
+
   # Store existing VPC details when using an existing VPC
   existing_vpc = {
     id              = local.create_vpc ? null : data.aws_vpc.existing[0].id
@@ -33,7 +31,7 @@ locals {
     private_subnets = local.create_vpc ? [] : var.existing_private_subnets
     public_subnets  = local.create_vpc ? [] : var.existing_public_subnets
   }
-  
+
   # These are only used when creating a new VPC (count = 1)
   availability_zones = length(var.availability_zones) == 0 ? slice(data.aws_availability_zones.available.names, 0, var.num_zones) : var.availability_zones
   private_subnets    = [for azs_count in local.availability_zones : cidrsubnet(var.vpc_cidr, 4, index(local.availability_zones, azs_count))]
@@ -41,7 +39,6 @@ locals {
 
   # Use VPC module outputs for new VPC, or existing values for existing VPC
   private_subnet_ids = local.create_vpc ? module.vpc[0].private_subnets : var.existing_private_subnets
-  public_subnet_ids  = local.create_vpc ? module.vpc[0].public_subnets : var.existing_public_subnets
   vpc_id             = local.create_vpc ? module.vpc[0].vpc_id : var.existing_vpc_id
   vpc_cidr_block     = local.create_vpc ? module.vpc[0].vpc_cidr_block : local.existing_vpc.cidr_block
 
@@ -139,7 +136,7 @@ locals {
       max_size                 = 20
       desired_size             = 0
       instance_type            = "f1.2xlarge"
-      ami_id                   = "${data.aws_ami.fpga.id}"
+      ami_id                   = data.aws_ami.fpga.id
       bootstrap_extra_args     = "--kubelet-extra-args '--node-labels=hyperspace.io/type=fpga --register-with-taints=fpga=true:NoSchedule'"
       post_bootstrap_user_data = <<-EOT
       #!/bin/bash -e
@@ -188,11 +185,6 @@ locals {
     ["eu-central-1", "us-east-1"]
   ))
 
-  grafana_networking = {
-    ingress_enabled    = !var.grafana_privatelink_config.enabled
-    ingress_class_name = var.grafana_privatelink_config.enabled ? "" : local.internal_ingress_class_name
-  }
-
   ###########################
   ### ArgoCD Privatelink ####
   ###########################
@@ -222,7 +214,7 @@ locals {
     "dex.config" = yamlencode({
       connectors = local.dex_connectors
     })
-  }, local.argocd_privatelink_enabled ? {
+    }, local.argocd_privatelink_enabled ? {
     "accounts.hyperspace" = "login"
   } : {})
 
@@ -233,9 +225,9 @@ locals {
   github_vcs_enabled     = local.argocd_enabled && try(local.argocd_config.vcs.github.enabled, false)
   github_vcs_app_enabled = local.github_vcs_enabled && try(local.argocd_config.vcs.github.github_app_enabled, false)
 
-  gitlab_vcs_enabled = local.argocd_enabled && try(local.argocd_config.vcs.gitlab.enabled, false)
+  gitlab_vcs_enabled       = local.argocd_enabled && try(local.argocd_config.vcs.gitlab.enabled, false)
   gitlab_vcs_oauth_enabled = local.gitlab_vcs_enabled && try(local.argocd_config.vcs.gitlab.oauth_enabled, false)
-    
+
   # VCS connector configuration for Dex
   dex_connectors = concat(
     local.github_vcs_app_enabled ? [{

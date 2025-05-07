@@ -14,7 +14,7 @@ resource "helm_release" "secrets_manager" {
   values = [<<EOF
 serviceAccount:
   annotations:
-    eks.amazonaws.com/role-arn: "${module.iam_iam-assumable-role-with-oidc["${local.external_secrets_release_name}"].iam_role_arn}"
+    eks.amazonaws.com/role-arn: "${module.iam_iam-assumable-role-with-oidc[local.external_secrets_release_name].iam_role_arn}"
 installCRDs: true
 EOF
   ]
@@ -23,7 +23,7 @@ EOF
 
 # Wait for CRD creation to be ready
 resource "time_sleep" "wait_for_crd" {
-  depends_on = [helm_release.secrets_manager]
+  depends_on      = [helm_release.secrets_manager]
   create_duration = "30s"
 }
 

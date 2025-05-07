@@ -56,12 +56,6 @@ variable "hyperspace_dev_account_id" {
   description = "The account ID of the hyperspace dev account, used to pull resources from Hyperspace like AMIs"
 }
 
-variable "hyperspace_aws_region" {
-  type        = string
-  default     = "us-east-1"
-  description = "The region of the hyperspace account"
-}
-
 ###############################
 ########### VPC ###############
 ###############################
@@ -152,12 +146,6 @@ variable "cluster_endpoint_public_access" {
   description = "Whether to enable public access to the EKS cluster endpoint"
   type        = bool
   default     = false
-}
-
-variable "enable_cluster_autoscaler" {
-  description = "should we enable and install cluster-autoscaler"
-  type        = bool
-  default     = true
 }
 
 variable "worker_nodes_max" {

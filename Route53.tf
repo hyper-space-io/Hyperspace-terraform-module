@@ -5,8 +5,8 @@ locals {
 }
 
 module "external_zone" {
-  count  = var.create_public_zone && local.public_domain_name != "" ? 1 : 0
-  source = "terraform-aws-modules/route53/aws//modules/zones"
+  count   = var.create_public_zone && local.public_domain_name != "" ? 1 : 0
+  source  = "terraform-aws-modules/route53/aws//modules/zones"
   version = "~> 4.1.0"
   zones = {
     external = {
@@ -21,8 +21,8 @@ module "external_zone" {
 }
 
 module "internal_zone" {
-  count  = local.internal_domain_name != "" ? 1 : 0
-  source = "terraform-aws-modules/route53/aws//modules/zones"
+  count   = local.internal_domain_name != "" ? 1 : 0
+  source  = "terraform-aws-modules/route53/aws//modules/zones"
   version = "~> 4.1.0"
   zones = {
     internal = {
@@ -47,7 +47,7 @@ resource "aws_route53_record" "wildcard" {
   name       = "*"
   type       = "CNAME"
   ttl        = "300"
-  records    = [data.kubernetes_ingress_v1.external_ingress.status.0.load_balancer.0.ingress.0.hostname]
+  records    = [data.kubernetes_ingress_v1.external_ingress.status[0].load_balancer[0].ingress[0].hostname]
   depends_on = [helm_release.nginx-ingress]
 }
 
@@ -57,6 +57,6 @@ resource "aws_route53_record" "internal_wildcard" {
   name       = "*"
   type       = "CNAME"
   ttl        = "300"
-  records    = [data.kubernetes_ingress_v1.internal_ingress.status.0.load_balancer.0.ingress.0.hostname]
+  records    = [data.kubernetes_ingress_v1.internal_ingress.status[0].load_balancer[0].ingress[0].hostname]
   depends_on = [helm_release.nginx-ingress]
 }

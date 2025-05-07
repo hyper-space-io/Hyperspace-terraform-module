@@ -8,8 +8,6 @@ data "aws_availability_zones" "available" {
   state = "available"
 }
 
-data "aws_region" "current" {}
-
 #######################
 ####### VPC ###########
 #######################
@@ -96,37 +94,25 @@ data "aws_secretsmanager_secret_version" "argocd_gitlab_credentials" {
 ######## EC2 ##########
 #######################
 
-data "aws_ami" "amazon_linux_2" {
-  most_recent = true
-  owners      = ["amazon"]
-  filter {
-    name   = "name"
-    values = ["amzn2-ami-hvm-*-x86_64-gp2"]
-  }
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
-  }
-}
 
 data "aws_ami" "fpga" {
-  owners     = ["${var.hyperspace_dev_account_id}"]
+  owners     = [var.hyperspace_dev_account_id]
   name_regex = "eks-1\\.31-fpga-prod"
 }
 
 data "aws_iam_policy_document" "ec2_tags_control" {
   statement {
-    sid     = "EC2TagsDescribe"
-    actions = ["ec2:DescribeTags"]
+    sid       = "EC2TagsDescribe"
+    actions   = ["ec2:DescribeTags"]
     resources = ["*"]
-    effect  = "Allow"
+    effect    = "Allow"
   }
 
   statement {
-    sid     = "EC2TagsCreate"
-    actions = ["ec2:CreateTags"]
+    sid       = "EC2TagsCreate"
+    actions   = ["ec2:CreateTags"]
     resources = ["arn:aws:ec2:*:*:instance/*"]
-    effect  = "Allow"
+    effect    = "Allow"
   }
 }
 
@@ -169,11 +155,6 @@ data "kubernetes_ingress_v1" "external_ingress" {
     namespace = "ingress"
   }
   depends_on = [time_sleep.wait_for_external_ingress, module.eks, kubernetes_ingress_v1.nginx_ingress]
-}
-
-data "aws_eks_cluster_auth" "eks" {
-  name       = local.cluster_name
-  depends_on = [module.eks]
 }
 
 data "aws_iam_policy_document" "cluster_autoscaler" {
@@ -236,7 +217,7 @@ data "aws_iam_policy_document" "core_dump_s3_full_access" {
       "s3:*"
     ]
     resources = [
-      "${module.s3_buckets["core-dump-logs"].s3_bucket_arn}",
+      module.s3_buckets["core-dump-logs"].s3_bucket_arn,
       "${module.s3_buckets["core-dump-logs"].s3_bucket_arn}/*"
     ]
     effect = "Allow"
@@ -250,7 +231,7 @@ data "aws_iam_policy_document" "velero_s3_full_access" {
       "s3:*"
     ]
     resources = [
-      "${module.s3_buckets["velero"].s3_bucket_arn}",
+      module.s3_buckets["velero"].s3_bucket_arn,
       "${module.s3_buckets["velero"].s3_bucket_arn}/*"
     ]
     effect = "Allow"
@@ -269,7 +250,7 @@ data "aws_iam_policy_document" "loki_s3_dynamodb_full_access" {
     ]
     effect = "Allow"
     resources = [
-      "${module.s3_buckets["loki"].s3_bucket_arn}",
+      module.s3_buckets["loki"].s3_bucket_arn,
       "${module.s3_buckets["loki"].s3_bucket_arn}/*"
     ]
   }

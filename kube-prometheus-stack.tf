@@ -1,7 +1,6 @@
 locals {
-  prometheus_release_name      = "kube-prometheus-stack"
-  prometheus_crds_release_name = "prometheus-operator-crds"
-  monitoring_namespace         = "monitoring"
+  prometheus_release_name = "kube-prometheus-stack"
+  monitoring_namespace    = "monitoring"
 
   prometheus_values = {
     global = {
