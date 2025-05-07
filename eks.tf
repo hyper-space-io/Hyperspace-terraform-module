@@ -4,7 +4,7 @@ module "eks" {
   create          = var.create_eks
   cluster_name    = local.cluster_name
   cluster_version = "1.31"
-  subnet_ids      = local.private_subnets
+  subnet_ids      = local.private_subnet_ids
   vpc_id          = local.vpc_id
   tags            = local.tags
 
@@ -51,7 +51,7 @@ module "eks" {
       AmazonSSMManagedInstanceCore = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore",
       AmazonEBSCSIDriverPolicy     = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
     }
-    subnets = local.private_subnets
+    subnets = local.private_subnet_ids
 
     tags = {
       "k8s.io/cluster-autoscaler/enabled"               = "True"
@@ -67,7 +67,7 @@ module "eks" {
 
   # Sperating the self managed nodegroups to az's ( 1 AZ : 1 ASG )
   self_managed_node_groups = merge([
-    for idx, subnet in slice(local.private_subnets, 0, length(local.availability_zones)) : {
+    for idx, subnet in slice(local.private_subnet_ids, 0, length(local.availability_zones)) : {
       for pool_name, pool_config in local.additional_self_managed_node_pools :
       "${var.environment}-az${idx + 1}-${pool_name}" => merge(
         pool_config,

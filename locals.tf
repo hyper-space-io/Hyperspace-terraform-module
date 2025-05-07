@@ -23,16 +23,25 @@ locals {
   ##################
   ##### VPC ########
   ##################
+  # Determine if we need to create a new VPC or use existing one
   create_vpc = var.existing_vpc_id == null ? true : false
+  
+  # Store existing VPC details when using an existing VPC
   existing_vpc = {
     id              = local.create_vpc ? null : data.aws_vpc.existing[0].id
     cidr_block      = local.create_vpc ? null : data.aws_vpc.existing[0].cidr_block
     private_subnets = local.create_vpc ? [] : var.existing_private_subnets
     public_subnets  = local.create_vpc ? [] : var.existing_public_subnets
   }
+  
+  # These are only used when creating a new VPC (count = 1)
   availability_zones = length(var.availability_zones) == 0 ? slice(data.aws_availability_zones.available.names, 0, var.num_zones) : var.availability_zones
-  private_subnets    = local.create_vpc ? [for azs_count in local.availability_zones : cidrsubnet(var.vpc_cidr, 4, index(local.availability_zones, azs_count))] : var.existing_private_subnets
-  public_subnets     = local.create_vpc ? [for azs_count in local.availability_zones : cidrsubnet(var.vpc_cidr, 4, index(local.availability_zones, azs_count) + 5)] : var.existing_public_subnets
+  private_subnets    = [for azs_count in local.availability_zones : cidrsubnet(var.vpc_cidr, 4, index(local.availability_zones, azs_count))]
+  public_subnets     = [for azs_count in local.availability_zones : cidrsubnet(var.vpc_cidr, 4, index(local.availability_zones, azs_count) + 5)]
+
+  # Use VPC module outputs for new VPC, or existing values for existing VPC
+  private_subnet_ids = local.create_vpc ? module.vpc[0].private_subnets : var.existing_private_subnets
+  public_subnet_ids  = local.create_vpc ? module.vpc[0].public_subnets : var.existing_public_subnets
   vpc_id             = local.create_vpc ? module.vpc[0].vpc_id : var.existing_vpc_id
   vpc_cidr_block     = local.create_vpc ? module.vpc[0].vpc_cidr_block : local.existing_vpc.cidr_block
 

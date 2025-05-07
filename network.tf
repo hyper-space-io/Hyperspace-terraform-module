@@ -38,7 +38,7 @@ module "endpoints" {
   source                     = "terraform-aws-modules/vpc/aws//modules/vpc-endpoints"
   version                    = "~>5.13.0"
   vpc_id                     = local.vpc_id
-  subnet_ids                 = local.private_subnets
+  subnet_ids                 = local.private_subnet_ids
   create_security_group      = true
   security_group_name_prefix = var.project
   security_group_description = "VPC endpoint security group"

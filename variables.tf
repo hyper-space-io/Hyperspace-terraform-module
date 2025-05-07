@@ -228,7 +228,7 @@ variable "argocd_config" {
   type = object({
     enabled = optional(bool, true)
     privatelink = optional(object({
-      enabled                     = bool
+      enabled                     = optional(bool, false)
       endpoint_allowed_principals = optional(list(string), [])
       additional_aws_regions      = optional(list(string), [])
     }))
@@ -269,7 +269,7 @@ variable "argocd_config" {
   default = {
     enabled = true
     privatelink = {
-      enabled                     = true
+      enabled                     = false
       endpoint_allowed_principals = []
       additional_aws_regions      = []
     }
@@ -291,10 +291,10 @@ variable "argocd_config" {
 
 variable "prometheus_endpoint_config" {
   type = object({
-    enabled                 = bool
-    endpoint_service_name   = string
-    endpoint_service_region = string
-    additional_cidr_blocks  = list(string)
+    enabled                 = optional(bool, false)
+    endpoint_service_name   = optional(string, "")
+    endpoint_service_region = optional(string, "")
+    additional_cidr_blocks  = optional(list(string), [])
   })
   description = "Prometheus endpoint configuration"
   default = {
@@ -311,13 +311,13 @@ variable "prometheus_endpoint_config" {
 
 variable "grafana_privatelink_config" {
   type = object({
-    enabled                     = bool
+    enabled                     = optional(bool, false)
     endpoint_allowed_principals = optional(list(string), [])
     additional_aws_regions      = optional(list(string), [])
   })
   description = "Grafana privatelink configuration"
   default = {
-    enabled                     = true
+    enabled                     = false
     endpoint_allowed_principals = []
     additional_aws_regions      = []
   }
