@@ -43,7 +43,7 @@ resource "kubernetes_manifest" "cluster_secret_store" {
       }
     }
   }
-  depends_on = [helm_release.secrets_manager, time_sleep.wait_for_crd]
+  depends_on = [helm_release.secrets_manager, time_sleep.wait_for_crd, time_sleep.wait_for_cluster_ready]
 }
 
 # resource "kubectl_manifest" "cluster_secret_store" {
