@@ -257,6 +257,7 @@ module "iam_iam-assumable-role-with-oidc" {
 
 module "boto3_irsa" {
   source    = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
+  version   = "~> 5.30.0"
   for_each  = { for k, v in local.iam_policies : k => v if lookup(v, "create_cluster_wide_role", false) == true }
   role_name = each.value.name
   role_policy_arns = {
