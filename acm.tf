@@ -29,7 +29,7 @@ module "acm" {
   source                    = "terraform-aws-modules/acm/aws"
   version                   = "~> 5.1.1"
   for_each                  = {
-    for k, enabled in local.acm_enabled : k => (
+    for k, enabled in local.acm_enabled : k => nonsensitive(
       k == "external" ? local.external_acm_config : local.internal_acm_config
     ) if enabled && (k == "external" ? local.external_acm_config != null : local.internal_acm_config != null)
   }
