@@ -13,6 +13,8 @@ locals {
       "arn:aws:iam::${var.aws_account_id}:role/${var.terraform_role}"
     ] : []
   )
+
+  terraform_role_arn = var.terraform_role != null ? "arn:aws:iam::${var.aws_account_id}:role/${var.terraform_role}" : null
 }
 
 terraform {
@@ -40,12 +42,9 @@ terraform {
 
 provider "aws" {
   region = var.aws_region
-  dynamic "assume_role" {
-    for_each = var.terraform_role != null ? [1] : []
-    content {
-      role_arn     = "arn:aws:iam::${var.aws_account_id}:role/${var.terraform_role}"
-      session_name = "terraform"
-    }
+  assume_role {
+    role_arn     = local.terraform_role_arn
+    session_name = "terraform"
   }
 }
 
