@@ -67,20 +67,83 @@ resource "helm_release" "argocd" {
   ]
 }
 
+##################################
+####### ArgoCD Privatelink #######
+##################################
+
+resource "null_resource" "argocd_privatelink_nlb_active" {
+  count = local.argocd_privatelink_enabled ? 1 : 0
+  provisioner "local-exec" {
+    command = <<EOF
+      NLB_ARN="${data.aws_lb.argocd_privatelink_nlb[0].arn}"
+      if [ -z "$NLB_ARN" ]; then
+        echo "Terraform data source did not return an ARN. Attempting to find NLB via AWS CLI tags..."
+        NLB_ARN=$(aws resourcegroupstaggingapi get-resources \
+          --region ${var.aws_region} \
+          --resource-type-filters elasticloadbalancing:loadbalancer \
+          --tag-filters Key=elbv2.k8s.aws/cluster,Values=${local.cluster_name} \
+                        Key=service.k8s.aws/resource,Values=LoadBalancer \
+                        Key=service.k8s.aws/stack,Values=argocd/argocd-server \
+          --query 'ResourceTagMappingList[0].ResourceARN' \
+          --output text)
+        if [ -z "$NLB_ARN" ]; then
+          echo "Could not find ArgoCD NLB via AWS CLI tag lookup either. Exiting."
+          exit 1
+        else
+          echo "Found NLB ARN via AWS CLI tag lookup: $NLB_ARN"
+        fi
+      fi
+      TIMEOUT=300
+      START_TIME=$(date +%s)
+      while true; do
+        STATE=$(aws elbv2 describe-load-balancers --region ${var.aws_region} --load-balancer-arns $NLB_ARN --query 'LoadBalancers[0].State.Code' --output text 2>/dev/null)
+        if [ "$STATE" = "active" ]; then
+          echo "NLB is now active"
+          break
+        fi
+        if [ $(( $(date +%s) - $START_TIME )) -ge $TIMEOUT ]; then
+          echo "Timed out waiting for NLB to become active"
+          exit 1
+        fi
+        echo "Waiting for NLB to become active... Current state: $STATE"
+        sleep 10
+      done
+    EOF
+  }
+  triggers = {
+    nlb_arn = data.aws_lb.argocd_privatelink_nlb[0].arn
+  }
+}
+
+resource "aws_vpc_endpoint_service" "argocd" {
+  count                      = local.argocd_privatelink_enabled ? 1 : 0
+  acceptance_required        = false
+  network_load_balancer_arns = [data.aws_lb.argocd_privatelink_nlb[0].arn]
+  allowed_principals         = local.argocd_privatelink_allowed_principals
+  supported_regions          = local.argocd_privatelink_supported_regions
+  private_dns_name           = "argocd.${var.project}.${local.internal_domain_name}"
+
+  tags = merge(local.tags, {
+    Name = "ArgoCD Endpoint Service - ${var.project}-${var.environment}"
+  })
+
+  depends_on = [data.aws_lb.argocd_privatelink_nlb[0]]
+}
+
 resource "random_password" "argocd_readonly" {
-  count  = local.argocd_enabled ? 1 : 0
+  count  = local.argocd_privatelink_enabled ? 1 : 0
   length = 16
 }
 
 resource "aws_secretsmanager_secret" "argocd_readonly_password" {
-  count                   = local.argocd_enabled ? 1 : 0
+  count                   = local.argocd_privatelink_enabled ? 1 : 0
   name                    = "argocd-readonly-password"
   recovery_window_in_days = 0
   description             = "Password for ArgoCD readonly hyperspace user"
 }
 
 resource "aws_secretsmanager_secret_version" "argocd_readonly_password" {
-  count         = local.argocd_enabled ? 1 : 0
+  count         = local.argocd_privatelink_enabled ? 1 : 0
   secret_id     = aws_secretsmanager_secret.argocd_readonly_password[0].id
   secret_string = random_password.argocd_readonly[0].result
 }
@@ -187,67 +250,4 @@ resource "null_resource" "argocd_create_user" {
     readonly_password = random_password.argocd_readonly[count.index].result
     timestamp         = timestamp()
   }
-}
-
-##################################
-####### ArgoCD Privatelink #######
-##################################
-
-resource "null_resource" "argocd_privatelink_nlb_active" {
-  count = local.argocd_privatelink_enabled ? 1 : 0
-  provisioner "local-exec" {
-    command = <<EOF
-      NLB_ARN="${data.aws_lb.argocd_privatelink_nlb[0].arn}"
-      if [ -z "$NLB_ARN" ]; then
-        echo "Terraform data source did not return an ARN. Attempting to find NLB via AWS CLI tags..."
-        NLB_ARN=$(aws resourcegroupstaggingapi get-resources \
-          --region ${var.aws_region} \
-          --resource-type-filters elasticloadbalancing:loadbalancer \
-          --tag-filters Key=elbv2.k8s.aws/cluster,Values=${local.cluster_name} \
-                        Key=service.k8s.aws/resource,Values=LoadBalancer \
-                        Key=service.k8s.aws/stack,Values=argocd/argocd-server \
-          --query 'ResourceTagMappingList[0].ResourceARN' \
-          --output text)
-        if [ -z "$NLB_ARN" ]; then
-          echo "Could not find ArgoCD NLB via AWS CLI tag lookup either. Exiting."
-          exit 1
-        else
-          echo "Found NLB ARN via AWS CLI tag lookup: $NLB_ARN"
-        fi
-      fi
-      TIMEOUT=300
-      START_TIME=$(date +%s)
-      while true; do
-        STATE=$(aws elbv2 describe-load-balancers --region ${var.aws_region} --load-balancer-arns $NLB_ARN --query 'LoadBalancers[0].State.Code' --output text 2>/dev/null)
-        if [ "$STATE" = "active" ]; then
-          echo "NLB is now active"
-          break
-        fi
-        if [ $(( $(date +%s) - $START_TIME )) -ge $TIMEOUT ]; then
-          echo "Timed out waiting for NLB to become active"
-          exit 1
-        fi
-        echo "Waiting for NLB to become active... Current state: $STATE"
-        sleep 10
-      done
-    EOF
-  }
-  triggers = {
-    nlb_arn = data.aws_lb.argocd_privatelink_nlb[0].arn
-  }
-}
-
-resource "aws_vpc_endpoint_service" "argocd" {
-  count                      = local.argocd_privatelink_enabled ? 1 : 0
-  acceptance_required        = false
-  network_load_balancer_arns = [data.aws_lb.argocd_privatelink_nlb[0].arn]
-  allowed_principals         = local.argocd_privatelink_allowed_principals
-  supported_regions          = local.argocd_privatelink_supported_regions
-  private_dns_name           = "argocd.${var.project}.${local.internal_domain_name}"
-
-  tags = merge(local.tags, {
-    Name = "ArgoCD Endpoint Service - ${var.project}-${var.environment}"
-  })
-
-  depends_on = [data.aws_lb.argocd_privatelink_nlb[0]]
 }
