@@ -198,7 +198,7 @@ locals {
   ###########################
 
   argocd_enabled             = var.create_eks && var.argocd_config.enabled
-  argocd_privatelink_enabled = local.argocd_enabled && local.argocd_config.privatelink.enabled
+  argocd_privatelink_enabled = local.argocd_enabled && try(local.argocd_config.privatelink.enabled, false)
 
   # Default values for Privatelink configuration
   argocd_endpoint_default_aws_regions        = ["eu-central-1", "us-east-1"]
@@ -230,11 +230,11 @@ locals {
   ### ArgoCD VCS ####
   ###################
 
-  github_vcs_enabled     = local.argocd_enabled && local.argocd_config.vcs.github.enabled
-  github_vcs_app_enabled = local.github_vcs_enabled && local.argocd_config.vcs.github.github_app_enabled
+  github_vcs_enabled     = local.argocd_enabled && try(local.argocd_config.vcs.github.enabled, false)
+  github_vcs_app_enabled = local.github_vcs_enabled && try(local.argocd_config.vcs.github.github_app_enabled, false)
 
-  gitlab_vcs_enabled = local.argocd_enabled && local.argocd_config.vcs.gitlab.enabled
-  gitlab_vcs_oauth_enabled = local.gitlab_vcs_enabled && local.argocd_config.vcs.gitlab.oauth_enabled
+  gitlab_vcs_enabled = local.argocd_enabled && try(local.argocd_config.vcs.gitlab.enabled, false)
+  gitlab_vcs_oauth_enabled = local.gitlab_vcs_enabled && try(local.argocd_config.vcs.gitlab.oauth_enabled, false)
     
   # VCS connector configuration for Dex
   dex_connectors = concat(

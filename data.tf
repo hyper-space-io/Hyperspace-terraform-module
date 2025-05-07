@@ -73,23 +73,23 @@ data "aws_lb" "grafana_privatelink_nlb" {
 # GitHub
 data "aws_secretsmanager_secret_version" "argocd_github_app" {
   count     = local.github_vcs_app_enabled ? 1 : 0
-  secret_id = local.argocd_config.vcs.github.github_app_secret_name
+  secret_id = try(local.argocd_config.vcs.github.github_app_secret_name, "argocd/github_app")
 }
 
 data "aws_secretsmanager_secret_version" "argocd_github_app_private_key" {
   count     = local.github_vcs_app_enabled ? 1 : 0
-  secret_id = local.argocd_config.vcs.github.github_private_key_secret
+  secret_id = try(local.argocd_config.vcs.github.github_private_key_secret, "argocd/github_app_private_key")
 }
 
 # GitLab
 data "aws_secretsmanager_secret_version" "argocd_gitlab_oauth" {
   count     = local.gitlab_vcs_oauth_enabled ? 1 : 0
-  secret_id = local.argocd_config.vcs.gitlab.oauth_secret_name
+  secret_id = try(local.argocd_config.vcs.gitlab.oauth_secret_name, "argocd/gitlab_oauth")
 }
 
 data "aws_secretsmanager_secret_version" "argocd_gitlab_credentials" {
   count     = local.gitlab_vcs_enabled ? 1 : 0
-  secret_id = local.argocd_config.vcs.gitlab.credentials_secret_name
+  secret_id = try(local.argocd_config.vcs.gitlab.credentials_secret_name, "argocd/gitlab_credentials")
 }
 
 #######################
