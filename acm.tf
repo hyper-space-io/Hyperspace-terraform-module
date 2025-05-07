@@ -1,8 +1,14 @@
 locals {
-  domain_name = nonsensitive(var.domain_name)
-  create_acm = local.domain_name != "" ? true : false
+  create_acm = var.domain_name != "" ? true : false
 
-  acm_config = {
+  # Non-sensitive keys
+  acm_keys = toset([
+    "external_acm",
+    "internal_acm"
+  ])
+
+  # Sensitive values in a map
+  acm_values = {
     external_acm = (var.create_public_zone && local.public_domain_name != "") ? {
       domain_name = local.public_domain_name
       subject_alternative_names = [
@@ -23,7 +29,7 @@ locals {
 module "acm" {
   source                    = "terraform-aws-modules/acm/aws"
   version                   = "~> 5.1.1"
-  for_each                  = { for k, v in local.acm_config : k => v if v != null }
+  for_each                  = { for k in local.acm_keys : k => local.acm_values[k] if local.acm_values[k] != null }
   create_certificate        = each.value.create_certificate
   domain_name               = each.value.domain_name
   subject_alternative_names = each.value.subject_alternative_names
