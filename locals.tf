@@ -45,7 +45,7 @@ locals {
   ##################
   ##### KMS ########
   ##################
-  hyperspace_ami_key_alias = "arn:aws:kms:${var.aws_region}:${var.hyperspace_dev_account_id}:alias/HYPERSPACE_AMI_KEY"
+  hyperspace_ami_key_alias = "arn:aws:kms:${var.aws_region}:${var.hyperspace_account_id}:alias/HYPERSPACE_AMI_KEY"
 
   ##################
   ### IAM Policy ###
