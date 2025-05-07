@@ -27,17 +27,36 @@ resource "time_sleep" "wait_for_crd" {
   create_duration = "30s"
 }
 
-resource "kubectl_manifest" "cluster_secret_store" {
-  yaml_body  = <<-EOF
-    apiVersion: external-secrets.io/v1beta1
-    kind: ClusterSecretStore
-    metadata:
-      name: cluster-secret-store
-    spec:
-      provider:
-        aws:
-          region: ${var.aws_region}
-          service: SecretsManager
-  EOF
+resource "kubernetes_manifest" "cluster_secret_store" {
+  manifest = {
+    apiVersion = "external-secrets.io/v1beta1"
+    kind       = "ClusterSecretStore"
+    metadata = {
+      name = "cluster-secret-store"
+    }
+    spec = {
+      provider = {
+        aws = {
+          region  = var.aws_region
+          service = "SecretsManager"
+        }
+      }
+    }
+  }
   depends_on = [helm_release.secrets_manager, time_sleep.wait_for_crd]
 }
+
+# resource "kubectl_manifest" "cluster_secret_store" {
+#   yaml_body  = <<-EOF
+#     apiVersion: external-secrets.io/v1beta1
+#     kind: ClusterSecretStore
+#     metadata:
+#       name: cluster-secret-store
+#     spec:
+#       provider:
+#         aws:
+#           region: ${var.aws_region}
+#           service: SecretsManager
+#   EOF
+#   depends_on = [helm_release.secrets_manager, time_sleep.wait_for_crd]
+# }
