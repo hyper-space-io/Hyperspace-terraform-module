@@ -211,6 +211,7 @@ variable "domain_name" {
   type        = string
   description = "Main domain name for sub-domains"
   default     = ""
+  sensitive   = true
 }
 
 variable "create_public_zone" {
