@@ -2,30 +2,17 @@ locals {
   internal_domain_name = var.domain_name != "" ? "internal.${var.environment}.${var.domain_name}" : ""
   public_domain_name   = var.domain_name != "" ? "${var.environment}.${var.domain_name}" : ""
   create_records       = var.domain_name != "" ? 1 : 0
-}
 
-module "external_zone" {
-  count  = var.create_public_zone && local.public_domain_name != "" ? 1 : 0
-  source = "terraform-aws-modules/route53/aws//modules/zones"
-  version = "~> 4.1.0"
   zones = {
-    external = {
+    external = (var.create_public_zone && local.public_domain_name != "") ? {
       domain_name = "${var.environment}.${var.domain_name}"
       comment     = "Public hosted zone for ${local.public_domain_name}"
       tags = merge(local.tags, {
         Name = local.public_domain_name
       })
-    }
-  }
-  depends_on = [module.external_acm]
-}
+    } : null
 
-module "internal_zone" {
-  count  = local.internal_domain_name != "" ? 1 : 0
-  source = "terraform-aws-modules/route53/aws//modules/zones"
-  version = "~> 4.1.0"
-  zones = {
-    internal = {
+    internal = local.internal_domain_name != "" ? {
       domain_name = local.internal_domain_name
       comment     = "Private hosted zone for ${local.internal_domain_name}"
       vpc = [
@@ -36,14 +23,20 @@ module "internal_zone" {
       tags = merge(local.tags, {
         Name = local.internal_domain_name
       })
-    }
+    } : null
   }
-  depends_on = [module.internal_acm]
+}
+
+module "zones" {
+  source     = "terraform-aws-modules/route53/aws//modules/zones"
+  version    = "~> 4.1.0"
+  zones      = { for k, v in local.zones : k => v if v != null }
+  depends_on = [module.acm]
 }
 
 resource "aws_route53_record" "wildcard" {
   count      = var.create_public_zone ? local.create_records : 0
-  zone_id    = module.external_zone[0].route53_zone_zone_id["external"]
+  zone_id    = module.zones.route53_zone_zone_id["external"]
   name       = "*"
   type       = "CNAME"
   ttl        = "300"
@@ -53,7 +46,7 @@ resource "aws_route53_record" "wildcard" {
 
 resource "aws_route53_record" "internal_wildcard" {
   count      = local.create_records
-  zone_id    = module.internal_zone[0].route53_zone_zone_id["internal"]
+  zone_id    = module.zones.route53_zone_zone_id["internal"]
   name       = "*"
   type       = "CNAME"
   ttl        = "300"
