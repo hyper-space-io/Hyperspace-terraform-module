@@ -51,6 +51,11 @@ variable "hyperspace_account_id" {
   description = "The account ID of the hyperspace account, used to pull resources from Hyperspace like AMIs"
 }
 
+variable "hyperspace_dev_account_id" {
+  type        = string
+  description = "The account ID of the hyperspace dev account, used to pull resources from Hyperspace like AMIs"
+}
+
 variable "hyperspace_aws_region" {
   type        = string
   default     = "us-east-1"
