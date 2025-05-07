@@ -116,15 +116,17 @@ data "aws_ami" "fpga" {
 
 data "aws_iam_policy_document" "ec2_tags_control" {
   statement {
-    sid = "EC2TagsAccess"
-    actions = [
-      "ec2:DescribeTags",
-      "ec2:CreateTags"
-    ]
-    resources = [
-      "arn:aws:ec2:*:*:instance/*"
-    ]
-    effect = "Allow"
+    sid     = "EC2TagsDescribe"
+    actions = ["ec2:DescribeTags"]
+    resources = ["*"]
+    effect  = "Allow"
+  }
+
+  statement {
+    sid     = "EC2TagsCreate"
+    actions = ["ec2:CreateTags"]
+    resources = ["arn:aws:ec2:*:*:instance/*"]
+    effect  = "Allow"
   }
 }
 

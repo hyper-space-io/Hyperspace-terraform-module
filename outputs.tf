@@ -26,3 +26,7 @@ output "grafana_vpc_endpoint_service_domain_verification_value" {
 ####### EKS ###########
 #######################
 
+output "ec2_tags_policy_arn" {
+  description = "The ARN of the role to be assumed by Data-Node"
+  value       = local.iam_policy_arns["ec2_tags"]
+}
