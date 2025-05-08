@@ -27,8 +27,6 @@ resource "time_sleep" "wait_for_crd" {
   create_duration = "30s"
 }
 
-
-
 resource "kubectl_manifest" "cluster_secret_store" {
   yaml_body  = <<-EOF
     apiVersion: external-secrets.io/v1beta1
