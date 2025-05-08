@@ -38,9 +38,9 @@ locals {
   public_subnets     = [for azs_count in local.availability_zones : cidrsubnet(var.vpc_cidr, 4, index(local.availability_zones, azs_count) + 5)]
 
   # Use VPC module outputs for new VPC, or existing values for existing VPC
-  private_subnet_ids = local.create_vpc ? module.vpc[0].private_subnets : var.existing_private_subnets
-  vpc_id             = local.create_vpc ? module.vpc[0].vpc_id : var.existing_vpc_id
-  vpc_cidr_block     = local.create_vpc ? module.vpc[0].vpc_cidr_block : local.existing_vpc.cidr_block
+  private_subnets_ids = local.create_vpc ? module.vpc[0].private_subnets : var.existing_private_subnets
+  vpc_id              = local.create_vpc ? module.vpc[0].vpc_id : var.existing_vpc_id
+  vpc_cidr_block      = local.create_vpc ? module.vpc[0].vpc_cidr_block : local.existing_vpc.cidr_block
 
   ##################
   ##### KMS ########
