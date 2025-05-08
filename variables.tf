@@ -64,6 +64,7 @@ variable "availability_zones" {
 variable "vpc_cidr" {
   description = "The CIDR block for the VPC"
   type        = string
+  default     = ""
 }
 
 variable "existing_vpc_id" {
