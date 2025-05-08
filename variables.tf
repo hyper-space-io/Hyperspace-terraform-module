@@ -51,12 +51,6 @@ variable "hyperspace_account_id" {
   description = "The account ID of the hyperspace account, used to pull resources from Hyperspace like AMIs"
 }
 
-variable "hyperspace_aws_region" {
-  type        = string
-  default     = "us-east-1"
-  description = "The region of the hyperspace account"
-}
-
 ###############################
 ########### VPC ###############
 ###############################
@@ -149,12 +143,6 @@ variable "cluster_endpoint_public_access" {
   default     = false
 }
 
-variable "enable_cluster_autoscaler" {
-  description = "should we enable and install cluster-autoscaler"
-  type        = bool
-  default     = true
-}
-
 variable "worker_nodes_max" {
   type    = number
   default = 10
@@ -206,6 +194,7 @@ variable "domain_name" {
   type        = string
   description = "Main domain name for sub-domains"
   default     = ""
+  sensitive   = false
 }
 
 variable "create_public_zone" {
@@ -222,7 +211,7 @@ variable "argocd_config" {
   type = object({
     enabled = optional(bool, true)
     privatelink = optional(object({
-      enabled                     = bool
+      enabled                     = optional(bool, false)
       endpoint_allowed_principals = optional(list(string), [])
       additional_aws_regions      = optional(list(string), [])
     }))
@@ -263,7 +252,7 @@ variable "argocd_config" {
   default = {
     enabled = true
     privatelink = {
-      enabled                     = true
+      enabled                     = false
       endpoint_allowed_principals = []
       additional_aws_regions      = []
     }
@@ -285,10 +274,10 @@ variable "argocd_config" {
 
 variable "prometheus_endpoint_config" {
   type = object({
-    enabled                 = bool
-    endpoint_service_name   = string
-    endpoint_service_region = string
-    additional_cidr_blocks  = list(string)
+    enabled                 = optional(bool, false)
+    endpoint_service_name   = optional(string, "")
+    endpoint_service_region = optional(string, "")
+    additional_cidr_blocks  = optional(list(string), [])
   })
   description = "Prometheus endpoint configuration"
   default = {
@@ -305,13 +294,13 @@ variable "prometheus_endpoint_config" {
 
 variable "grafana_privatelink_config" {
   type = object({
-    enabled                     = bool
+    enabled                     = optional(bool, false)
     endpoint_allowed_principals = optional(list(string), [])
     additional_aws_regions      = optional(list(string), [])
   })
   description = "Grafana privatelink configuration"
   default = {
-    enabled                     = true
+    enabled                     = false
     endpoint_allowed_principals = []
     additional_aws_regions      = []
   }

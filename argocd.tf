@@ -21,10 +21,10 @@ resource "helm_release" "argocd" {
       }
       configs = {
         rbac = {
-          "policy.default" = "${local.argocd_rbac_policy_default}"
+          "policy.default" = local.argocd_rbac_policy_default
           "policy.csv"     = join("\n", local.argocd_rbac_policy_rules)
         }
-        cm = local.argocd_configmap_values
+        cm                  = local.argocd_configmap_values
         credentialTemplates = sensitive(local.argocd_credential_templates)
       }
       server = {

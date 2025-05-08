@@ -4,7 +4,7 @@ module "eks" {
   create          = var.create_eks
   cluster_name    = local.cluster_name
   cluster_version = "1.31"
-  subnet_ids      = local.private_subnets
+  subnet_ids      = local.private_subnets_ids
   vpc_id          = local.vpc_id
   tags            = local.tags
 
@@ -25,7 +25,7 @@ module "eks" {
       desired_size   = 1
       instance_types = local.worker_instance_type
       capacity_type  = "ON_DEMAND"
-      labels         = { Environment = "${var.environment}" }
+      labels         = { Environment = var.environment }
       tags           = merge(local.tags, { nodegroup = "workers", Name = "${local.cluster_name}-eks-medium" })
       ami_type       = "BOTTLEROCKET_x86_64"
 
@@ -51,12 +51,12 @@ module "eks" {
       AmazonSSMManagedInstanceCore = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore",
       AmazonEBSCSIDriverPolicy     = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
     }
-    subnets = local.private_subnets
+    subnets = local.private_subnets_ids
 
     tags = {
       "k8s.io/cluster-autoscaler/enabled"               = "True"
       "k8s.io/cluster-autoscaler/${local.cluster_name}" = "True"
-      "Name"                                            = "${local.cluster_name}"
+      "Name"                                            = local.cluster_name
     }
   }
 
@@ -67,18 +67,18 @@ module "eks" {
 
   # Sperating the self managed nodegroups to az's ( 1 AZ : 1 ASG )
   self_managed_node_groups = merge([
-    for idx, subnet in slice(local.private_subnets, 0, length(local.availability_zones)) : {
+    for subnet in slice(local.private_subnets_ids, 0, length(local.availability_zones)) : {
       for pool_name, pool_config in local.additional_self_managed_node_pools :
-      "${var.environment}-az${idx + 1}-${pool_name}" => merge(
+      "${var.environment}-${subnet}-${pool_name}" => merge(
         pool_config,
         {
-          name       = "${pool_name}-az${idx + 1}"
+          name       = "${pool_name}-${subnet}"
           subnet_ids = [subnet]
           tags = merge(
             local.tags,
             {
-              nodegroup = "${pool_name}-az${idx + 1}",
-              az        = "az${idx + 1}"
+              nodegroup = "${pool_name}-${subnet}",
+              subnet    = subnet
             },
             pool_config.tags
           )
@@ -110,7 +110,7 @@ module "eks" {
       from_port   = 443
       to_port     = 443
       type        = "ingress"
-      cidr_blocks = local.auth0_ingress_cidr_blocks["${split("-", var.aws_region)[0]}"]
+      cidr_blocks = local.auth0_ingress_cidr_blocks[split("-", var.aws_region)[0]]
     }
 
     ingress_self_all = {
@@ -257,6 +257,7 @@ module "iam_iam-assumable-role-with-oidc" {
 
 module "boto3_irsa" {
   source    = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
+  version   = "~> 5.30.0"
   for_each  = { for k, v in local.iam_policies : k => v if lookup(v, "create_cluster_wide_role", false) == true }
   role_name = each.value.name
   role_policy_arns = {

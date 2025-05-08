@@ -1,7 +1,6 @@
 locals {
-  prometheus_release_name      = "kube-prometheus-stack"
-  prometheus_crds_release_name = "prometheus-operator-crds"
-  monitoring_namespace         = "monitoring"
+  prometheus_release_name = "kube-prometheus-stack"
+  monitoring_namespace    = "monitoring"
 
   prometheus_values = {
     global = {
@@ -179,7 +178,7 @@ resource "aws_vpc_endpoint" "prometheus" {
   vpc_id              = local.vpc_id
   service_name        = local.prometheus_endpoint_config.endpoint_service_name
   vpc_endpoint_type   = "Interface"
-  subnet_ids          = local.private_subnets
+  subnet_ids          = local.private_subnets_ids
   security_group_ids  = [aws_security_group.prometheus_endpoint[0].id]
   private_dns_enabled = true
   ip_address_type     = "ipv4"
