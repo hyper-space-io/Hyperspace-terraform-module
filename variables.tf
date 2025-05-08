@@ -5,7 +5,7 @@
 variable "terraform_role" {
   type        = string
   description = "Terraform role to assume. If not set (null), no role will be assumed"
-  default     = "PlatformAdmin"
+  default     = null
 }
 
 variable "aws_account_id" {
@@ -51,12 +51,6 @@ variable "hyperspace_account_id" {
   description = "The account ID of the hyperspace account, used to pull resources from Hyperspace like AMIs"
 }
 
-variable "hyperspace_aws_region" {
-  type        = string
-  default     = "us-east-1"
-  description = "The region of the hyperspace account"
-}
-
 ###############################
 ########### VPC ###############
 ###############################
@@ -92,12 +86,8 @@ variable "existing_public_subnets" {
 }
 
 variable "num_zones" {
-  type    = number
-  default = 2
-  validation {
-    condition     = var.num_zones <= length(data.aws_availability_zones.available.names)
-    error_message = "The number of zones specified (num_zones) exceeds the number of available availability zones in the selected region. The number of available AZ's is ${length(data.aws_availability_zones.available.names)}"
-  }
+  type        = number
+  default     = 2
   description = "How many zones should we utilize for the eks nodes"
 }
 
@@ -153,12 +143,6 @@ variable "cluster_endpoint_public_access" {
   default     = false
 }
 
-variable "enable_cluster_autoscaler" {
-  description = "should we enable and install cluster-autoscaler"
-  type        = bool
-  default     = true
-}
-
 variable "worker_nodes_max" {
   type    = number
   default = 10
@@ -185,10 +169,10 @@ variable "eks_additional_admin_roles" {
   description = "Additional IAM roles to add as cluster administrators"
   default     = []
 
-  validation {
-    condition     = alltrue([for arn in var.eks_additional_admin_roles : can(regex("^arn:aws:iam::[0-9]{12}:role/(service-role/)?[a-zA-Z0-9+=,.@_-]+$", arn))])
-    error_message = "All role ARNs must be valid IAM role ARNs in the format: arn:aws:iam::<account-id>:role/<role-name> or arn:aws:iam::<account-id>:role/service-role/<role-name>"
-  }
+  # validation {
+  #   condition     = alltrue([for arn in var.eks_additional_admin_roles : can(regex("^arn:aws:iam::[0-9]{12}:role/(service-role/)?[a-zA-Z0-9+=,.@_-]+$", arn))])
+  #   error_message = "All role ARNs must be valid IAM role ARNs in the format: arn:aws:iam::<account-id>:role/<role-name> or arn:aws:iam::<account-id>:role/service-role/<role-name>"
+  # }
 }
 
 variable "eks_additional_admin_roles_policy" {
@@ -196,10 +180,10 @@ variable "eks_additional_admin_roles_policy" {
   description = "IAM policy for the EKS additional admin roles"
   default     = "arn:aws:iam::aws:policy/AmazonEKSClusterAdminPolicy"
 
-  validation {
-    condition     = can(regex("^arn:aws:iam::(aws|[0-9]{12}):policy/[a-zA-Z0-9+=,.@_-]+$", var.eks_additional_admin_roles_policy))
-    error_message = "The policy ARN must be empty or a valid IAM policy ARN in the format: arn:aws:iam::<account-id>:policy/<policy-name> or arn:aws:iam::aws:policy/<policy-name>"
-  }
+  # validation {
+  #   condition     = var.eks_additional_admin_roles_policy == "" || can(regex("^arn:aws:iam::[0-9]{12}:policy/[a-zA-Z0-9+=,.@_-]+$", var.eks_additional_admin_roles_policy))
+  #   error_message = "The policy ARN must be empty or a valid IAM policy ARN in the format: arn:aws:iam::<account-id>:policy/<policy-name>"
+  # }
 }
 
 ###############################
@@ -210,6 +194,7 @@ variable "domain_name" {
   type        = string
   description = "Main domain name for sub-domains"
   default     = ""
+  sensitive   = false
 }
 
 variable "existing_public_zone" {
@@ -236,7 +221,7 @@ variable "argocd_config" {
   type = object({
     enabled = optional(bool, true)
     privatelink = optional(object({
-      enabled                     = bool
+      enabled                     = optional(bool, false)
       endpoint_allowed_principals = optional(list(string), [])
       additional_aws_regions      = optional(list(string), [])
     }))
@@ -245,11 +230,13 @@ variable "argocd_config" {
       repository   = string
       github = optional(object({
         enabled                   = bool
+        github_app_enabled        = optional(bool, false)
         github_app_secret_name    = optional(string, "argocd/github_app")
         github_private_key_secret = optional(string, "argocd/github_app_private_key")
       }))
       gitlab = optional(object({
         enabled                 = bool
+        oauth_enabled           = optional(bool, false)
         oauth_secret_name       = optional(string, "argocd/gitlab_oauth")
         credentials_secret_name = optional(string, "argocd/gitlab_credentials")
       }))
@@ -275,7 +262,7 @@ variable "argocd_config" {
   default = {
     enabled = true
     privatelink = {
-      enabled                     = true
+      enabled                     = false
       endpoint_allowed_principals = []
       additional_aws_regions      = []
     }
@@ -297,10 +284,10 @@ variable "argocd_config" {
 
 variable "prometheus_endpoint_config" {
   type = object({
-    enabled                 = bool
-    endpoint_service_name   = string
-    endpoint_service_region = string
-    additional_cidr_blocks  = list(string)
+    enabled                 = optional(bool, false)
+    endpoint_service_name   = optional(string, "")
+    endpoint_service_region = optional(string, "")
+    additional_cidr_blocks  = optional(list(string), [])
   })
   description = "Prometheus endpoint configuration"
   default = {
@@ -317,13 +304,13 @@ variable "prometheus_endpoint_config" {
 
 variable "grafana_privatelink_config" {
   type = object({
-    enabled                     = bool
+    enabled                     = optional(bool, false)
     endpoint_allowed_principals = optional(list(string), [])
     additional_aws_regions      = optional(list(string), [])
   })
   description = "Grafana privatelink configuration"
   default = {
-    enabled                     = true
+    enabled                     = false
     endpoint_allowed_principals = []
     additional_aws_regions      = []
   }

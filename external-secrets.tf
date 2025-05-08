@@ -14,11 +14,17 @@ resource "helm_release" "secrets_manager" {
   values = [<<EOF
 serviceAccount:
   annotations:
-    eks.amazonaws.com/role-arn: "${module.iam_iam-assumable-role-with-oidc["${local.external_secrets_release_name}"].iam_role_arn}"
+    eks.amazonaws.com/role-arn: "${module.iam_iam-assumable-role-with-oidc[local.external_secrets_release_name].iam_role_arn}"
 installCRDs: true
 EOF
   ]
   depends_on = [time_sleep.wait_for_cluster_ready]
+}
+
+# Wait for CRD creation to be ready
+resource "time_sleep" "wait_for_crd" {
+  depends_on      = [helm_release.secrets_manager]
+  create_duration = "30s"
 }
 
 resource "kubectl_manifest" "cluster_secret_store" {
@@ -33,5 +39,5 @@ resource "kubectl_manifest" "cluster_secret_store" {
           region: ${var.aws_region}
           service: SecretsManager
   EOF
-  depends_on = [helm_release.secrets_manager]
+  depends_on = [helm_release.secrets_manager, time_sleep.wait_for_crd, time_sleep.wait_for_cluster_ready]
 }

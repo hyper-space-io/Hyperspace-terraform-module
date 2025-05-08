@@ -8,8 +8,6 @@ data "aws_availability_zones" "available" {
   state = "available"
 }
 
-data "aws_region" "current" {}
-
 #######################
 ####### VPC ###########
 #######################
@@ -17,6 +15,11 @@ data "aws_region" "current" {}
 data "aws_vpc" "existing" {
   count = local.create_vpc ? 0 : 1
   id    = var.existing_vpc_id
+}
+
+data "aws_subnet" "existing" {
+  count = local.create_vpc ? 0 : length(var.existing_private_subnets)
+  id    = var.existing_private_subnets[count.index]
 }
 
 #######################
@@ -72,59 +75,64 @@ data "aws_lb" "grafana_privatelink_nlb" {
 #######################
 # GitHub
 data "aws_secretsmanager_secret_version" "argocd_github_app" {
-  count     = local.github_vcs_enabled ? 1 : 0
-  secret_id = local.argocd_config.vcs.github.github_app_secret_name
+  count     = local.github_vcs_app_enabled ? 1 : 0
+  secret_id = try(local.argocd_config.vcs.github.github_app_secret_name, "argocd/github_app")
 }
 
 data "aws_secretsmanager_secret_version" "argocd_github_app_private_key" {
-  count     = local.github_vcs_enabled ? 1 : 0
-  secret_id = local.argocd_config.vcs.github.github_private_key_secret
+  count     = local.github_vcs_app_enabled ? 1 : 0
+  secret_id = try(local.argocd_config.vcs.github.github_private_key_secret, "argocd/github_app_private_key")
 }
 
 # GitLab
 data "aws_secretsmanager_secret_version" "argocd_gitlab_oauth" {
-  count     = local.gitlab_vcs_enabled ? 1 : 0
-  secret_id = local.argocd_config.vcs.gitlab.oauth_secret_name
+  count     = local.gitlab_vcs_oauth_enabled ? 1 : 0
+  secret_id = try(local.argocd_config.vcs.gitlab.oauth_secret_name, "argocd/gitlab_oauth")
 }
 
 data "aws_secretsmanager_secret_version" "argocd_gitlab_credentials" {
   count     = local.gitlab_vcs_enabled ? 1 : 0
-  secret_id = local.argocd_config.vcs.gitlab.credentials_secret_name
+  secret_id = try(local.argocd_config.vcs.gitlab.credentials_secret_name, "argocd/gitlab_credentials")
 }
 
 #######################
 ######## EC2 ##########
 #######################
 
-data "aws_ami" "amazon_linux_2" {
-  most_recent = true
-  owners      = ["amazon"]
-  filter {
-    name   = "name"
-    values = ["amzn2-ami-hvm-*-x86_64-gp2"]
-  }
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
-  }
-}
 
 data "aws_ami" "fpga" {
-  owners     = ["${var.hyperspace_account_id}"]
+  owners     = [var.hyperspace_account_id]
   name_regex = "eks-1\\.31-fpga-prod"
 }
 
+# TODO: Uncomment this when we want a way to copy the AMI from the hyperspace account
+#       to the current account if we don't have the AMI in the current region.
+# resource "aws_ami_copy" "fpga" {
+#   name              = "eks-1.31-fpga-prod-${var.aws_region}"
+#   description       = "A copy of the FPGA AMI for ${var.aws_region}"
+#   source_ami_id     = data.aws_ami.fpga.id
+#   source_ami_region = local.hyperspace_region
+#   encrypted         = true
+#   kms_key_id        = data.aws_kms_key.by_alias.arn
+
+#   tags = merge(local.tags, {
+#     Name = "eks-1.31-fpga-prod-${var.aws_region}"
+#   })
+# }
+
 data "aws_iam_policy_document" "ec2_tags_control" {
   statement {
-    sid = "EC2TagsAccess"
-    actions = [
-      "ec2:DescribeTags",
-      "ec2:CreateTags"
-    ]
-    resources = [
-      "arn:aws:ec2:*:*:instance/*"
-    ]
-    effect = "Allow"
+    sid       = "EC2TagsDescribe"
+    actions   = ["ec2:DescribeTags"]
+    resources = ["*"]
+    effect    = "Allow"
+  }
+
+  statement {
+    sid       = "EC2TagsCreate"
+    actions   = ["ec2:CreateTags"]
+    resources = ["arn:aws:ec2:*:*:instance/*"]
+    effect    = "Allow"
   }
 }
 
@@ -167,11 +175,6 @@ data "kubernetes_ingress_v1" "external_ingress" {
     namespace = "ingress"
   }
   depends_on = [time_sleep.wait_for_external_ingress, module.eks, kubernetes_ingress_v1.nginx_ingress]
-}
-
-data "aws_eks_cluster_auth" "eks" {
-  name       = local.cluster_name
-  depends_on = [module.eks]
 }
 
 data "aws_iam_policy_document" "cluster_autoscaler" {
@@ -234,7 +237,7 @@ data "aws_iam_policy_document" "core_dump_s3_full_access" {
       "s3:*"
     ]
     resources = [
-      "${module.s3_buckets["core-dump-logs"].s3_bucket_arn}",
+      module.s3_buckets["core-dump-logs"].s3_bucket_arn,
       "${module.s3_buckets["core-dump-logs"].s3_bucket_arn}/*"
     ]
     effect = "Allow"
@@ -248,7 +251,7 @@ data "aws_iam_policy_document" "velero_s3_full_access" {
       "s3:*"
     ]
     resources = [
-      "${module.s3_buckets["velero"].s3_bucket_arn}",
+      module.s3_buckets["velero"].s3_bucket_arn,
       "${module.s3_buckets["velero"].s3_bucket_arn}/*"
     ]
     effect = "Allow"
@@ -267,7 +270,7 @@ data "aws_iam_policy_document" "loki_s3_dynamodb_full_access" {
     ]
     effect = "Allow"
     resources = [
-      "${module.s3_buckets["loki"].s3_bucket_arn}",
+      module.s3_buckets["loki"].s3_bucket_arn,
       "${module.s3_buckets["loki"].s3_bucket_arn}/*"
     ]
   }

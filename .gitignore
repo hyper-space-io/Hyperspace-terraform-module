@@ -8,6 +8,8 @@ tmp/
 **/.terraform/*
 **/.terraform*
 
+# tflint
+.tflint*
 
 # .tfstate files
 *.tfstate
