@@ -99,11 +99,31 @@ data "aws_secretsmanager_secret_version" "argocd_gitlab_credentials" {
 ######## EC2 ##########
 #######################
 
-
+# AMI Must be tagged with "customers" = "true" and start with "eks-1.31-fpga-prod"
 data "aws_ami" "fpga" {
   owners     = [var.hyperspace_account_id]
-  name_regex = "eks-1\\.31-fpga-prod"
+  name_regex = "^eks-1\\.31-fpga-prod"
+
+  filter {
+    name   = "tag:customers"
+    values = ["true"]
+  }
 }
+
+# TODO: Uncomment this when we want a way to copy the AMI from the hyperspace account
+#       to the current account if we don't have the AMI in the current region.
+# resource "aws_ami_copy" "fpga" {
+#   name              = "eks-1.31-fpga-prod-${var.aws_region}"
+#   description       = "A copy of the FPGA AMI for ${var.aws_region}"
+#   source_ami_id     = data.aws_ami.fpga.id
+#   source_ami_region = local.hyperspace_region
+#   encrypted         = true
+#   kms_key_id        = data.aws_kms_key.by_alias.arn
+
+#   tags = merge(local.tags, {
+#     Name = "eks-1.31-fpga-prod-${var.aws_region}"
+#   })
+# }
 
 # TODO: Uncomment this when we want a way to copy the AMI from the hyperspace account
 #       to the current account if we don't have the AMI in the current region.
