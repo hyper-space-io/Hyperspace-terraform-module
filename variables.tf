@@ -158,32 +158,22 @@ variable "worker_instance_type" {
   type        = list(string)
   default     = ["m5n.xlarge"]
 
-  # validation {
-  #   condition     = alltrue([for instance in var.worker_instance_type : contains(["m5n.xlarge", "m5n.large", "m5d.xlarge", "m5d.large"], instance)])
-  #   error_message = "Worker instance type must be one of: m5n.xlarge, m5n.large, m5d.xlarge, m5d.large"
-  # }
+  validation {
+    condition     = alltrue([for instance in var.worker_instance_type : contains(["m5n.xlarge", "m5n.large", "m5d.xlarge", "m5d.large"], instance)])
+    error_message = "Worker instance type must be one of: m5n.xlarge, m5n.large, m5d.xlarge, m5d.large"
+  }
 }
 
 variable "eks_additional_admin_roles" {
   type        = list(string)
   description = "Additional IAM roles to add as cluster administrators"
   default     = []
-
-  # validation {
-  #   condition     = alltrue([for arn in var.eks_additional_admin_roles : can(regex("^arn:aws:iam::[0-9]{12}:role/(service-role/)?[a-zA-Z0-9+=,.@_-]+$", arn))])
-  #   error_message = "All role ARNs must be valid IAM role ARNs in the format: arn:aws:iam::<account-id>:role/<role-name> or arn:aws:iam::<account-id>:role/service-role/<role-name>"
-  # }
 }
 
 variable "eks_additional_admin_roles_policy" {
   type        = string
   description = "IAM policy for the EKS additional admin roles"
   default     = "arn:aws:iam::aws:policy/AmazonEKSClusterAdminPolicy"
-
-  # validation {
-  #   condition     = var.eks_additional_admin_roles_policy == "" || can(regex("^arn:aws:iam::[0-9]{12}:policy/[a-zA-Z0-9+=,.@_-]+$", var.eks_additional_admin_roles_policy))
-  #   error_message = "The policy ARN must be empty or a valid IAM policy ARN in the format: arn:aws:iam::<account-id>:policy/<policy-name>"
-  # }
 }
 
 ###############################
