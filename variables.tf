@@ -4,8 +4,8 @@
 
 variable "terraform_role" {
   type        = string
-  description = "Terraform role to assume"
-  default     = "PlatformAdmin"
+  description = "Terraform role to assume. If not set (null), no role will be assumed"
+  default     = null
 }
 
 variable "aws_account_id" {
@@ -51,12 +51,6 @@ variable "hyperspace_account_id" {
   description = "The account ID of the hyperspace account, used to pull resources from Hyperspace like AMIs"
 }
 
-variable "hyperspace_aws_region" {
-  type        = string
-  default     = "us-east-1"
-  description = "The region of the hyperspace account"
-}
-
 ###############################
 ########### VPC ###############
 ###############################
@@ -67,41 +61,33 @@ variable "availability_zones" {
   description = "List of availability zones to deploy the resources. Leave empty to automatically select based on the region and the variable num_zones."
 }
 
-variable "create_vpc" {
-  description = "Controls if VPC should be created"
-  type        = bool
-  default     = true
-}
-
-variable "existing_vpc_config" {
-  description = "Configuration for using an existing VPC"
-  type = object({
-    vpc_id          = string
-    vpc_cidr        = string
-    private_subnets = list(string)
-    public_subnets  = list(string)
-  })
-  default = {
-    vpc_id          = null
-    vpc_cidr        = null
-    private_subnets = []
-    public_subnets  = []
-  }
-}
-
 variable "vpc_cidr" {
+  description = "The CIDR block for the VPC"
   type        = string
-  description = "CIDR block for the VPC"
   default     = "10.0.0.0/16"
 }
 
+variable "existing_vpc_id" {
+  description = "ID of an existing VPC to use instead of creating a new one"
+  type        = string
+  default     = null
+}
+
+variable "existing_private_subnets" {
+  description = "The private subnets for the existing VPC"
+  type        = list(string)
+  default     = []
+}
+
+variable "existing_public_subnets" {
+  description = "The public subnets for the existing VPC"
+  type        = list(string)
+  default     = []
+}
+
 variable "num_zones" {
-  type    = number
-  default = 2
-  validation {
-    condition     = var.num_zones <= length(data.aws_availability_zones.available.names)
-    error_message = "The number of zones specified (num_zones) exceeds the number of available availability zones in the selected region. The number of available AZ's is ${length(data.aws_availability_zones.available.names)}"
-  }
+  type        = number
+  default     = 2
   description = "How many zones should we utilize for the eks nodes"
 }
 
@@ -151,10 +137,10 @@ variable "create_eks" {
   description = "Should we create the eks cluster?"
 }
 
-variable "enable_cluster_autoscaler" {
-  description = "should we enable and install cluster-autoscaler"
+variable "cluster_endpoint_public_access" {
+  description = "Whether to enable public access to the EKS cluster endpoint"
   type        = bool
-  default     = true
+  default     = false
 }
 
 variable "worker_nodes_max" {
@@ -172,10 +158,10 @@ variable "worker_instance_type" {
   type        = list(string)
   default     = ["m5n.xlarge"]
 
-  validation {
-    condition     = alltrue([for instance in var.worker_instance_type : contains(["m5n.xlarge", "m5n.large", "m5d.xlarge", "m5d.large"], instance)])
-    error_message = "Worker instance type must be one of: m5n.xlarge, m5n.large, m5d.xlarge, m5d.large"
-  }
+  # validation {
+  #   condition     = alltrue([for instance in var.worker_instance_type : contains(["m5n.xlarge", "m5n.large", "m5d.xlarge", "m5d.large"], instance)])
+  #   error_message = "Worker instance type must be one of: m5n.xlarge, m5n.large, m5d.xlarge, m5d.large"
+  # }
 }
 
 variable "eks_additional_admin_roles" {
@@ -183,10 +169,21 @@ variable "eks_additional_admin_roles" {
   description = "Additional IAM roles to add as cluster administrators"
   default     = []
 
-  validation {
-    condition     = alltrue([for arn in var.eks_additional_admin_roles : can(regex("^arn:aws:iam::[0-9]{12}:role/[a-zA-Z0-9+=,.@_-]+$", arn))])
-    error_message = "All role ARNs must be valid IAM role ARNs in the format: arn:aws:iam::<account-id>:role/<role-name>"
-  }
+  # validation {
+  #   condition     = alltrue([for arn in var.eks_additional_admin_roles : can(regex("^arn:aws:iam::[0-9]{12}:role/(service-role/)?[a-zA-Z0-9+=,.@_-]+$", arn))])
+  #   error_message = "All role ARNs must be valid IAM role ARNs in the format: arn:aws:iam::<account-id>:role/<role-name> or arn:aws:iam::<account-id>:role/service-role/<role-name>"
+  # }
+}
+
+variable "eks_additional_admin_roles_policy" {
+  type        = string
+  description = "IAM policy for the EKS additional admin roles"
+  default     = "arn:aws:iam::aws:policy/AmazonEKSClusterAdminPolicy"
+
+  # validation {
+  #   condition     = var.eks_additional_admin_roles_policy == "" || can(regex("^arn:aws:iam::[0-9]{12}:policy/[a-zA-Z0-9+=,.@_-]+$", var.eks_additional_admin_roles_policy))
+  #   error_message = "The policy ARN must be empty or a valid IAM policy ARN in the format: arn:aws:iam::<account-id>:policy/<policy-name>"
+  # }
 }
 
 ###############################
@@ -197,6 +194,7 @@ variable "domain_name" {
   type        = string
   description = "Main domain name for sub-domains"
   default     = ""
+  sensitive   = false
 }
 
 variable "create_public_zone" {
@@ -213,7 +211,7 @@ variable "argocd_config" {
   type = object({
     enabled = optional(bool, true)
     privatelink = optional(object({
-      enabled                     = bool
+      enabled                     = optional(bool, false)
       endpoint_allowed_principals = optional(list(string), [])
       additional_aws_regions      = optional(list(string), [])
     }))
@@ -222,11 +220,13 @@ variable "argocd_config" {
       repository   = string
       github = optional(object({
         enabled                   = bool
+        github_app_enabled        = optional(bool, false)
         github_app_secret_name    = optional(string, "argocd/github_app")
         github_private_key_secret = optional(string, "argocd/github_app_private_key")
       }))
       gitlab = optional(object({
         enabled                 = bool
+        oauth_enabled           = optional(bool, false)
         oauth_secret_name       = optional(string, "argocd/gitlab_oauth")
         credentials_secret_name = optional(string, "argocd/gitlab_credentials")
       }))
@@ -252,7 +252,7 @@ variable "argocd_config" {
   default = {
     enabled = true
     privatelink = {
-      enabled                     = true
+      enabled                     = false
       endpoint_allowed_principals = []
       additional_aws_regions      = []
     }
@@ -274,10 +274,10 @@ variable "argocd_config" {
 
 variable "prometheus_endpoint_config" {
   type = object({
-    enabled                 = bool
-    endpoint_service_name   = string
-    endpoint_service_region = string
-    additional_cidr_blocks  = list(string)
+    enabled                 = optional(bool, false)
+    endpoint_service_name   = optional(string, "")
+    endpoint_service_region = optional(string, "")
+    additional_cidr_blocks  = optional(list(string), [])
   })
   description = "Prometheus endpoint configuration"
   default = {
@@ -294,13 +294,13 @@ variable "prometheus_endpoint_config" {
 
 variable "grafana_privatelink_config" {
   type = object({
-    enabled                     = bool
+    enabled                     = optional(bool, false)
     endpoint_allowed_principals = optional(list(string), [])
     additional_aws_regions      = optional(list(string), [])
   })
   description = "Grafana privatelink configuration"
   default = {
-    enabled                     = true
+    enabled                     = false
     endpoint_allowed_principals = []
     additional_aws_regions      = []
   }

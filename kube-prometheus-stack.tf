@@ -1,7 +1,6 @@
 locals {
-  prometheus_release_name      = "kube-prometheus-stack"
-  prometheus_crds_release_name = "prometheus-operator-crds"
-  monitoring_namespace         = "monitoring"
+  prometheus_release_name = "kube-prometheus-stack"
+  monitoring_namespace    = "monitoring"
 
   prometheus_values = {
     global = {
@@ -176,10 +175,10 @@ EOF
 
 resource "aws_vpc_endpoint" "prometheus" {
   count               = local.prometheus_endpoint_enabled ? 1 : 0
-  vpc_id              = module.vpc.vpc_id
+  vpc_id              = local.vpc_id
   service_name        = local.prometheus_endpoint_config.endpoint_service_name
   vpc_endpoint_type   = "Interface"
-  subnet_ids          = module.vpc.private_subnets
+  subnet_ids          = local.private_subnets_ids
   security_group_ids  = [aws_security_group.prometheus_endpoint[0].id]
   private_dns_enabled = true
   ip_address_type     = "ipv4"
@@ -194,13 +193,13 @@ resource "aws_security_group" "prometheus_endpoint" {
   count       = local.prometheus_endpoint_enabled ? 1 : 0
   name        = "prometheus-endpoint"
   description = "Security group for prometheus endpoint"
-  vpc_id      = module.vpc.vpc_id
+  vpc_id      = local.vpc_id
 
   ingress {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = distinct(concat([module.vpc.vpc_cidr_block], local.prometheus_endpoint_config.additional_cidr_blocks))
+    cidr_blocks = distinct(concat([local.vpc_cidr_block], local.prometheus_endpoint_config.additional_cidr_blocks))
   }
 
   egress {
@@ -215,69 +214,6 @@ resource "aws_security_group" "prometheus_endpoint" {
 ##################################
 ####### Grafana Privatelink ######
 ##################################
-
-resource "null_resource" "grafana_privatelink_nlb_active" {
-  count = local.grafana_privatelink_enabled ? 1 : 0
-  provisioner "local-exec" {
-    command = <<EOF
-      # Always assume the role to ensure consistent permissions
-      CREDS=$(aws sts assume-role --role-arn arn:aws:iam::${var.aws_account_id}:role/${var.terraform_role} --role-session-name terraform-local-exec)
-      if [ $? -ne 0 ]; then
-        echo "Failed to assume role"
-        exit 1
-      fi
-      
-      # Set AWS credentials
-      export AWS_ACCESS_KEY_ID=$(echo $CREDS | jq -r '.Credentials.AccessKeyId')
-      export AWS_SECRET_ACCESS_KEY=$(echo $CREDS | jq -r '.Credentials.SecretAccessKey')
-      export AWS_SESSION_TOKEN=$(echo $CREDS | jq -r '.Credentials.SessionToken')
-      
-      # Verify AWS credentials
-      if ! aws sts get-caller-identity >/dev/null 2>&1; then
-        echo "Failed to verify AWS credentials"
-        exit 1
-      fi
-      
-      NLB_ARN="${data.aws_lb.grafana_privatelink_nlb[0].arn}"
-      if [ -z "$NLB_ARN" ]; then
-        echo "Terraform data source did not return an ARN. Attempting to find NLB via AWS CLI tags..."
-        NLB_ARN=$(aws resourcegroupstaggingapi get-resources \
-          --region ${var.aws_region} \
-          --resource-type-filters elasticloadbalancing:loadbalancer \
-          --tag-filters Key=elbv2.k8s.aws/cluster,Values=${local.cluster_name} \
-                        Key=service.k8s.aws/resource,Values=LoadBalancer \
-                        Key=service.k8s.aws/stack,Values=monitoring/grafana \
-          --query 'ResourceTagMappingList[0].ResourceARN' \
-          --output text)
-        if [ -z "$NLB_ARN" ]; then
-          echo "Could not find Grafana NLB via AWS CLI tag lookup either. Exiting."
-          exit 1
-        else
-          echo "Found NLB ARN via AWS CLI tag lookup: $NLB_ARN"
-        fi
-      fi
-      TIMEOUT=300
-      START_TIME=$(date +%s)
-      while true; do
-        STATE=$(aws elbv2 describe-load-balancers --region ${var.aws_region} --load-balancer-arns $NLB_ARN --query 'LoadBalancers[0].State.Code' --output text 2>/dev/null)
-        if [ "$STATE" = "active" ]; then
-          echo "Grafana NLB is now active"
-          break
-        fi
-        if [ $(( $(date +%s) - $START_TIME )) -ge $TIMEOUT ]; then
-          echo "Timed out waiting for Grafana NLB to become active"
-          exit 1
-        fi
-        echo "Waiting for Grafana NLB to become active... Current state: $STATE"
-        sleep 10
-      done
-    EOF
-  }
-  triggers = {
-    nlb_arn = data.aws_lb.grafana_privatelink_nlb[0].arn
-  }
-  depends_on = [helm_release.grafana, module.eks_blueprints_addons]
-}
 
 resource "aws_vpc_endpoint_service" "grafana" {
   count                      = local.grafana_privatelink_enabled ? 1 : 0

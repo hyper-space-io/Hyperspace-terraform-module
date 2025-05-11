@@ -19,7 +19,7 @@ daemonset:
 serviceAccount:
   name: "${local.dump_release_name}"
   annotations:
-    eks.amazonaws.com/role-arn: "${module.iam_iam-assumable-role-with-oidc["${local.dump_release_name}"].iam_role_arn}"
+    eks.amazonaws.com/role-arn: "${module.iam_iam-assumable-role-with-oidc[local.dump_release_name].iam_role_arn}"
 tolerations:
 - key: "fpga"
   operator: "Equal"

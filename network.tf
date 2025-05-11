@@ -1,5 +1,6 @@
 # NETWORKING
 module "vpc" {
+  count                                           = local.create_vpc ? 1 : 0
   source                                          = "terraform-aws-modules/vpc/aws"
   version                                         = "~>5.13.0"
   name                                            = "${var.project}-${var.environment}-vpc"
@@ -33,12 +34,11 @@ module "vpc" {
   tags = local.tags
 }
 
-
 module "endpoints" {
   source                     = "terraform-aws-modules/vpc/aws//modules/vpc-endpoints"
   version                    = "~>5.13.0"
-  vpc_id                     = module.vpc.vpc_id
-  subnet_ids                 = module.vpc.private_subnets
+  vpc_id                     = local.vpc_id
+  subnet_ids                 = local.private_subnets_ids
   create_security_group      = true
   security_group_name_prefix = var.project
   security_group_description = "VPC endpoint security group"
@@ -46,7 +46,7 @@ module "endpoints" {
   security_group_rules = {
     ingress_https = {
       description = "HTTPS from VPC"
-      cidr_blocks = [module.vpc.vpc_cidr_block]
+      cidr_blocks = [local.vpc_cidr_block]
     }
   }
 
