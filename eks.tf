@@ -66,11 +66,11 @@ module "eks" {
   ############################
 
   # Sperating the self managed nodegroups to az's ( 1 AZ : 1 ASG )
-  # Using direct module.vpc reference instead of local.private_subnets_ids to avoid Terraform's for_each unknown value error
+  # Using AZ index in map key to avoid Terraform's for_each unknown value error
   self_managed_node_groups = merge([
-    for subnet in slice(local.create_vpc ? module.vpc[0].private_subnets : var.existing_private_subnets, 0, length(local.availability_zones)) : {
+    for i, subnet in slice(local.private_subnets_ids, 0, length(local.availability_zones)) : {
       for pool_name, pool_config in local.additional_self_managed_node_pools :
-      "${var.environment}-${subnet}-${pool_name}" => merge(
+      "${var.environment}-az${i}-${pool_name}" => merge(
         pool_config,
         {
           name       = "${pool_name}-${subnet}"
