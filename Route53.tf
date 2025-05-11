@@ -60,22 +60,3 @@ resource "aws_route53_record" "internal_wildcard" {
   records    = [data.kubernetes_ingress_v1.internal_ingress.status[0].load_balancer[0].ingress[0].hostname]
   depends_on = [helm_release.nginx-ingress]
 }
-
-# DNS validation records for privatelink endpoints
-resource "aws_route53_record" "argocd_privatelink_validation" {
-  count   = local.argocd_privatelink_enabled && var.existing_public_zone != "" ? 1 : 0
-  zone_id = var.existing_public_zone
-  name    = aws_vpc_endpoint_service.argocd[0].private_dns_name_configuration[0].name
-  type    = "TXT"
-  ttl     = "300"
-  records = [aws_vpc_endpoint_service.argocd[0].private_dns_name_configuration[0].value]
-}
-
-resource "aws_route53_record" "grafana_privatelink_validation" {
-  count   = local.grafana_privatelink_enabled && var.existing_public_zone != "" ? 1 : 0
-  zone_id = var.existing_public_zone
-  name    = aws_vpc_endpoint_service.grafana[0].private_dns_name_configuration[0].name
-  type    = "TXT"
-  ttl     = "300"
-  records = [aws_vpc_endpoint_service.grafana[0].private_dns_name_configuration[0].value]
-}
