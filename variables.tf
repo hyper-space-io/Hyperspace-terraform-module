@@ -208,8 +208,8 @@ variable "existing_private_zone_id" {
   description = "Existing private Route 53 zone"
   default     = ""
   validation {
-    condition     = (var.existing_private_zone == "" && var.create_private_zone) || (var.existing_private_zone != "" && !var.create_private_zone)
-    error_message = "Either provide an existing private zone (and set create_private_zone to false) or set create_private_zone to true (and leave existing_private_zone empty)."
+    condition     = (var.existing_private_zone_id == "" && var.create_private_zone) || (var.existing_private_zone_id != "" && !var.create_private_zone)
+    error_message = "Either provide an existing private zone ID (and set create_private_zone to false) or set create_private_zone to true (and leave existing_private_zone_id empty)."
   }
 }
 
