@@ -103,11 +103,6 @@ data "aws_secretsmanager_secret_version" "argocd_gitlab_credentials" {
 data "aws_ami" "fpga" {
   owners     = [var.hyperspace_account_id]
   name_regex = "^eks-1\\.31-fpga-prod"
-
-  filter {
-    name   = "tag:customers"
-    values = ["true"]
-  }
 }
 
 # TODO: Uncomment this when we want a way to copy the AMI from the hyperspace account
