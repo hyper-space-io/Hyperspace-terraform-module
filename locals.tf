@@ -6,13 +6,14 @@ locals {
     terraform   = "true"
   })
 
-  worker_instance_type             = var.worker_instance_type
-  prometheus_endpoint_config       = var.prometheus_endpoint_config
-  prometheus_endpoint_enabled      = var.create_eks && var.prometheus_endpoint_config.enabled
-  argocd_config                    = var.argocd_config
-  prometheus_remote_write_endpoint = "https://prometheus.internal.devops-dev.hyper-space.xyz/api/v1/write"
-  internal_ingress_class_name      = "nginx-internal"
+  ###############
+  #### Ingress ##
+  ###############
+  internal_ingress_class_name = "nginx-internal"
 
+  ###############
+  #### ALB ######
+  ###############
   alb_values = <<EOT
   vpcId: ${local.vpc_id}
   region: ${var.aws_region}
@@ -36,8 +37,8 @@ locals {
   availability_zones = local.create_vpc ? (length(var.availability_zones) == 0 ? slice(data.aws_availability_zones.available.names, 0, var.num_zones) : var.availability_zones) : (length(data.aws_subnet.existing) > 0 ? [for subnet in data.aws_subnet.existing : subnet.availability_zone] : [])
 
   # Used to calculate the subnets. These are only used when creating a new VPC
-  private_subnets    = local.create_vpc ? [for azs_count in local.availability_zones : cidrsubnet(var.vpc_cidr, 4, index(local.availability_zones, azs_count))] : []
-  public_subnets     = local.create_vpc ? [for azs_count in local.availability_zones : cidrsubnet(var.vpc_cidr, 4, index(local.availability_zones, azs_count) + 5)] : []
+  private_subnets = local.create_vpc ? [for azs_count in local.availability_zones : cidrsubnet(var.vpc_cidr, 4, index(local.availability_zones, azs_count))] : []
+  public_subnets  = local.create_vpc ? [for azs_count in local.availability_zones : cidrsubnet(var.vpc_cidr, 4, index(local.availability_zones, azs_count) + 5)] : []
 
   # Use VPC module outputs for new VPC, or existing values from input variables for existing VPC
   private_subnets_ids = local.create_vpc ? module.vpc[0].private_subnets : var.existing_private_subnets
@@ -48,76 +49,6 @@ locals {
   ##### KMS ########
   ##################
   hyperspace_ami_key_alias = "arn:aws:kms:${var.aws_region}:${var.hyperspace_account_id}:alias/HYPERSPACE_AMI_KEY"
-
-  ##################
-  ### IAM Policy ###
-  ##################
-  iam_policy_arns = {
-    for k, v in local.iam_policies : k => aws_iam_policy.policies[k].arn
-  }
-
-  # IAM Policies
-  iam_policies = {
-    fpga_pull = {
-      name        = "${local.cluster_name}-FpgaPullAccessPolicy"
-      path        = "/"
-      description = "Policy for loading AFI in eks"
-      policy      = data.aws_iam_policy_document.fpga_pull_access.json
-    }
-    ec2_tags = {
-      name                     = "${local.cluster_name}-EC2TagsPolicy"
-      path                     = "/"
-      description              = "Policy for controling EC2 resources tags"
-      policy                   = data.aws_iam_policy_document.ec2_tags_control.json
-      create_cluster_wide_role = true
-    }
-    cluster-autoscaler = {
-      name                  = "${local.cluster_name}-cluster-autoscaler"
-      path                  = "/"
-      description           = "Policy for cluster-autoscaler service"
-      policy                = data.aws_iam_policy_document.cluster_autoscaler.json
-      create_assumable_role = true
-      sa_namespace          = "cluster-autoscaler"
-    }
-    core-dump = {
-      name                  = "${local.cluster_name}-core-dump"
-      path                  = "/"
-      description           = "Policy for core-dump service"
-      policy                = data.aws_iam_policy_document.core_dump_s3_full_access.json
-      create_assumable_role = true
-      sa_namespace          = "core-dump"
-    }
-    velero = {
-      name                  = "${local.cluster_name}-velero"
-      path                  = "/"
-      description           = "Policy for velero service"
-      policy                = data.aws_iam_policy_document.velero_s3_full_access.json
-      create_assumable_role = true
-      sa_namespace          = "velero"
-    }
-    loki = {
-      name                  = "${local.cluster_name}-loki"
-      path                  = "/"
-      description           = "Policy for loki service"
-      policy                = data.aws_iam_policy_document.loki_s3_dynamodb_full_access.json
-      create_assumable_role = true
-      sa_namespace          = "monitoring"
-    }
-    external-secrets = {
-      name                  = "${local.cluster_name}-external-secrets"
-      path                  = "/"
-      description           = "Policy for external-secrets service"
-      policy                = data.aws_iam_policy_document.secrets_manager.json
-      create_assumable_role = true
-      sa_namespace          = "external-secrets"
-    }
-    kms = {
-      name        = "${local.cluster_name}-kms"
-      path        = "/"
-      description = "Policy for using Hyperspace's KMS key for AMI encryption"
-      policy      = data.aws_iam_policy_document.kms.json
-    }
-  }
 
   #################
   ##### EKS #######
@@ -188,10 +119,21 @@ locals {
   ))
 
   ###########################
+  ####### Prometheus ########
+  ###########################
+  prometheus_endpoint_config       = var.prometheus_endpoint_config
+  prometheus_endpoint_enabled      = var.create_eks && var.prometheus_endpoint_config.enabled
+  prometheus_remote_write_endpoint = ""
+
+  ###########################
+  ######### ArgoCD  #########
+  ###########################
+  argocd_config  = var.argocd_config
+  argocd_enabled = var.create_eks && var.argocd_config.enabled
+
+  ###########################
   ### ArgoCD Privatelink ####
   ###########################
-
-  argocd_enabled             = var.create_eks && var.argocd_config.enabled
   argocd_privatelink_enabled = local.argocd_enabled && try(local.argocd_config.privatelink.enabled, false)
 
   # Default values for Privatelink configuration
