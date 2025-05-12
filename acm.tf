@@ -15,7 +15,7 @@ module "external_acm" {
   tags                   = local.tags
   create_route53_records = local.create_route53_records
   validation_method      = "DNS"
-  zone_id                = local.domain_hosted_zone.id
+  zone_id                = local.domain_hosted_zone_id
   wait_for_validation    = true
 }
 
@@ -31,6 +31,6 @@ module "internal_acm" {
   tags                   = local.tags
   create_route53_records = local.create_route53_records
   validation_method      = "DNS"
-  zone_id                = local.domain_hosted_zone.id
+  zone_id                = local.domain_hosted_zone_id
   wait_for_validation    = true
 }
