@@ -105,8 +105,8 @@ data "aws_ami" "fpga" {
   name_regex = "^eks-1\\.31-fpga-prod"
 
   filter {
-    name   = "tag:customers"
-    values = ["true"]
+    name   = "description"
+    values = ["*Customers*"]
   }
 }
 
