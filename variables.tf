@@ -187,7 +187,13 @@ variable "domain_name" {
   sensitive   = false
 }
 
-variable "existing_public_zone" {
+variable "create_public_zone" {
+  description = "Whether to create the public Route 53 zone"
+  type        = bool
+  default     = false
+}
+
+variable "existing_public_zone_id" {
   type        = string
   description = "Existing public Route 53 zone"
   default     = ""
@@ -197,10 +203,24 @@ variable "existing_public_zone" {
   }
 }
 
-variable "create_public_zone" {
-  description = "Whether to create the public Route 53 zone"
-  type        = bool
-  default     = false
+variable "existing_private_zone_id" {
+  type        = string
+  description = "Existing private Route 53 zone"
+  default     = ""
+  validation {
+    condition     = (var.existing_private_zone == "" && var.create_private_zone) || (var.existing_private_zone != "" && !var.create_private_zone)
+    error_message = "Either provide an existing private zone (and set create_private_zone to false) or set create_private_zone to true (and leave existing_private_zone empty)."
+  }
+}
+
+variable "domain_hosted_zone_id" {
+  type        = string
+  description = "Hosted zone ID for ACM validation (optional, for cross-account or root domain validation)"
+  default     = ""
+  validation {
+    condition     = var.domain_hosted_zone_id == "" || can(regex("^Z[A-Z0-9]{10,40}$", var.domain_hosted_zone_id))
+    error_message = "The hosted zone ID must be a valid Route 53 hosted zone ID (e.g. Z1A2BC3D4E5F6G7H8I9J0K) or empty string."
+  }
 }
 
 ###############################

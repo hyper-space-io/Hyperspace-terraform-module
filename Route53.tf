@@ -5,7 +5,7 @@ locals {
 }
 
 module "external_zone" {
-  count   = var.create_public_zone && local.public_domain_name != "" ? 1 : 0
+  count   = local.create_public_zone && local.public_domain_name != "" ? 1 : 0
   source  = "terraform-aws-modules/route53/aws//modules/zones"
   version = "~> 4.1.0"
   zones = {
@@ -21,7 +21,7 @@ module "external_zone" {
 }
 
 module "internal_zone" {
-  count   = local.internal_domain_name != "" ? 1 : 0
+  count   = local.create_private_zone && local.internal_domain_name != "" ? 1 : 0
   source  = "terraform-aws-modules/route53/aws//modules/zones"
   version = "~> 4.1.0"
   zones = {
@@ -43,7 +43,7 @@ module "internal_zone" {
 
 resource "aws_route53_record" "wildcard" {
   count      = var.create_public_zone ? local.create_records : 0
-  zone_id    = module.external_zone[0].route53_zone_zone_id["external"]
+  zone_id    = local.public_zone_id
   name       = "*"
   type       = "CNAME"
   ttl        = "300"
@@ -53,7 +53,7 @@ resource "aws_route53_record" "wildcard" {
 
 resource "aws_route53_record" "internal_wildcard" {
   count      = local.create_records
-  zone_id    = module.internal_zone[0].route53_zone_zone_id["internal"]
+  zone_id    = local.private_zone_id
   name       = "*"
   type       = "CNAME"
   ttl        = "300"

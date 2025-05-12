@@ -19,6 +19,11 @@ locals {
   EOT
 
   ##################
+  ##### KMS ########
+  ##################
+  hyperspace_ami_key_alias = "arn:aws:kms:${var.aws_region}:${var.hyperspace_account_id}:alias/HYPERSPACE_AMI_KEY"
+
+  ##################
   ##### VPC ########
   ##################
   # Determine if we need to create a new VPC or use existing one
@@ -36,18 +41,24 @@ locals {
   availability_zones = local.create_vpc ? (length(var.availability_zones) == 0 ? slice(data.aws_availability_zones.available.names, 0, var.num_zones) : var.availability_zones) : (length(data.aws_subnet.existing) > 0 ? [for subnet in data.aws_subnet.existing : subnet.availability_zone] : [])
 
   # Used to calculate the subnets. These are only used when creating a new VPC
-  private_subnets    = local.create_vpc ? [for azs_count in local.availability_zones : cidrsubnet(var.vpc_cidr, 4, index(local.availability_zones, azs_count))] : []
-  public_subnets     = local.create_vpc ? [for azs_count in local.availability_zones : cidrsubnet(var.vpc_cidr, 4, index(local.availability_zones, azs_count) + 5)] : []
+  private_subnets = local.create_vpc ? [for azs_count in local.availability_zones : cidrsubnet(var.vpc_cidr, 4, index(local.availability_zones, azs_count))] : []
+  public_subnets  = local.create_vpc ? [for azs_count in local.availability_zones : cidrsubnet(var.vpc_cidr, 4, index(local.availability_zones, azs_count) + 5)] : []
 
   # Use VPC module outputs for new VPC, or existing values from input variables for existing VPC
   private_subnets_ids = local.create_vpc ? module.vpc[0].private_subnets : var.existing_private_subnets
   vpc_id              = local.create_vpc ? module.vpc[0].vpc_id : var.existing_vpc_id
   vpc_cidr_block      = local.create_vpc ? module.vpc[0].vpc_cidr_block : local.existing_vpc.cidr_block
 
-  ##################
-  ##### KMS ########
-  ##################
-  hyperspace_ami_key_alias = "arn:aws:kms:${var.aws_region}:${var.hyperspace_account_id}:alias/HYPERSPACE_AMI_KEY"
+  ###################
+  ##### Route53 #####
+  ###################
+  # Determine if we need to create new zones or use existing ones
+  create_public_zone  = var.create_public_zone && var.existing_public_zone_id == ""
+  create_private_zone = var.existing_private_zone_id == ""
+
+  # Use zone module outputs for new zones, or existing values from variables
+  public_zone_id  = local.create_public_zone ? module.external_zone[0].route53_zone_zone_id["external"] : var.existing_public_zone_id
+  private_zone_id = local.create_private_zone ? module.internal_zone[0].route53_zone_zone_id["internal"] : var.existing_private_zone_id
 
   ##################
   ### IAM Policy ###
@@ -56,7 +67,6 @@ locals {
     for k, v in local.iam_policies : k => aws_iam_policy.policies[k].arn
   }
 
-  # IAM Policies
   iam_policies = {
     fpga_pull = {
       name        = "${local.cluster_name}-FpgaPullAccessPolicy"
