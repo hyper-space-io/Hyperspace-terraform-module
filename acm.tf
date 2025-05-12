@@ -4,7 +4,7 @@ locals {
 }
 
 module "external_acm" {
-  count              = var.create_public_zone && local.public_domain_name != "" ? 1 : 0
+  count              = (var.create_public_zone || var.existing_public_zone_id != "") && local.public_domain_name != "" ? 1 : 0
   source             = "terraform-aws-modules/acm/aws"
   version            = "~> 5.1.1"
   create_certificate = local.create_acm

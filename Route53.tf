@@ -5,7 +5,7 @@ locals {
 }
 
 module "external_zone" {
-  count   = local.create_public_zone && local.public_domain_name != "" ? 1 : 0
+  count   = var.create_public_zone && local.public_domain_name != "" ? 1 : 0
   source  = "terraform-aws-modules/route53/aws//modules/zones"
   version = "~> 4.1.0"
   zones = {
@@ -42,7 +42,7 @@ module "internal_zone" {
 }
 
 resource "aws_route53_record" "wildcard" {
-  count      = var.create_public_zone ? local.create_records : 0
+  count      = (var.create_public_zone || var.existing_public_zone_id != "") ? local.create_records : 0
   zone_id    = local.public_zone_id
   name       = "*"
   type       = "CNAME"

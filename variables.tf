@@ -198,8 +198,8 @@ variable "existing_public_zone_id" {
   description = "Existing public Route 53 zone"
   default     = ""
   validation {
-    condition     = (var.existing_public_zone == "" && var.create_public_zone) || (var.existing_public_zone != "" && !var.create_public_zone)
-    error_message = "Either provide an existing public zone (and set create_public_zone to false) or set create_public_zone to true (and leave existing_public_zone empty)."
+    condition     = (var.existing_public_zone_id == "" && var.create_public_zone) || (var.existing_public_zone_id != "" && !var.create_public_zone)
+    error_message = "Either provide an existing public zone ID (and set create_public_zone to false) or set create_public_zone to true (and leave existing_public_zone_id empty)."
   }
 }
 

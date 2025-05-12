@@ -53,13 +53,11 @@ locals {
   ##### Route53 #####
   ###################
   # Determine if we need to create new zones or use existing ones
-  create_public_zone  = var.create_public_zone && var.existing_public_zone_id == ""
-  create_private_zone = var.existing_private_zone_id == ""
-
+  create_private_zone   = var.existing_private_zone_id == ""
   domain_hosted_zone_id = var.domain_hosted_zone_id != "" ? var.domain_hosted_zone_id : null
 
   # Use zone module outputs for new zones, or existing values from variables
-  public_zone_id  = local.create_public_zone ? module.external_zone[0].route53_zone_zone_id["external"] : var.existing_public_zone_id
+  public_zone_id  = var.create_public_zone ? module.external_zone[0].route53_zone_zone_id["external"] : var.existing_public_zone_id
   private_zone_id = local.create_private_zone ? module.internal_zone[0].route53_zone_zone_id["internal"] : var.existing_private_zone_id
 
   ##################
