@@ -126,6 +126,24 @@ resource "null_resource" "argocd_create_user" {
     command = <<EOT
       echo "Getting ArgoCD admin password..."
       
+      # Always assume the role to ensure consistent permissions
+      CREDS=$(aws sts assume-role --role-arn arn:aws:iam::${var.aws_account_id}:role/${var.terraform_role} --role-session-name terraform-local-exec)
+      if [ $? -ne 0 ]; then
+        echo "Failed to assume role"
+        exit 1
+      fi
+      
+      # Set AWS credentials
+      export AWS_ACCESS_KEY_ID=$(echo $CREDS | jq -r '.Credentials.AccessKeyId')
+      export AWS_SECRET_ACCESS_KEY=$(echo $CREDS | jq -r '.Credentials.SecretAccessKey')
+      export AWS_SESSION_TOKEN=$(echo $CREDS | jq -r '.Credentials.SessionToken')
+      
+      # Verify AWS credentials
+      if ! aws sts get-caller-identity >/dev/null 2>&1; then
+        echo "Failed to verify AWS credentials"
+        exit 1
+      fi
+      
       # Update kubeconfig
       aws eks update-kubeconfig --name ${local.cluster_name} --region ${var.aws_region}
       if [ $? -ne 0 ]; then
@@ -140,7 +158,7 @@ resource "null_resource" "argocd_create_user" {
         exit 1
       fi
       
-      NEW_PASSWORD="${random_string.argocd_readonly_password.result}"
+      NEW_PASSWORD="${random_password.argocd_readonly[count.index].result}"
       
       if [ "$CURRENT_HYPERSPACE_PASSWORD" = "$NEW_PASSWORD" ]; then
         echo "Current password matches desired password. No update needed."
@@ -200,7 +218,7 @@ resource "null_resource" "argocd_create_user" {
   depends_on = [helm_release.argocd, data.aws_lb.argocd_privatelink_nlb[0]]
   triggers = {
     helm_release_id   = helm_release.argocd[count.index].id
-    readonly_password = random_string.argocd_readonly_password.result
+    readonly_password = random_password.argocd_readonly[count.index].result
     timestamp         = timestamp()
   }
 }
