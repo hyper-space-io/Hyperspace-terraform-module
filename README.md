@@ -6,12 +6,22 @@
 - [Overview](#overview)
 - [Prerequisites](#prerequisites)
 - [Basic Module Usage](#basic-module-usage)
-- [Variables](#variables)
+- [Inputs](#inputs)
+  - [Required Inputs](#required-inputs)
+  - [Optional Inputs](#optional-inputs)
+    - [VPC Configuration](#vpc-configuration)
+    - [EKS Configuration](#eks-configuration)
+    - [Monitoring and Observability](#monitoring-and-observability)
+    - [Additional Configuration](#additional-configuration)
+  - [Object Inputs](#object-inputs)
+- [VPC Examples](#vpc-examples)
+  - [Option 1: Create New VPC (Default)](#option-1-create-new-vpc-default)
+  - [Option 2: Use Existing VPC](#option-2-use-existing-vpc)
+    - [Prerequisites for Existing VPC](#prerequisites-for-existing-vpc)
 - [Features](#features)
-- [ACM Certificate Validation](#acm-certificate-validation)
-- [Privatelink](#privatelink)
-- [VPC Configuration](#vpc-configuration)
-- [ArgoCD, Grafana & Prometheus Variables](#argocd-grafana--prometheus-variables)
+- [Important Notes](#important-notes)
+  - [ACM Certificate Validation](#acm-certificate-validation)
+  - [Privatelink](#privatelink)
 - [Access Your Infrastructure](#access-your-infrastructure)
 
 ## Overview
@@ -73,130 +83,231 @@ terraform apply
 
 3. After the infrastructure is deployed, you can install Hyperspace Helm chart through [Hyperspace Deployment Repository](https://github.com/hyper-space-io/Hyperspace-Deployment)
 
+## Inputs
 
-## Variables
+### Required Inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|----------|
-| aws_account_id | AWS account ID | string | - | yes |
-| hyperspace_account_id | The account ID of the hyperspace account (obtained from Hyperspace support) | string | - | yes |
-| aws_region | AWS region | string | "us-east-1" | yes |
-| domain_name | Main domain name for sub-domains | string | "" | yes |
-| environment | Deployment environment | string | - | yes |
-| vpc_cidr | CIDR block for the VPC | string | "10.10.0.0/16" | no |
-| argocd_config | ArgoCD configuration. Required fields when enabled: vcs.organization, vcs.repository, and either vcs.github.enabled or vcs.gitlab.enabled | object | {vcs: {organization: "", repository: "", github: {enabled: false}, gitlab: {enabled: false}}} | yes |
-| project | Name of the project | string | "hyperspace" | no |
-| terraform_role | Terraform role to assume | string | null | no |
-| tags | Map of tags to add to all resources | map(string) | {} | no |
-| availability_zones | List of availability zones to deploy resources | list(string) | [] | no |
-| create_vpc | Controls if VPC should be created | bool | true | no |
-| existing_vpc_id | ID of an existing VPC to use instead of creating a new one | string | null | no |
-| existing_private_subnets | The private subnets for the existing VPC | list(string) | [] | no |
-| existing_public_subnets | The public subnets for the existing VPC | list(string) | [] | no |
-| num_zones | Number of zones to utilize for EKS nodes | number | 2 | no |
-| enable_nat_gateway | Enable NAT Gateway | bool | true | no |
-| single_nat_gateway | Use single NAT Gateway or one per AZ | bool | false | no |
-| create_vpc_flow_logs | Enable VPC flow logs | bool | false | no |
-| flow_logs_retention | Flow logs retention in days | number | 14 | no |
-| flow_log_group_class | Flow logs log group class in CloudWatch | string | "STANDARD" | no |
-| flow_log_file_format | Flow logs file format | string | "parquet" | no |
-| create_eks | Should we create the EKS cluster? | bool | true | no |
-| cluster_endpoint_public_access | Whether to enable public access to the EKS cluster endpoint | bool | false | no |
-| enable_cluster_autoscaler | Enable and install cluster-autoscaler | bool | true | no |
-| worker_nodes_max | Maximum amount of worker nodes allowed | number | 10 | no |
-| worker_instance_type | Instance type for EKS worker nodes | list(string) | ["m5n.xlarge"] | no |
-| eks_additional_admin_roles | Additional IAM roles to add as cluster administrators | list(string) | [] | no |
-| eks_additional_admin_roles_policy | IAM policy for the EKS additional admin roles | string | "AmazonEKSClusterAdminPolicy" | no |
-| create_public_zone | Whether to create the public Route 53 zone | bool | false | no |
-| prometheus_endpoint_config | Prometheus endpoint configuration. Required when enabled: endpoint_service_name and endpoint_service_region | object | {enabled: false, endpoint_service_name: "", endpoint_service_region: ""} | no |
-| grafana_privatelink_config | Grafana privatelink configuration. Required when enabled: endpoint_allowed_principals | object | {enabled: false, endpoint_allowed_principals: []} | no |
+| aws_account_id | The AWS account ID where resources will be created | `string` | n/a | yes |
+| hyperspace_account_id | The Hyperspace account ID (obtained from Hyperspace support) used for accessing Hyperspace resources | `string` | n/a | yes |
+| aws_region | The AWS region where resources will be created | `string` | `"us-east-1"` | yes |
+| domain_name | The main domain name used for creating subdomains for various services | `string` | `""` | yes |
+| environment | The deployment environment (e.g., dev, staging, prod) | `string` | n/a | yes |
+| argocd_config | Configuration for ArgoCD installation and VCS integration | `object` | See below | yes |
 
-**Note**: 
-The `hyperspace_account_id` is a required variable that you need to obtain from Hyperspace support. This ID is used to pull resources from Hyperspace like AMIs and other infrastructure components.
+### Optional Inputs
 
-## VPC Configuration
-The module can either create a new VPC or use an existing one. By default, it creates a new VPC with the following configuration:
-- CIDR block: 10.0.0.0/16 (Configurable with var.vpc_cidr)
-- Public and private subnets across 2 availability zones
-- NAT Gateway for private subnet internet access
+#### VPC Configuration
 
-You can also choose to deploy the resource to an existing VPC by providing the following inputs:
-```hcl
-existing_vpc_id           = "vpc-1234567890abcdef0"
-existing_private_subnets  = ["subnet-1234567890abcdef0", "subnet-0987654321fedcba0"]
-existing_public_subnets   = ["subnet-abcdef1234567890", "subnet-fedcba0987654321"] # (Optional)
-```
+| Name | Description | Type | Default | Required |
+|------|-------------|------|---------|----------|
+| vpc_cidr | The CIDR block for the VPC | `string` | `"10.0.0.0/16"` | no |
+| create_vpc | Whether to create a new VPC | `bool` | `true` | no |
+| existing_vpc_id | ID of an existing VPC to use | `string` | `null` | no |
+| existing_private_subnets | List of existing private subnet IDs | `list(string)` | `[]` | no |
+| existing_public_subnets | List of existing public subnet IDs | `list(string)` | `[]` | no |
+| availability_zones | List of availability zones to deploy resources | `list(string)` | `[]` | no |
+| num_zones | Number of availability zones to use for EKS nodes | `number` | `2` | no |
+| enable_nat_gateway | Whether to enable NAT Gateway | `bool` | `true` | no |
+| single_nat_gateway | Whether to use a single NAT Gateway or one per AZ | `bool` | `false` | no |
+| create_vpc_flow_logs | Whether to enable VPC flow logs | `bool` | `false` | no |
+| flow_logs_retention | Number of days to retain VPC flow logs | `number` | `14` | no |
+| flow_log_group_class | CloudWatch log group class for flow logs | `string` | `"STANDARD"` | no |
+| flow_log_file_format | Format for VPC flow logs | `string` | `"parquet"` | no |
 
-**Important**: When using an existing VPC:
-1. The VPC must have DNS hostnames and DNS resolution enabled
-2. The private subnets must have the following tags:
-   - `kubernetes.io/role/internal-elb` = "1"
-3. The public subnets must have the following tags:
-   - `kubernetes.io/role/elb` = "1"
+#### EKS Configuration
 
-## ArgoCD, Grafana & Prometheus Variables
+| Name | Description | Type | Default | Required |
+|------|-------------|------|---------|----------|
+| create_eks | Whether to create the EKS cluster | `bool` | `true` | no |
+| cluster_endpoint_public_access | Whether to enable public access to the EKS cluster endpoint | `bool` | `false` | no |
+| enable_cluster_autoscaler | Whether to enable and install cluster-autoscaler | `bool` | `true` | no |
+| worker_nodes_max | Maximum number of worker nodes allowed | `number` | `10` | no |
+| worker_instance_type | Instance type(s) for EKS worker nodes | `list(string)` | `["m5n.xlarge"]` | no |
+| eks_additional_admin_roles | Additional IAM roles to add as cluster administrators | `list(string)` | `[]` | no |
+| eks_additional_admin_roles_policy | IAM policy for the EKS additional admin roles | `string` | `"AmazonEKSClusterAdminPolicy"` | no |
 
-### ArgoCD Configuration
-The `argocd_config` object configures ArgoCD installation and its integration with your version control system. Required fields:
-- `vcs.organization`: Your Git organization/group name
-- `vcs.repository`: The repository name where your ArgoCD applications are stored
-- Either `vcs.github.enabled` or `vcs.gitlab.enabled`: Set to `true` based on your VCS provider
+#### Monitoring and Observability
 
-Complete configuration example:
+| Name | Description | Type | Default | Required |
+|------|-------------|------|---------|----------|
+| prometheus_endpoint_config | Configuration for Prometheus endpoint service | `object` | See below | no |
+| grafana_privatelink_config | Configuration for Grafana PrivateLink | `object` | See below | no |
+
+#### Additional Configuration
+
+| Name | Description | Type | Default | Required |
+|------|-------------|------|---------|----------|
+| project | Name of the project | `string` | `"hyperspace"` | no |
+| terraform_role | IAM role for Terraform to assume | `string` | `null` | no |
+| tags | Map of tags to add to all resources | `map(string)` | `{}` | no |
+| create_public_zone | Whether to create the public Route 53 zone | `bool` | `false` | no |
+
+### Object Inputs
+
+#### argocd_config (Required)
+
 ```hcl
 argocd_config = {
+  # Required fields
+  vcs = {
+    organization = string  # Your Git organization/group name
+    repository   = string  # Your repository name
+    # Choose either GitHub or GitLab
+    github = {
+      enabled = bool  # Set to true to use GitHub
+    }
+    # OR
+    gitlab = {
+      enabled = bool  # Set to true to use GitLab
+    }
+  }
+
+  # Optional fields with defaults
   enabled = true
   privatelink = {
     enabled                     = false
-    endpoint_allowed_principals = []  # List of AWS account IDs allowed to connect
-    additional_aws_regions      = []  # Additional AWS regions for the endpoint service
-  }
-  vcs = {
-    organization = "<ORG>"
-    repository   = "<REPO>"
-    github = {
-      enabled                   = true
-      github_app_enabled        = false
-      github_app_secret_name    = "argocd/github_app"
-      github_private_key_secret = "argocd/github_app_private_key"
-    }
-    gitlab = {
-      enabled                 = false
-      oauth_enabled           = false
-      oauth_secret_name       = "argocd/gitlab_oauth"
-      credentials_secret_name = "argocd/gitlab_credentials"
-    }
+    endpoint_allowed_principals = []
+    additional_aws_regions      = []
   }
   rbac = {
-    sso_admin_group        = ""  # SSO admin group name
-    users_rbac_rules       = []  # List of RBAC rules for users
-    users_additional_rules = []  # Additional RBAC rules
+    sso_admin_group        = null
+    users_rbac_rules       = []
+    users_additional_rules = []
   }
 }
 ```
 
-### Grafana Privatelink Configuration
-The `grafana_privatelink_config` object enables secure access to Grafana through AWS PrivateLink:
-
-```hcl
-grafana_privatelink_config = {
-  enabled                     = false
-  endpoint_allowed_principals = []  # List of AWS account IDs allowed to connect
-  additional_aws_regions      = []  # Additional AWS regions for the endpoint service
-}
-```
-
-### Prometheus Endpoint Configuration
-The `prometheus_endpoint_config` object configures the Prometheus endpoint service:
+#### prometheus_endpoint_config
 
 ```hcl
 prometheus_endpoint_config = {
   enabled                 = false
-  endpoint_service_name   = ""  # Name of the endpoint service
-  endpoint_service_region = ""  # Region for the endpoint service
-  additional_cidr_blocks  = []  # Additional CIDR blocks allowed to access the endpoint
+  endpoint_service_name   = ""
+  endpoint_service_region = ""
+  additional_cidr_blocks  = []
 }
 ```
+
+#### grafana_privatelink_config
+
+```hcl
+grafana_privatelink_config = {
+  enabled                     = false
+  endpoint_allowed_principals = []
+  additional_aws_regions      = []
+}
+```
+
+## VPC Examples
+
+The module supports two deployment options for networking:
+
+### Option 1: Create New VPC (Default)
+
+By default, the module creates a new VPC with the following configuration:
+- CIDR block: `10.0.0.0/16` (configurable via `vpc_cidr`)
+- Public and private subnets across 2 availability zones
+- NAT Gateway for private subnet internet access
+- All required tags and DNS settings automatically configured
+
+### Option 2: Use Existing VPC
+
+To use an existing VPC, simply provide the VPC and subnet IDs:
+
+```hcl
+module "hyperspace" {
+  source                = "github.com/hyper-space-io/Hyperspace-terraform-module"
+  aws_region            = "eu-west-1"
+  domain_name           = "example.com"
+  environment           = "dev"
+  aws_account_id        = "123456789012"
+  hyperspace_account_id = "123456789012"
+
+  # Existing VPC Configuration
+  create_vpc             = false
+  existing_vpc_id        = "vpc-0dc21447e050ee2b9"
+  existing_private_subnets = [
+    "subnet-063e309f79a853d4b",
+    "subnet-036a1e0052df1a89f",
+    "subnet-0661c345359809e05"
+  ]
+  # Optional: If you have public subnets
+  existing_public_subnets = [
+    "subnet-abcdef1234567890",
+    "subnet-fedcba0987654321"
+  ]
+  argocd_config = {
+    vcs = {
+      organization = "your-org"
+      repository   = "your-repo"
+      github = {
+        enabled = true
+      }
+    }
+  }
+}
+```
+
+#### Prerequisites for Existing VPC
+
+Before using an existing VPC, ensure it meets these requirements:
+
+1. **VPC Settings**:
+   - DNS hostnames must be enabled
+   - DNS resolution must be enabled
+
+2. **Subnet Tags**:
+   - Private subnets must have: `kubernetes.io/role/internal-elb = "1"`
+   - Public subnets must have: `kubernetes.io/role/elb = "1"`
+
+3. **Network Requirements**:
+   - Private subnets must have NAT Gateway access
+   - Public subnets must have Internet Gateway access
+   - Sufficient IP addresses in each subnet for EKS nodes
+
+## Features
+
+### EKS Cluster
+- Managed node groups with Bottlerocket OS
+- Self-managed node groups for specialized workloads
+- Cluster autoscaling
+- IRSA (IAM Roles for Service Accounts)
+- EBS CSI Driver integration
+- EKS Managed Addons
+
+### Networking
+- VPC with public and private subnets
+- NAT Gateways
+- VPC Endpoints
+- Internal and external ALB ingress controllers
+- Network policies
+- VPC flow logs (optional)
+- Connectivity to Auth0
+
+### Security
+- Network policies
+- Security groups
+- IAM roles and policies
+- OIDC integration
+
+### Monitoring and Logging
+- Prometheus and Grafana
+- Loki for log aggregation
+- OpenTelemetry for observability
+- CloudWatch integration
+- Core dump handling
+
+### Backup and Disaster Recovery
+- Velero for cluster backup
+- EBS volume snapshots
+
+### GitOps
+- ArgoCD installation and SSO integration
+- ECR credentials sync to gain access to private hyperspace ECR repositories
+
+# Important Notes
 
 ## ACM Certificate Validation
 During deployment, Terraform will pause for ACM certificate validation:
@@ -211,12 +322,15 @@ During deployment, Terraform will pause for ACM certificate validation:
 3. Wait for validation (5-30 minutes)
 4. Terraform will automatically continue once validated
 
-
 **Important**: The CNAME must be created in a public hosted zone, not private. Ensure you include the trailing dot in the Value field.
 
 ## Privatelink
-After deploying the infrastructure, you'll need to verify your VPC Endpoint Service by creating a DNS record. 
-This verification allows Hyperspace to establish a secure connection to collect essential metrics from your environment through AWS PrivateLink:
+
+Privatelink is disabled by default and can be enabled through the `argocd_config.privatelink` and `grafana_privatelink_config` variables. 
+
+When enabled, it creates a secure, private connection that allows Hyperspace to access your deployed services (ArgoCD, Grafana, Prometheus, and Loki) through AWS PrivateLink. This ensures all traffic between Hyperspace and your services stays private and never traverses the public internet.
+
+After deploying the infrastructure with Privatelink enabled, you'll need to verify your VPC Endpoint Service by creating a DNS record in the hosted zone of your domain:
 
 ### 1. Get Verification Details
 1. Open AWS Console and navigate to VPC Services
@@ -280,11 +394,17 @@ prometheus_endpoint_config = {
 ```
 
 ## Access Your Infrastructure
-After successful deployment, you can access:
-   - ArgoCD: `https://argocd.internal-<environment>.<your-domain>`
-   - Grafana: `https://grafana.internal-<environment>.<your-domain>`
 
-**ArgoCD Initial Login**:
+After successful deployment, the following services will be available at these URLs:
+- ArgoCD: `https://argocd.internal-<environment>.<your-domain>`
+- Grafana: `https://grafana.internal-<environment>.<your-domain>`
+
+By default, the module creates a private hosted zone with a wildcard DNS record for your subdomain. This means:
+- Services are only accessible from within the VPC
+- No public internet access is allowed
+- You must be connected to the VPC (via VPN, Direct Connect, or EC2 instance) to access the services
+
+### ArgoCD Initial Login
 
 1. **Username**: The default admin username is `admin`
 
@@ -292,43 +412,3 @@ After successful deployment, you can access:
    ```bash
    kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
    ```
-
-## Features
-
-### EKS Cluster
-- Managed node groups with Bottlerocket OS
-- Self-managed node groups for specialized workloads
-- Cluster autoscaling
-- IRSA (IAM Roles for Service Accounts)
-- EBS CSI Driver integration
-- EKS Managed Addons
-
-### Networking
-- VPC with public and private subnets
-- NAT Gateways
-- VPC Endpoints
-- Internal and external ALB ingress controllers
-- Network policies
-- VPC flow logs (optional)
-- Connectivity to Auth0
-
-### Security
-- Network policies
-- Security groups
-- IAM roles and policies
-- OIDC integration
-
-### Monitoring and Logging
-- Prometheus and Grafana
-- Loki for log aggregation
-- OpenTelemetry for observability
-- CloudWatch integration
-- Core dump handling
-
-### Backup and Disaster Recovery
-- Velero for cluster backup
-- EBS volume snapshots
-
-### GitOps
-- ArgoCD installation and SSO integration
-- ECR credentials sync to gain access to private hyperspace ECR repositories
