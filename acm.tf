@@ -31,6 +31,6 @@ module "internal_acm" {
   tags                   = local.tags
   create_route53_records = local.create_private_zone
   validation_method      = "DNS"
-  zone_id                = local.private_zone_id
+  zone_id                = var.existing_public_zone_id
   wait_for_validation    = false
 }
