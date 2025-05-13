@@ -213,16 +213,6 @@ variable "existing_private_zone_id" {
   }
 }
 
-variable "domain_hosted_zone_id" {
-  type        = string
-  description = "Hosted zone ID for ACM validation (optional, for cross-account or root domain validation)"
-  default     = ""
-  validation {
-    condition     = var.domain_hosted_zone_id == "" || can(regex("^Z[A-Z0-9]{10,40}$", var.domain_hosted_zone_id))
-    error_message = "The hosted zone ID must be a valid Route 53 hosted zone ID (e.g. Z1A2BC3D4E5F6G7H8I9J0K) or empty string."
-  }
-}
-
 ###############################
 ########## ArgoCD #############
 ###############################
