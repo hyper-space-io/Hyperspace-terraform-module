@@ -124,27 +124,7 @@ resource "null_resource" "argocd_create_user" {
   count = local.argocd_privatelink_enabled ? 1 : 0
   provisioner "local-exec" {
     command = <<EOT
-      # echo "Getting ArgoCD admin password..."
-      
-      # # Only assume the role if terraform_role is set
-      # if [ ! -z "${var.terraform_role}" ] && [ "${var.terraform_role}" != "null" ]; then
-      #   CREDS=$(aws sts assume-role --role-arn arn:aws:iam::${var.aws_account_id}:role/${var.terraform_role} --role-session-name terraform-local-exec)
-      #   if [ $? -ne 0 ]; then
-      #     echo "Failed to assume role"
-      #     exit 1
-      #   fi
-      # fi
-      
-      # # Set AWS credentials
-      # export AWS_ACCESS_KEY_ID=$(echo $CREDS | jq -r '.Credentials.AccessKeyId')
-      # export AWS_SECRET_ACCESS_KEY=$(echo $CREDS | jq -r '.Credentials.SecretAccessKey')
-      # export AWS_SESSION_TOKEN=$(echo $CREDS | jq -r '.Credentials.SessionToken')
-      
-      # # Verify AWS credentials
-      # if ! aws sts get-caller-identity >/dev/null 2>&1; then
-      #   echo "Failed to verify AWS credentials"
-      #   exit 1
-      # fi
+      echo "Getting ArgoCD admin password..."
       
       # Update kubeconfig
       aws eks update-kubeconfig --name ${local.cluster_name} --region ${var.aws_region}
