@@ -105,25 +105,10 @@ data "aws_ami" "fpga" {
   name_regex = "^eks-1\\.31-fpga-prod"
 
   filter {
-    name   = "tag:customers"
-    values = ["true"]
+    name   = "description"
+    values = ["*Customers*"]
   }
 }
-
-# TODO: Uncomment this when we want a way to copy the AMI from the hyperspace account
-#       to the current account if we don't have the AMI in the current region.
-# resource "aws_ami_copy" "fpga" {
-#   name              = "eks-1.31-fpga-prod-${var.aws_region}"
-#   description       = "A copy of the FPGA AMI for ${var.aws_region}"
-#   source_ami_id     = data.aws_ami.fpga.id
-#   source_ami_region = local.hyperspace_region
-#   encrypted         = true
-#   kms_key_id        = data.aws_kms_key.by_alias.arn
-
-#   tags = merge(local.tags, {
-#     Name = "eks-1.31-fpga-prod-${var.aws_region}"
-#   })
-# }
 
 data "aws_iam_policy_document" "ec2_tags_control" {
   statement {
@@ -175,6 +160,7 @@ data "kubernetes_ingress_v1" "internal_ingress" {
 }
 
 data "kubernetes_ingress_v1" "external_ingress" {
+  count = var.create_public_zone ? 1 : 0
   metadata {
     name      = "external-ingress"
     namespace = "ingress"

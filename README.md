@@ -231,11 +231,33 @@ When using ArgoCD or Grafana with privatelink enabled, there are some important 
 | worker_instance_type | Instance type for EKS worker nodes | list(string) | ["m5n.xlarge"] | no |
 | eks_additional_admin_roles | Additional IAM roles to add as cluster administrators | list(string) | [] | no |
 | create_public_zone | Whether to create the public Route 53 zone | bool | false | no |
+| existing_public_zone_id | Existing public Route 53 zone ID (optional) | string | "" | no |
+| existing_private_zone_id | Existing private Route 53 zone ID (optional) | string | "" | no |
+| domain_hosted_zone_id | Hosted zone ID for ACM validation (optional, for cross-account or root domain validation) | string | "" | no |
 | argocd_config | ArgoCD configuration | object | {enabled: true, privatelink: {enabled: true, endpoint_allowed_principals: [], additional_aws_regions: []}, vcs: {organization: "", repository: ""}, rbac: {sso_admin_group: "", users_rbac_rules: [], users_additional_rules: []}} | no |
 | prometheus_endpoint_config | Prometheus endpoint configuration | object | {enabled: false, endpoint_service_name: "", endpoint_service_region: "", additional_cidr_blocks: []} | no |
 | grafana_privatelink_config | Grafana privatelink configuration | object | {enabled: true, endpoint_allowed_principals: [], additional_aws_regions: []} | no |
 
-> **Note**: The `hyperspace_account_id` is a required variable that you need to obtain from Hyperspace support. This ID is used to pull resources from Hyperspace like AMIs and other infrastructure components.
+**Note**: The `hyperspace_account_id` is a required variable that you need to obtain from Hyperspace support. This ID is used to pull resources from Hyperspace like AMIs and other infrastructure components.
+
+**Note**: 
+When using `domain_hosted_zone_id` for ACM validation in a different AWS account, ensure that the Terraform role (or the underlying machine) has the necessary permissions to create and manage DNS records in that zone. The role must have at least the following permissions in the target account:
+> ```json
+> {
+>   "Version": "2012-10-17",
+>   "Statement": [
+>     {
+>       "Effect": "Allow",
+>       "Action": [
+>         "route53:ChangeResourceRecordSets",
+>         "route53:ListResourceRecordSets",
+>         "route53:GetHostedZone"
+>       ],
+>       "Resource": "arn:aws:route53:::hostedzone/*"
+>     }
+>   ]
+> }
+> ```
 
 ## Features
 

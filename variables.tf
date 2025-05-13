@@ -193,6 +193,26 @@ variable "create_public_zone" {
   default     = false
 }
 
+variable "existing_public_zone_id" {
+  type        = string
+  description = "Existing public Route 53 zone"
+  default     = ""
+  validation {
+    condition     = (var.existing_public_zone_id == "" && var.create_public_zone) || (var.existing_public_zone_id != "" && !var.create_public_zone)
+    error_message = "Either provide an existing public zone ID (and set create_public_zone to false) or set create_public_zone to true (and leave existing_public_zone_id empty)."
+  }
+}
+
+variable "existing_private_zone_id" {
+  type        = string
+  description = "Existing private Route 53 zone"
+  default     = ""
+  validation {
+    condition     = var.existing_private_zone_id == "" || var.existing_private_zone_id != ""
+    error_message = "Either provide an existing private zone ID (and set create_private_zone to false) or set create_private_zone to true (and leave existing_private_zone_id empty)."
+  }
+}
+
 ###############################
 ########## ArgoCD #############
 ###############################

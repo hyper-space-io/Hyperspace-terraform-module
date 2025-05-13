@@ -1,9 +1,10 @@
 locals {
-  create_acm = var.domain_name != "" ? true : false
+  create_acm             = var.domain_name != "" ? true : false
+  create_route53_records = var.existing_public_zone_id != "" ? true : false
 }
 
 module "external_acm" {
-  count              = var.create_public_zone && local.public_domain_name != "" ? 1 : 0
+  count              = local.public_domain_name != "" ? 1 : 0 && (var.create_public_zone || var.existing_public_zone_id != "") ? 1 : 0
   source             = "terraform-aws-modules/acm/aws"
   version            = "~> 5.1.1"
   create_certificate = local.create_acm
@@ -12,13 +13,14 @@ module "external_acm" {
     "*.${local.public_domain_name}",
   ]
   tags                   = local.tags
-  create_route53_records = false
+  create_route53_records = local.create_route53_records
   validation_method      = "DNS"
+  zone_id                = var.existing_public_zone_id
   wait_for_validation    = true
 }
 
 module "internal_acm" {
-  count              = local.internal_domain_name != "" ? 1 : 0
+  count              = local.internal_domain_name != "" ? 1 : 0 && local.create_private_zone ? 1 : 0
   source             = "terraform-aws-modules/acm/aws"
   version            = "~> 5.1.1"
   create_certificate = local.create_acm
@@ -27,7 +29,8 @@ module "internal_acm" {
     "*.${local.internal_domain_name}",
   ]
   tags                   = local.tags
-  create_route53_records = false
+  create_route53_records = local.create_private_zone
   validation_method      = "DNS"
+  zone_id                = var.existing_public_zone_id
   wait_for_validation    = true
 }
