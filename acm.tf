@@ -16,7 +16,7 @@ module "external_acm" {
   create_route53_records = local.create_route53_records
   validation_method      = "DNS"
   zone_id                = var.existing_public_zone_id
-  wait_for_validation    = false
+  wait_for_validation    = true
 }
 
 module "internal_acm" {
@@ -32,5 +32,5 @@ module "internal_acm" {
   create_route53_records = local.create_private_zone
   validation_method      = "DNS"
   zone_id                = var.existing_public_zone_id
-  wait_for_validation    = false
+  wait_for_validation    = true
 }
