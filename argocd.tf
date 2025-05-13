@@ -102,7 +102,7 @@ resource "random_password" "argocd_readonly" {
   length = 16
 }
 
-resource "random_pet" "argocd_readonly_password" {
+resource "random_string" "argocd_readonly_password" {
   length = 16
 }
 
@@ -116,7 +116,7 @@ resource "aws_secretsmanager_secret" "argocd_readonly_password" {
 resource "aws_secretsmanager_secret_version" "argocd_readonly_password" {
   count         = local.argocd_privatelink_enabled ? 1 : 0
   secret_id     = aws_secretsmanager_secret.argocd_readonly_password[0].id
-  secret_string = random_password.argocd_readonly[0].result
+  secret_string = random_string.argocd_readonly_password.result
 }
 
 # Execute ArgoCD CLI setup and password update
@@ -160,7 +160,7 @@ resource "null_resource" "argocd_create_user" {
         exit 1
       fi
       
-      NEW_PASSWORD="${random_pet.argocd_readonly_password.result}"
+      NEW_PASSWORD="${random_string.argocd_readonly_password.result}"
       
       if [ "$CURRENT_HYPERSPACE_PASSWORD" = "$NEW_PASSWORD" ]; then
         echo "Current password matches desired password. No update needed."
@@ -220,7 +220,7 @@ resource "null_resource" "argocd_create_user" {
   depends_on = [helm_release.argocd, data.aws_lb.argocd_privatelink_nlb[0]]
   triggers = {
     helm_release_id   = helm_release.argocd[count.index].id
-    readonly_password = random_pet.argocd_readonly_password.result
+    readonly_password = random_string.argocd_readonly_password.result
     timestamp         = timestamp()
   }
 }
