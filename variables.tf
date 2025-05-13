@@ -22,7 +22,6 @@ variable "project" {
 variable "environment" {
   type        = string
   description = "Environment Name"
-  default     = "development"
 }
 
 variable "aws_region" {
@@ -40,7 +39,6 @@ variable "tags" {
   description = "A map of tags to add to all resources"
   default     = {}
 }
-
 
 ########################
 #### Hyperspace ########
