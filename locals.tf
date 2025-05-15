@@ -6,13 +6,14 @@ locals {
     terraform   = "true"
   })
 
-  worker_instance_type             = var.worker_instance_type
-  prometheus_endpoint_config       = var.prometheus_endpoint_config
-  prometheus_endpoint_enabled      = var.create_eks && var.prometheus_endpoint_config.enabled
-  argocd_config                    = var.argocd_config
-  prometheus_remote_write_endpoint = "https://prometheus.internal.devops-dev.hyper-space.xyz/api/v1/write"
-  internal_ingress_class_name      = "nginx-internal"
+  ###############
+  #### Ingress ##
+  ###############
+  internal_ingress_class_name = "nginx-internal"
 
+  ###############
+  #### ALB ######
+  ###############
   alb_values = <<EOT
   vpcId: ${local.vpc_id}
   region: ${var.aws_region}
@@ -58,75 +59,6 @@ locals {
   # Use zone module outputs for new zones, or existing values from variables
   public_zone_id  = var.create_public_zone ? module.external_zone[0].route53_zone_zone_id["external"] : var.existing_public_zone_id
   private_zone_id = local.create_private_zone ? module.internal_zone[0].route53_zone_zone_id["internal"] : var.existing_private_zone_id
-
-  ##################
-  ### IAM Policy ###
-  ##################
-  iam_policy_arns = {
-    for k, v in local.iam_policies : k => aws_iam_policy.policies[k].arn
-  }
-
-  iam_policies = {
-    fpga_pull = {
-      name        = "${local.cluster_name}-FpgaPullAccessPolicy"
-      path        = "/"
-      description = "Policy for loading AFI in eks"
-      policy      = data.aws_iam_policy_document.fpga_pull_access.json
-    }
-    ec2_tags = {
-      name                     = "${local.cluster_name}-EC2TagsPolicy"
-      path                     = "/"
-      description              = "Policy for controling EC2 resources tags"
-      policy                   = data.aws_iam_policy_document.ec2_tags_control.json
-      create_cluster_wide_role = true
-    }
-    cluster-autoscaler = {
-      name                  = "${local.cluster_name}-cluster-autoscaler"
-      path                  = "/"
-      description           = "Policy for cluster-autoscaler service"
-      policy                = data.aws_iam_policy_document.cluster_autoscaler.json
-      create_assumable_role = true
-      sa_namespace          = "cluster-autoscaler"
-    }
-    core-dump = {
-      name                  = "${local.cluster_name}-core-dump"
-      path                  = "/"
-      description           = "Policy for core-dump service"
-      policy                = data.aws_iam_policy_document.core_dump_s3_full_access.json
-      create_assumable_role = true
-      sa_namespace          = "core-dump"
-    }
-    velero = {
-      name                  = "${local.cluster_name}-velero"
-      path                  = "/"
-      description           = "Policy for velero service"
-      policy                = data.aws_iam_policy_document.velero_s3_full_access.json
-      create_assumable_role = true
-      sa_namespace          = "velero"
-    }
-    loki = {
-      name                  = "${local.cluster_name}-loki"
-      path                  = "/"
-      description           = "Policy for loki service"
-      policy                = data.aws_iam_policy_document.loki_s3_dynamodb_full_access.json
-      create_assumable_role = true
-      sa_namespace          = "monitoring"
-    }
-    external-secrets = {
-      name                  = "${local.cluster_name}-external-secrets"
-      path                  = "/"
-      description           = "Policy for external-secrets service"
-      policy                = data.aws_iam_policy_document.secrets_manager.json
-      create_assumable_role = true
-      sa_namespace          = "external-secrets"
-    }
-    kms = {
-      name        = "${local.cluster_name}-kms"
-      path        = "/"
-      description = "Policy for using Hyperspace's KMS key for AMI encryption"
-      policy      = data.aws_iam_policy_document.kms.json
-    }
-  }
 
   #################
   ##### EKS #######
@@ -197,10 +129,21 @@ locals {
   ))
 
   ###########################
+  ####### Prometheus ########
+  ###########################
+  prometheus_endpoint_config       = var.prometheus_endpoint_config
+  prometheus_endpoint_enabled      = var.create_eks && var.prometheus_endpoint_config.enabled
+  prometheus_remote_write_endpoint = ""
+
+  ###########################
+  ######### ArgoCD  #########
+  ###########################
+  argocd_config  = var.argocd_config
+  argocd_enabled = var.create_eks && var.argocd_config.enabled
+
+  ###########################
   ### ArgoCD Privatelink ####
   ###########################
-
-  argocd_enabled             = var.create_eks && var.argocd_config.enabled
   argocd_privatelink_enabled = local.argocd_enabled && try(local.argocd_config.privatelink.enabled, false)
 
   # Default values for Privatelink configuration
