@@ -182,21 +182,12 @@ variable "domain_name" {
   type        = string
   description = "Main domain name for sub-domains"
   default     = null
-  sensitive   = false
-  validation {
-    condition     = can(regex("^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$", var.domain_name))
-    error_message = "Domain name must be a valid domain name format."
-  }
 }
 
 variable "create_public_zone" {
   description = "Whether to create the public Route 53 zone"
   type        = bool
   default     = true
-  validation {
-    condition     = !var.create_public_zone || var.existing_public_zone_id == null
-    error_message = "Cannot create public zone when existing_public_zone_id is provided."
-  }
 }
 
 variable "domain_validation_id" {
