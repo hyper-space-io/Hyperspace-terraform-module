@@ -62,8 +62,8 @@ locals {
   private_zone_id = local.create_private_zone ? module.internal_zone[0].route53_zone_zone_id["internal"] : var.existing_private_zone_id
 
   # ACM validation - use override if provided, otherwise use public zone
-  validation_zone_id = var.domain_validation_id != null ? var.domain_validation_id : local.public_zone_id
-
+  validation_zone_id = var.domain_validation_id != null ? var.domain_validation_id : (var.existing_public_zone_id != null ? var.existing_public_zone_id : null)
+  
   #################
   ##### EKS #######
   #################

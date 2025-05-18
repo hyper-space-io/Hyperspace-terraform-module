@@ -1,6 +1,6 @@
 locals {
   create_acm             = var.domain_name != "" ? true : false
-  create_route53_records = var.domain_name != "" ? true : false
+  create_route53_records = local.create_acm && local.validation_zone_id != null ? true : false
 }
 
 module "external_acm" {
