@@ -56,7 +56,6 @@ locals {
   # Zone creation flags - create if domain exists and no existing zone provided
   create_public_zone  = var.create_public_zone != null ? var.create_public_zone : var.existing_public_zone_id == null
   create_private_zone = var.domain_name != null && var.existing_private_zone_id == null
-  create_records      = var.domain_name != null
 
   # Zone IDs - get from either newly created zones or existing ones
   public_zone_id  = local.create_public_zone ? module.external_zone[0].route53_zone_zone_id["external"] : var.existing_public_zone_id
