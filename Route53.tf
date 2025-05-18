@@ -39,6 +39,7 @@ module "internal_zone" {
   }
 }
 
+# Only create wildcard record in public zone if we're creating the public zone
 resource "aws_route53_record" "wildcard" {
   count      = var.create_public_zone ? local.create_records : 0
   zone_id    = local.public_zone_id

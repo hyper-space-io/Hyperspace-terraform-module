@@ -181,22 +181,28 @@ variable "eks_additional_admin_roles_policy" {
 variable "domain_name" {
   type        = string
   description = "Main domain name for sub-domains"
-  default     = ""
+  default     = null
   sensitive   = false
 }
 
 variable "create_public_zone" {
   description = "Whether to create the public Route 53 zone"
   type        = bool
-  default     = false
+  default     = true
+}
+
+variable "domain_validation_id" {
+  description = "The domain validation ID for the public Route 53 zone"
+  type        = string
+  default     = null
 }
 
 variable "existing_public_zone_id" {
   type        = string
   description = "Existing public Route 53 zone"
-  default     = ""
+  default     = null
   validation {
-    condition     = (var.existing_public_zone_id == "" && var.create_public_zone) || (var.existing_public_zone_id != "" && !var.create_public_zone)
+    condition     = (var.existing_public_zone_id == null && var.create_public_zone) || (var.existing_public_zone_id != null && !var.create_public_zone)
     error_message = "Either provide an existing public zone ID (and set create_public_zone to false) or set create_public_zone to true (and leave existing_public_zone_id empty)."
   }
 }
@@ -204,10 +210,10 @@ variable "existing_public_zone_id" {
 variable "existing_private_zone_id" {
   type        = string
   description = "Existing private Route 53 zone"
-  default     = ""
+  default     = null
   validation {
-    condition     = var.existing_private_zone_id == "" || var.existing_private_zone_id != ""
-    error_message = "Either provide an existing private zone ID (and set create_private_zone to false) or set create_private_zone to true (and leave existing_private_zone_id empty)."
+    condition     = var.existing_private_zone_id == null || var.existing_private_zone_id != null
+    error_message = "Either provide an existing private zone ID or leave it as null."
   }
 }
 
