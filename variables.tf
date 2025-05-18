@@ -181,13 +181,17 @@ variable "eks_additional_admin_roles_policy" {
 variable "domain_name" {
   type        = string
   description = "Main domain name for sub-domains"
-  default     = null
+
+  validation {
+    condition     = var.domain_name != null
+    error_message = "Domain name must be provided"
+  }
 }
 
 variable "create_public_zone" {
-  description = "Whether to create the public Route 53 zone"
+  description = "Whether to create the public Route 53 zone. Defaults to true unless existing_public_zone_id is provided"
   type        = bool
-  default     = true
+  default     = null
 }
 
 variable "domain_validation_id" {
@@ -200,10 +204,6 @@ variable "existing_public_zone_id" {
   type        = string
   description = "Existing public Route 53 zone"
   default     = null
-  validation {
-    condition     = var.existing_public_zone_id == null || !var.create_public_zone
-    error_message = "Cannot provide existing_public_zone_id when create_public_zone is true."
-  }
 }
 
 variable "existing_private_zone_id" {
