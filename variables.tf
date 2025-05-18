@@ -183,12 +183,20 @@ variable "domain_name" {
   description = "Main domain name for sub-domains"
   default     = null
   sensitive   = false
+  validation {
+    condition     = can(regex("^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$", var.domain_name))
+    error_message = "Domain name must be a valid domain name format."
+  }
 }
 
 variable "create_public_zone" {
   description = "Whether to create the public Route 53 zone"
   type        = bool
   default     = true
+  validation {
+    condition     = !var.create_public_zone || var.existing_public_zone_id == null
+    error_message = "Cannot create public zone when existing_public_zone_id is provided."
+  }
 }
 
 variable "domain_validation_id" {
@@ -202,8 +210,8 @@ variable "existing_public_zone_id" {
   description = "Existing public Route 53 zone"
   default     = null
   validation {
-    condition     = (var.existing_public_zone_id == null && var.create_public_zone) || (var.existing_public_zone_id != null && !var.create_public_zone)
-    error_message = "Either provide an existing public zone ID (and set create_public_zone to false) or set create_public_zone to true (and leave existing_public_zone_id empty)."
+    condition     = var.existing_public_zone_id == null || !var.create_public_zone
+    error_message = "Cannot provide existing_public_zone_id when create_public_zone is true."
   }
 }
 
@@ -211,10 +219,6 @@ variable "existing_private_zone_id" {
   type        = string
   description = "Existing private Route 53 zone"
   default     = null
-  validation {
-    condition     = var.existing_private_zone_id == null || var.existing_private_zone_id != null
-    error_message = "Either provide an existing private zone ID or leave it as null."
-  }
 }
 
 ###############################
