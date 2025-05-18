@@ -229,3 +229,14 @@ resource "aws_vpc_endpoint_service" "grafana" {
 
   depends_on = [data.aws_lb.grafana_privatelink_nlb[0]]
 }
+
+resource "aws_route53_record" "grafana_privatelink_verification" {
+  count   = local.grafana_privatelink_enabled && var.existing_public_zone_id != "" ? 1 : 0
+  zone_id = var.existing_public_zone_id
+  name    = aws_vpc_endpoint_service.grafana[0].private_dns_name_configuration[0].name
+  type    = aws_vpc_endpoint_service.grafana[0].private_dns_name_configuration[0].type
+  ttl     = 300
+  records = [aws_vpc_endpoint_service.grafana[0].private_dns_name_configuration[0].value]
+
+  depends_on = [aws_vpc_endpoint_service.grafana]
+}

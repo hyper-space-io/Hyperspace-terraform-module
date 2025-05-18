@@ -20,6 +20,11 @@ locals {
   EOT
 
   ##################
+  ##### KMS ########
+  ##################
+  hyperspace_ami_key_alias = "arn:aws:kms:${var.aws_region}:${var.hyperspace_account_id}:alias/HYPERSPACE_AMI_KEY"
+
+  ##################
   ##### VPC ########
   ##################
   # Determine if we need to create a new VPC or use existing one
@@ -45,11 +50,24 @@ locals {
   vpc_id              = local.create_vpc ? module.vpc[0].vpc_id : var.existing_vpc_id
   vpc_cidr_block      = local.create_vpc ? module.vpc[0].vpc_cidr_block : local.existing_vpc.cidr_block
 
-  ##################
-  ##### KMS ########
-  ##################
-  hyperspace_ami_key_alias = "arn:aws:kms:${var.aws_region}:${var.hyperspace_account_id}:alias/HYPERSPACE_AMI_KEY"
+  ###################
+  ##### Route53 #####
+  ###################
+  # Zone creation flags - create if domain exists and no existing zone provided
+  create_public_zone  = var.create_public_zone != null ? var.create_public_zone : var.existing_public_zone_id == null
+  create_private_zone = var.domain_name != null && var.existing_private_zone_id == null
 
+  # Zone IDs - get from either newly created zones or existing ones
+  public_zone_id  = local.create_public_zone ? module.external_zone[0].route53_zone_zone_id["external"] : var.existing_public_zone_id
+  private_zone_id = local.create_private_zone ? module.internal_zone[0].route53_zone_zone_id["internal"] : var.existing_private_zone_id
+
+  # ACM validation - priority: validation_id > existing_zone > new_zone > null
+  validation_zone_id = var.domain_validation_id != null ? var.domain_validation_id : (
+    var.existing_public_zone_id != null ? var.existing_public_zone_id : (
+      local.create_public_zone ? module.external_zone[0].route53_zone_zone_id["external"] : null
+    )
+  )
+  
   #################
   ##### EKS #######
   #################

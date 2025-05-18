@@ -86,8 +86,23 @@ resource "aws_vpc_endpoint_service" "argocd" {
   depends_on = [data.aws_lb.argocd_privatelink_nlb[0]]
 }
 
+resource "aws_route53_record" "argocd_privatelink_verification" {
+  count   = local.argocd_privatelink_enabled && var.existing_public_zone_id != "" ? 1 : 0
+  zone_id = var.existing_public_zone_id
+  name    = aws_vpc_endpoint_service.argocd[0].private_dns_name_configuration[0].name
+  type    = aws_vpc_endpoint_service.argocd[0].private_dns_name_configuration[0].type
+  ttl     = 300
+  records = [aws_vpc_endpoint_service.argocd[0].private_dns_name_configuration[0].value]
+
+  depends_on = [aws_vpc_endpoint_service.argocd]
+}
+
 resource "random_password" "argocd_readonly" {
   count  = local.argocd_privatelink_enabled ? 1 : 0
+  length = 16
+}
+
+resource "random_string" "argocd_readonly_password" {
   length = 16
 }
 
@@ -101,12 +116,13 @@ resource "aws_secretsmanager_secret" "argocd_readonly_password" {
 resource "aws_secretsmanager_secret_version" "argocd_readonly_password" {
   count         = local.argocd_privatelink_enabled ? 1 : 0
   secret_id     = aws_secretsmanager_secret.argocd_readonly_password[0].id
-  secret_string = random_password.argocd_readonly[0].result
+  secret_string = random_string.argocd_readonly_password.result
 }
 
 # Execute ArgoCD CLI setup and password update
 resource "null_resource" "argocd_create_user" {
-  count = local.argocd_privatelink_enabled ? 1 : 0
+  # count = local.argocd_privatelink_enabled ? 1 : 0
+  count = 0
   provisioner "local-exec" {
     command = <<EOT
       echo "Getting ArgoCD admin password..."
