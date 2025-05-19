@@ -34,7 +34,7 @@ locals {
   }
 
   # Get availability zones either from existing subnets or create new ones
-  availability_zones = local.create_vpc ? (length(var.availability_zones) == 0 ? slice(data.aws_availability_zones.available.names, 0, var.num_zones) : var.availability_zones) : (length(data.aws_subnet.existing) > 0 ? [for subnet in data.aws_subnet.existing : subnet.availability_zone] : [])
+  availability_zones = local.create_vpc ? (length(var.availability_zones) == 0 ? slice(data.aws_availability_zones.available.names, 0, var.num_zones) : var.availability_zones) : (length(data.aws_subnet.existing_private) > 0 ? [for subnet in data.aws_subnet.existing_private : subnet.availability_zone] : [])
 
   # Used to calculate the subnets. These are only used when creating a new VPC
   private_subnets = local.create_vpc ? [for azs_count in local.availability_zones : cidrsubnet(var.vpc_cidr, 4, index(local.availability_zones, azs_count))] : []

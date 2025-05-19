@@ -312,31 +312,3 @@ data "aws_subnet" "existing_public" {
   for_each = toset(var.existing_public_subnets)
   id       = each.value
 }
-
-locals {
-  # Required tags for subnets
-  required_private_subnet_tags = {
-    "kubernetes.io/role/internal-elb" = "1"
-    "Type"                            = "private"
-  }
-
-  required_public_subnet_tags = {
-    "kubernetes.io/role/elb" = "1"
-    "Type"                   = "public"
-  }
-
-  # Validation functions
-  validate_private_subnet_tags = alltrue([
-    for subnet in data.aws_subnet.existing_private : alltrue([
-      for tag_key, tag_value in local.required_private_subnet_tags :
-      lookup(subnet.tags, tag_key, "") == tag_value
-    ])
-  ])
-
-  validate_public_subnet_tags = alltrue([
-    for subnet in data.aws_subnet.existing_public : alltrue([
-      for tag_key, tag_value in local.required_public_subnet_tags :
-      lookup(subnet.tags, tag_key, "") == tag_value
-    ])
-  ])
-}
