@@ -250,7 +250,6 @@ resource "kubernetes_storage_class" "ebs_sc_gp3" {
 }
 
 module "iam_iam-assumable-role-with-oidc" {
-  count                         = var.create_eks ? 1 : 0
   source                        = "terraform-aws-modules/iam/aws//modules/iam-assumable-role-with-oidc"
   version                       = "~> 5.48.0"
   for_each                      = var.create_eks ? { for k, v in local.iam_policies : k => v if lookup(v, "create_assumable_role", false) == true } : {}
@@ -262,7 +261,6 @@ module "iam_iam-assumable-role-with-oidc" {
 }
 
 module "boto3_irsa" {
-  count                         = var.create_eks ? 1 : 0
   source                        = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
   version                       = "~> 5.30.0"
   for_each                      = var.create_eks ? { for k, v in local.iam_policies : k => v if lookup(v, "create_cluster_wide_role", false) == true } : {}
