@@ -42,7 +42,7 @@ module "internal_zone" {
 }
 
 resource "aws_route53_record" "wildcard" {
-  count      = var.create_public_zone ? local.create_records : 0
+  count      = 0
   zone_id    = module.external_zone[0].route53_zone_zone_id["external"]
   name       = "*"
   type       = "CNAME"
@@ -52,7 +52,7 @@ resource "aws_route53_record" "wildcard" {
 }
 
 resource "aws_route53_record" "internal_wildcard" {
-  count      = local.create_records
+  count      = 0
   zone_id    = module.internal_zone[0].route53_zone_zone_id["internal"]
   name       = "*"
   type       = "CNAME"
