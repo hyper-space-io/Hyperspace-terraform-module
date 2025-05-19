@@ -153,7 +153,7 @@ data "aws_iam_policy_document" "fpga_pull_access" {
 
 data "aws_lb" "internal_ingress" {
   tags = {
-    "alb.ingress.kubernetes.io/tags" = "Domain=internal"
+    "domain" = "internal"
     "elbv2.k8s.aws/cluster"          = module.eks.cluster_name
     "ingress.k8s.aws/resource"       = "LoadBalancer"
   }
@@ -163,7 +163,7 @@ data "aws_lb" "internal_ingress" {
 data "aws_lb" "external_ingress" {
   count = var.create_public_zone ? 1 : 0
   tags = {
-    "alb.ingress.kubernetes.io/tags" = "Domain=external"
+    "domain" = "external"
     "elbv2.k8s.aws/cluster"          = module.eks.cluster_name
     "ingress.k8s.aws/resource"       = "LoadBalancer"
   }
