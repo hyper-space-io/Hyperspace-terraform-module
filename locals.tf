@@ -45,6 +45,32 @@ locals {
   vpc_id              = local.create_vpc ? module.vpc[0].vpc_id : var.existing_vpc_id
   vpc_cidr_block      = local.create_vpc ? module.vpc[0].vpc_cidr_block : local.existing_vpc.cidr_block
 
+  # Required tags for subnets
+  private_subnet_tags = {
+    "kubernetes.io/role/internal-elb" = "1"
+    "Type"                            = "private"
+  }
+
+  public_subnet_tags = {
+    "kubernetes.io/role/elb" = "1"
+    "Type"                   = "public"
+  }
+
+  # Validation functions for subnet tags
+  validate_private_subnet_tags = local.create_vpc ? true : alltrue([
+    for subnet in data.aws_subnet.existing_private : alltrue([
+      for tag_key, tag_value in local.private_subnet_tags :
+      lookup(subnet.tags, tag_key, "") == tag_value
+    ])
+  ])
+
+  validate_public_subnet_tags = local.create_vpc ? true : alltrue([
+    for subnet in data.aws_subnet.existing_public : alltrue([
+      for tag_key, tag_value in local.public_subnet_tags :
+      lookup(subnet.tags, tag_key, "") == tag_value
+    ])
+  ])
+
   ##################
   ##### KMS ########
   ##################

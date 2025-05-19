@@ -72,15 +72,23 @@ variable "existing_vpc_id" {
 }
 
 variable "existing_private_subnets" {
-  description = "The private subnets for the existing VPC"
+  description = "The private subnets for the existing VPC. Must have kubernetes.io/role/internal-elb=1 and Type=private tags."
   type        = list(string)
   default     = []
+  validation {
+    condition     = length(var.existing_private_subnets) == 0 || local.validate_private_subnet_tags
+    error_message = "All private subnets must have the required tags: kubernetes.io/role/internal-elb=1 and Type=private"
+  }
 }
 
 variable "existing_public_subnets" {
-  description = "The public subnets for the existing VPC"
+  description = "The public subnets for the existing VPC. Required if create_public_zone is true. Must have kubernetes.io/role/elb=1 and Type=public tags."
   type        = list(string)
   default     = []
+  validation {
+    condition     = (!var.create_public_zone || length(var.existing_public_subnets) > 0) && (length(var.existing_public_subnets) == 0 || local.validate_public_subnet_tags)
+    error_message = "All public subnets must have the required tags: kubernetes.io/role/elb=1 and Type=public"
+  }
 }
 
 variable "num_zones" {
@@ -292,4 +300,43 @@ variable "grafana_privatelink_config" {
     endpoint_allowed_principals = []
     additional_aws_regions      = []
   }
+}
+
+# Data sources for subnet validation
+data "aws_subnet" "existing_private" {
+  for_each = toset(var.existing_private_subnets)
+  id       = each.value
+}
+
+data "aws_subnet" "existing_public" {
+  for_each = toset(var.existing_public_subnets)
+  id       = each.value
+}
+
+locals {
+  # Required tags for subnets
+  required_private_subnet_tags = {
+    "kubernetes.io/role/internal-elb" = "1"
+    "Type"                            = "private"
+  }
+
+  required_public_subnet_tags = {
+    "kubernetes.io/role/elb" = "1"
+    "Type"                   = "public"
+  }
+
+  # Validation functions
+  validate_private_subnet_tags = alltrue([
+    for subnet in data.aws_subnet.existing_private : alltrue([
+      for tag_key, tag_value in local.required_private_subnet_tags :
+      lookup(subnet.tags, tag_key, "") == tag_value
+    ])
+  ])
+
+  validate_public_subnet_tags = alltrue([
+    for subnet in data.aws_subnet.existing_public : alltrue([
+      for tag_key, tag_value in local.required_public_subnet_tags :
+      lookup(subnet.tags, tag_key, "") == tag_value
+    ])
+  ])
 }
