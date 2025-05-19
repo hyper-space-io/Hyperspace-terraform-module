@@ -259,8 +259,17 @@ Before using an existing VPC, ensure it meets these requirements:
    - DNS resolution must be enabled
 
 2. **Subnet Tags**:
-   - Private subnets must have: `kubernetes.io/role/internal-elb = "1"`
-   - Public subnets must have: `kubernetes.io/role/elb = "1"`
+  - Private subnets must have: 
+   
+  ```
+  kubernetes.io/role/internal-elb = 1
+  Type = private
+  ```
+   - Public subnets must have: 
+  ```
+  kubernetes.io/role/elb = 1
+  Type = public
+  ```
 
 3. **Network Requirements**:
    - Private subnets must have NAT Gateway access
