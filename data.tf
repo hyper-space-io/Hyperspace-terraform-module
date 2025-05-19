@@ -160,7 +160,7 @@ data "kubernetes_ingress_v1" "internal_ingress" {
 }
 
 data "kubernetes_ingress_v1" "external_ingress" {
-  count = local.create_public_zone ? 1 : 0
+  count = var.create_public_zone ? 1 : 0
   metadata {
     name      = "external-ingress"
     namespace = "ingress"
