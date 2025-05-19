@@ -20,31 +20,11 @@ data "aws_vpc" "existing" {
 data "aws_subnet" "existing_private" {
   count = local.create_vpc ? 0 : length(var.existing_private_subnets)
   id    = var.existing_private_subnets[count.index]
-
-  lifecycle {
-    precondition {
-      condition     = alltrue([
-        for tag_key, tag_value in local.private_subnet_tags :
-        lookup(tags, tag_key, "") == tag_value
-      ])
-      error_message = "Private subnet ${id} is missing required tags. Required tags: ${jsonencode(local.private_subnet_tags)}"
-    }
-  }
 }
 
 data "aws_subnet" "existing_public" {
   count = local.create_vpc ? 0 : length(var.existing_public_subnets)
   id    = var.existing_public_subnets[count.index]
-
-  lifecycle {
-    precondition {
-      condition     = alltrue([
-        for tag_key, tag_value in local.public_subnet_tags :
-        lookup(tags, tag_key, "") == tag_value
-      ])
-      error_message = "Public subnet ${id} is missing required tags. Required tags: ${jsonencode(local.public_subnet_tags)}"
-    }
-  }
 }
 
 data "aws_subnet" "tag_validation" {
