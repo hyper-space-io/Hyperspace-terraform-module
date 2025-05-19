@@ -152,6 +152,7 @@ data "aws_iam_policy_document" "fpga_pull_access" {
 #######################
 
 data "aws_lb" "internal_ingress" {
+  count = 0
   tags = {
     "Domain"                   = "internal"
     "elbv2.k8s.aws/cluster"    = module.eks.cluster_name
