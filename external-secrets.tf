@@ -27,17 +27,15 @@ resource "time_sleep" "wait_for_crd" {
   create_duration = "30s"
 }
 
-resource "kubectl_manifest" "cluster_secret_store" {
-  yaml_body  = <<-EOF
-    apiVersion: external-secrets.io/v1beta1
-    kind: ClusterSecretStore
-    metadata:
-      name: cluster-secret-store
-    spec:
-      provider:
-        aws:
-          region: ${var.aws_region}
-          service: SecretsManager
-  EOF
-  depends_on = [helm_release.secrets_manager, time_sleep.wait_for_crd, time_sleep.wait_for_cluster_ready]
+resource "helm_release" "secret_manager_manifests" {
+  name            = "secret-manager-manifests"
+  chart           = "${path.module}/secrets-manager-manifests"
+  wait            = true
+  force_update    = true
+  cleanup_on_fail = true
+  values = [<<EOT
+  awsRegion: "${var.aws_region}"
+  EOT
+  ]
+  depends_on = [helm_release.secrets_manager, time_sleep.wait_for_crd]
 }
