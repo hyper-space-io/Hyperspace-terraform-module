@@ -20,7 +20,7 @@ module "external_acm" {
 }
 
 module "internal_acm" {
-  count              = local.internal_domain_name != "" ? 1 : 0 && local.create_private_zone ? 1 : 0
+  count              = (local.internal_domain_name != "" && local.create_private_zone) ? 1 : 0
   source             = "terraform-aws-modules/acm/aws"
   version            = "~> 5.1.1"
   create_certificate = local.create_acm

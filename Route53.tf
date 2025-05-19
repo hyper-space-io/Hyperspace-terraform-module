@@ -40,7 +40,7 @@ module "internal_zone" {
 }
 
 resource "aws_route53_record" "wildcard" {
-  count      = (var.existing_public_zone_id != null || var.create_public_zone) ? 1 : 0
+  count      = var.create_public_zone ? 1 : 0
   zone_id    = local.public_zone_id
   name       = "*"
   type       = "CNAME"
