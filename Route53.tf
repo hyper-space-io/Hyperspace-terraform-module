@@ -47,7 +47,7 @@ resource "aws_route53_record" "wildcard" {
   name       = "*"
   type       = "CNAME"
   ttl        = "300"
-  records    = [data.aws_lb.external_ingress.dns_name]
+  records    = [data.aws_lb.external_ingress[0].dns_name]
   depends_on = [helm_release.nginx-ingress]
 }
 
