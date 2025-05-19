@@ -142,8 +142,8 @@ resource "kubernetes_ingress_v1" "nginx_ingress" {
       "alb.ingress.kubernetes.io/scheme"                   = each.value.scheme
       "alb.ingress.kubernetes.io/tags"                     = "Domain=${each.key}"
       "alb.ingress.kubernetes.io/load-balancer-attributes" = "idle_timeout.timeout_seconds=600, access_logs.s3.enabled=true, access_logs.s3.bucket=${local.s3_bucket_names["logs-ingress"]},access_logs.s3.prefix=${each.value.s3_prefix}"
-      "alb.ingress.kubernetes.io/actions.ssl-redirect"     = (each.key == "internal" && module.internal_acm[0].acm_certificate_arn != "") || (each.key == "external" && var.create_public_zone && var.domain_name != "") ? jsonencode({
-        Type                                               = "redirect"
+      "alb.ingress.kubernetes.io/actions.ssl-redirect" = (each.key == "internal" && module.internal_acm[0].acm_certificate_arn != "") || (each.key == "external" && var.create_public_zone && var.domain_name != "") ? jsonencode({
+        Type = "redirect"
         RedirectConfig = {
           Protocol   = "HTTPS"
           Port       = "443"
