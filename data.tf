@@ -151,20 +151,19 @@ data "aws_iam_policy_document" "fpga_pull_access" {
 ######### EKS #########
 #######################
 
-data "kubernetes_ingress_v1" "internal_ingress" {
-  metadata {
-    name      = "internal-ingress"
-    namespace = "ingress"
+data "aws_lb" "internal_ingress" {
+  tags = {
+    "alb.ingress.kubernetes.io/tags" = "Domain=internal"
   }
   depends_on = [time_sleep.wait_for_internal_ingress, module.eks, kubernetes_ingress_v1.nginx_ingress]
 }
 
-data "kubernetes_ingress_v1" "external_ingress" {
-  metadata {
-    name      = "external-ingress"
-    namespace = "ingress"
+data "aws_lb" "external_ingress" {
+  count = var.create_public_zone ? 1 : 0
+  tags = {
+    "alb.ingress.kubernetes.io/tags" = "Domain=external"
   }
-  depends_on = [time_sleep.wait_for_external_ingress, module.eks, kubernetes_ingress_v1.nginx_ingress]
+  depends_on = [time_sleep.wait_for_internal_ingress, module.eks, kubernetes_ingress_v1.nginx_ingress]
 }
 
 data "aws_iam_policy_document" "cluster_autoscaler" {
