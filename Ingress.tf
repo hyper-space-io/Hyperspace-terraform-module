@@ -199,18 +199,10 @@ resource "kubernetes_ingress_v1" "nginx_ingress" {
 resource "time_sleep" "wait_for_internal_ingress" {
   create_duration = "300s"
   depends_on      = [kubernetes_ingress_v1.nginx_ingress["internal"]]
-
-  triggers = {
-    timestamp = timestamp()
-  }
 }
 
 resource "time_sleep" "wait_for_external_ingress" {
   count           = var.create_public_zone ? 1 : 0
   create_duration = "300s"
   depends_on      = [kubernetes_ingress_v1.nginx_ingress["external"]]
-
-  triggers = {
-    timestamp = timestamp()
-  }
 }
