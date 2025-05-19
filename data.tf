@@ -25,9 +25,9 @@ data "aws_subnet" "existing_private" {
     precondition {
       condition     = alltrue([
         for tag_key, tag_value in local.private_subnet_tags :
-        lookup(self.tags, tag_key, "") == tag_value
+        lookup(tags, tag_key, "") == tag_value
       ])
-      error_message = "Private subnet ${self.id} is missing required tags. Required tags: ${jsonencode(local.private_subnet_tags)}"
+      error_message = "Private subnet ${id} is missing required tags. Required tags: ${jsonencode(local.private_subnet_tags)}"
     }
   }
 }
@@ -40,9 +40,27 @@ data "aws_subnet" "existing_public" {
     precondition {
       condition     = alltrue([
         for tag_key, tag_value in local.public_subnet_tags :
-        lookup(self.tags, tag_key, "") == tag_value
+        lookup(tags, tag_key, "") == tag_value
       ])
-      error_message = "Public subnet ${self.id} is missing required tags. Required tags: ${jsonencode(local.public_subnet_tags)}"
+      error_message = "Public subnet ${id} is missing required tags. Required tags: ${jsonencode(local.public_subnet_tags)}"
+    }
+  }
+}
+
+data "aws_subnet" "tag_validation" {
+  count = local.create_vpc ? 0 : length(concat(var.existing_private_subnets, var.existing_public_subnets))
+  id    = local.create_vpc ? null : concat(var.existing_private_subnets, var.existing_public_subnets)[count.index]
+
+  lifecycle {
+    precondition {
+      condition     = contains(var.existing_private_subnets, id) ? alltrue([
+        for tag_key, tag_value in local.private_subnet_tags :
+        lookup(tags, tag_key, "") == tag_value
+      ]) : alltrue([
+        for tag_key, tag_value in local.public_subnet_tags :
+        lookup(tags, tag_key, "") == tag_value
+      ])
+      error_message = "Subnet ${id} is missing required ${contains(var.existing_private_subnets, id) ? "private" : "public"} subnet tags. Required tags: ${jsonencode(contains(var.existing_private_subnets, id) ? local.private_subnet_tags : local.public_subnet_tags)}"
     }
   }
 }
