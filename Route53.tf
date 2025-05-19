@@ -48,7 +48,7 @@ resource "aws_route53_record" "wildcard" {
   type       = "CNAME"
   ttl        = "300"
   records    = [data.aws_lb.external_ingress[0].dns_name]
-  depends_on = [helm_release.nginx-ingress]
+  depends_on = [helm_release.nginx-ingress, time_sleep.wait_for_external_ingress]
 }
 
 resource "aws_route53_record" "internal_wildcard" {
@@ -58,5 +58,5 @@ resource "aws_route53_record" "internal_wildcard" {
   type       = "CNAME"
   ttl        = "300"
   records    = [data.aws_lb.internal_ingress.dns_name]
-  depends_on = [helm_release.nginx-ingress]
+  depends_on = [helm_release.nginx-ingress, time_sleep.wait_for_internal_ingress]
 }

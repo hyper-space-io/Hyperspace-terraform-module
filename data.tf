@@ -163,7 +163,7 @@ data "aws_lb" "external_ingress" {
   tags = {
     "alb.ingress.kubernetes.io/tags" = "Domain=external"
   }
-  depends_on = [time_sleep.wait_for_internal_ingress, module.eks, kubernetes_ingress_v1.nginx_ingress]
+  depends_on = [time_sleep.wait_for_external_ingress, module.eks, kubernetes_ingress_v1.nginx_ingress]
 }
 
 data "aws_iam_policy_document" "cluster_autoscaler" {
