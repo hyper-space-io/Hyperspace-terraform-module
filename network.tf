@@ -65,6 +65,7 @@ resource "null_resource" "validate_subnet_tags" {
   triggers = {
     private_subnets = join(",", var.existing_private_subnets)
     public_subnets  = join(",", var.existing_public_subnets)
+    timestamp       = timestamp()
   }
 
   provisioner "local-exec" {
