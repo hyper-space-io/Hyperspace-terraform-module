@@ -191,6 +191,7 @@ module "irsa-ebs-csi" {
   version               = "~>5.48.0"
   role_name             = "${local.cluster_name}-ebs-csi"
   attach_ebs_csi_policy = true
+  force_detach_policies = true
 
   oidc_providers = {
     eks = {
