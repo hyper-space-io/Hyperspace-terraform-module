@@ -7,10 +7,9 @@ locals {
   })
 
   ###############
-  #### Hyperspace ##
+  #### Hyperspace 
   ###############
   hyperspace_helm_region = "eu-west-1"
-  
 
   ###############
   #### Ingress ##
