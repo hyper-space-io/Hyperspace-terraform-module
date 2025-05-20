@@ -10,6 +10,6 @@ resource "helm_release" "ecr_token" {
 
   set {
     name  = "ACCOUNT_ID"
-    value = "${var.hyperspace_account_id}"
+    value = var.hyperspace_account_id
   }
 }

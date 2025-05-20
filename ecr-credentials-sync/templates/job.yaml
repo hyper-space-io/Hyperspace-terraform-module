@@ -1,4 +1,4 @@
-{{- if .Values.init-job }}
+{{- if .Values.initJob }}
 apiVersion: batch/v1
 kind: Job
 metadata:
