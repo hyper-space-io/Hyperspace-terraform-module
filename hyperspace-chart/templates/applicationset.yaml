@@ -1,127 +1,120 @@
 apiVersion: argoproj.io/v1alpha1
-kind: ApplicationSet
+kind: Application
 metadata:
-  name: {{ .Values.global.environment }}
+  name: hyperspace-{{ .Values.global.environment }}
   namespace: argocd
-spec: 
-  generators:
-  - list:
-      elements: 
-        - name: {{ .Values.global.environment }}
-          targetRevision: 2.0.181
-  template:
-    metadata:
-      name: 'hyperspace-seed-{{name}}'
-      namespace: argocd
-    spec:
-      destination:
-        namespace: '{{name}}'
-        server: https://kubernetes.default.svc
-      project: default
-      sources:
-        - chart: hyperspace
-          path: hyperspace
-          repoURL: "{{ .Values.global.ecr_repository }}"
-          targetRevision: '{{targetRevision}}'
-          helm:
-            values: |
-              global:
-                {{- range $key, $value := .Values.global }}
-                {{ $key }}: {{ $value | quote }}
+spec:
+  destination:
+    namespace: {{ .Values.global.environment }}
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    chart: hyperspace
+    path: hyperspace
+    repoURL: "{{ .Values.global.ecr_repository }}"
+    targetRevision: 2.0.181
+    helm:
+      values: |
+        global:
+          {{- range $key, $value := .Values.global }}
+          {{ $key }}: {{ $value | quote }}
+          {{- end }}
+      
+        data-node:
+          {{- range $key, $value := .Values.data-node }}
+          {{- if kindIs "map" $value }}
+          {{ $key }}:
+            {{- range $subkey, $subvalue := $value }}
+            {{- if kindIs "map" $subvalue }}
+            {{ $subkey }}:
+              {{- range $subsubkey, $subsubvalue := $subvalue }}
+              {{- if kindIs "map" $subsubvalue }}
+              {{ $subsubkey }}:
+                {{- range $subsubsubkey, $subsubsubvalue := $subsubvalue }}
+                {{ $subsubsubkey }}: {{ $subsubsubvalue | quote }}
                 {{- end }}
-            
-              data-node:
-                {{- range $key, $value := .Values.data-node }}
-                {{- if kindIs "map" $value }}
-                {{ $key }}:
-                  {{- range $subkey, $subvalue := $value }}
-                  {{- if kindIs "map" $subvalue }}
-                  {{ $subkey }}:
-                    {{- range $subsubkey, $subsubvalue := $subvalue }}
-                    {{- if kindIs "map" $subsubvalue }}
-                    {{ $subsubkey }}:
-                      {{- range $subsubsubkey, $subsubsubvalue := $subsubvalue }}
-                      {{ $subsubsubkey }}: {{ $subsubsubvalue | quote }}
-                      {{- end }}
-                    {{- else }}
-                    {{ $subsubkey }}: {{ $subsubvalue | quote }}
-                    {{- end }}
-                    {{- end }}
-                  {{- else }}
-                  {{ $subkey }}: {{ $subvalue | quote }}
-                  {{- end }}
-                  {{- end }}
-                {{- else }}
-                {{ $key }}: {{ $value | quote }}
-                {{- end }}
-                {{- end }}
+              {{- else }}
+              {{ $subsubkey }}: {{ $subsubvalue | quote }}
+              {{- end }}
+              {{- end }}
+            {{- else }}
+            {{ $subkey }}: {{ $subvalue | quote }}
+            {{- end }}
+            {{- end }}
+          {{- else }}
+          {{ $key }}: {{ $value | quote }}
+          {{- end }}
+          {{- end }}
 
-              realtime-compiler:
-                {{- range $key, $value := .Values.realtime-compiler }}
-                {{- if kindIs "map" $value }}
-                {{ $key }}:
-                  {{- range $subkey, $subvalue := $value }}
-                  {{- if kindIs "map" $subvalue }}
-                  {{ $subkey }}:
-                    {{- range $subsubkey, $subsubvalue := $subvalue }}
-                    {{ $subsubkey }}: {{ $subsubvalue | quote }}
-                    {{- end }}
-                  {{- else }}
-                  {{ $subkey }}: {{ $subvalue | quote }}
-                  {{- end }}
-                  {{- end }}
-                {{- else }}
-                {{ $key }}: {{ $value | quote }}
-                {{- end }}
-                {{- end }}
+        realtime-compiler:
+          {{- range $key, $value := .Values.realtime-compiler }}
+          {{- if kindIs "map" $value }}
+          {{ $key }}:
+            {{- range $subkey, $subvalue := $value }}
+            {{- if kindIs "map" $subvalue }}
+            {{ $subkey }}:
+              {{- range $subsubkey, $subsubvalue := $subvalue }}
+              {{ $subsubkey }}: {{ $subsubvalue | quote }}
+              {{- end }}
+            {{- else }}
+            {{ $subkey }}: {{ $subvalue | quote }}
+            {{- end }}
+            {{- end }}
+          {{- else }}
+          {{ $key }}: {{ $value | quote }}
+          {{- end }}
+          {{- end }}
 
-              search-master:
-                {{- range $key, $value := .Values.search-master }}
-                {{- if kindIs "map" $value }}
-                {{ $key }}:
-                  {{- range $subkey, $subvalue := $value }}
-                  {{- if kindIs "map" $subvalue }}
-                  {{ $subkey }}:
-                    {{- range $subsubkey, $subsubvalue := $subvalue }}
-                    {{- if kindIs "map" $subsubvalue }}
-                    {{ $subsubkey }}:
-                      {{- range $subsubsubkey, $subsubsubvalue := $subsubvalue }}
-                      {{ $subsubsubkey }}: {{ $subsubsubvalue | quote }}
-                      {{- end }}
-                    {{- else }}
-                    {{ $subsubkey }}: {{ $subsubvalue | quote }}
-                    {{- end }}
-                    {{- end }}
-                  {{- else }}
-                  {{ $subkey }}: {{ $subvalue | quote }}
-                  {{- end }}
-                  {{- end }}
-                {{- else }}
-                {{ $key }}: {{ $value | quote }}
+        search-master:
+          {{- range $key, $value := .Values.search-master }}
+          {{- if kindIs "map" $value }}
+          {{ $key }}:
+            {{- range $subkey, $subvalue := $value }}
+            {{- if kindIs "map" $subvalue }}
+            {{ $subkey }}:
+              {{- range $subsubkey, $subsubvalue := $subvalue }}
+              {{- if kindIs "map" $subsubvalue }}
+              {{ $subsubkey }}:
+                {{- range $subsubsubkey, $subsubsubvalue := $subsubvalue }}
+                {{ $subsubsubkey }}: {{ $subsubsubvalue | quote }}
                 {{- end }}
-                {{- end }}
+              {{- else }}
+              {{ $subsubkey }}: {{ $subsubvalue | quote }}
+              {{- end }}
+              {{- end }}
+            {{- else }}
+            {{ $subkey }}: {{ $subvalue | quote }}
+            {{- end }}
+            {{- end }}
+          {{- else }}
+          {{ $key }}: {{ $value | quote }}
+          {{- end }}
+          {{- end }}
 
-              etcd:
-                {{- range $key, $value := .Values.etcd }}
-                {{ $key }}: {{ $value | quote }}
-                {{- end }}
+        etcd:
+          {{- range $key, $value := .Values.etcd }}
+          {{ $key }}: {{ $value | quote }}
+          {{- end }}
 
-              backup:
-                {{- range $key, $value := .Values.backup }}
-                {{ $key }}:
-                  {{- range $subkey, $subvalue := $value }}
-                  {{ $subkey }}: {{ $subvalue | quote }}
-                  {{- end }}
-                {{- end }}
-      syncPolicy:
-        syncOptions:
-          - RespectIgnoreDifferences=true
-          - CreateNamespace=true
-      ignoreDifferences:
-        - kind: Secret
-          jsonPointers:
-          - /data
-        - kind: StatefulSet
-          group: apps
-          jqPathExpressions:
-          - .spec.template.metadata.annotations["checksum/token-secret"]
+        backup:
+          {{- range $key, $value := .Values.backup }}
+          {{ $key }}:
+            {{- range $subkey, $subvalue := $value }}
+            {{ $subkey }}: {{ $subvalue | quote }}
+            {{- end }}
+          {{- end }}
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - RespectIgnoreDifferences=true
+      - CreateNamespace=true
+    ignoreDifferences:
+      - kind: Secret
+        jsonPointers:
+        - /data
+      - kind: StatefulSet
+        group: apps
+        jqPathExpressions:
+        - .spec.template.metadata.annotations["checksum/token-secret"]
