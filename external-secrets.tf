@@ -28,6 +28,7 @@ resource "time_sleep" "wait_for_crd" {
   create_duration = "30s"
 }
 
+# Install the secret manager manifests with helm chart as kubectl_manifest and kubernetes_manifest resources don't work well with CRDS
 resource "helm_release" "secret_manager_manifests" {
   count            = var.create_eks ? 1 : 0
   name            = "secret-manager-manifests"
