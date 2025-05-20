@@ -186,6 +186,7 @@ module "eks" {
 
 # EBS CSI Driver IRSA 
 module "irsa-ebs-csi" {
+  count = var.create_eks ? 1 : 0
   source                = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
   version               = "~>5.48.0"
   role_name             = "${local.cluster_name}-ebs-csi"
@@ -213,6 +214,7 @@ module "eks_blueprints_addons" {
 
 # Remove non encrypted default storage class
 resource "kubernetes_annotations" "default_storageclass" {
+  count = var.create_eks ? 1 : 0
   api_version = "storage.k8s.io/v1"
   kind        = "StorageClass"
   force       = "true"
@@ -226,6 +228,7 @@ resource "kubernetes_annotations" "default_storageclass" {
 }
 
 resource "kubernetes_storage_class" "ebs_sc_gp3" {
+  count = var.create_eks ? 1 : 0
   metadata {
     name = "ebs-sc-gp3"
     annotations = {
@@ -249,7 +252,7 @@ resource "kubernetes_storage_class" "ebs_sc_gp3" {
 module "iam_iam-assumable-role-with-oidc" {
   source                        = "terraform-aws-modules/iam/aws//modules/iam-assumable-role-with-oidc"
   version                       = "~> 5.48.0"
-  for_each                      = { for k, v in local.iam_policies : k => v if lookup(v, "create_assumable_role", false) == true }
+  for_each                      = var.create_eks ? { for k, v in local.iam_policies : k => v if lookup(v, "create_assumable_role", false) == true } : {}
   create_role                   = true
   role_name                     = each.value.name
   provider_url                  = module.eks.cluster_oidc_issuer_url
@@ -258,10 +261,10 @@ module "iam_iam-assumable-role-with-oidc" {
 }
 
 module "boto3_irsa" {
-  source    = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
-  version   = "~> 5.30.0"
-  for_each  = { for k, v in local.iam_policies : k => v if lookup(v, "create_cluster_wide_role", false) == true }
-  role_name = each.value.name
+  source                        = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
+  version                       = "~> 5.30.0"
+  for_each                      = var.create_eks ? { for k, v in local.iam_policies : k => v if lookup(v, "create_cluster_wide_role", false) == true } : {}
+  role_name                     = each.value.name
   role_policy_arns = {
     policy = local.iam_policy_arns[each.key]
   }

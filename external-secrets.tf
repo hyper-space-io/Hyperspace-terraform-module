@@ -23,11 +23,13 @@ EOF
 
 # Wait for CRD creation to be ready
 resource "time_sleep" "wait_for_crd" {
+  count            = var.create_eks ? 1 : 0
   depends_on      = [helm_release.secrets_manager]
   create_duration = "30s"
 }
 
 resource "helm_release" "secret_manager_manifests" {
+  count            = var.create_eks ? 1 : 0
   name            = "secret-manager-manifests"
   chart           = "${path.module}/secrets-manager-manifests"
   wait            = true

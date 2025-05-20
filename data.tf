@@ -17,9 +17,14 @@ data "aws_vpc" "existing" {
   id    = var.existing_vpc_id
 }
 
-data "aws_subnet" "existing" {
+data "aws_subnet" "existing_private" {
   count = local.create_vpc ? 0 : length(var.existing_private_subnets)
   id    = var.existing_private_subnets[count.index]
+}
+
+data "aws_subnet" "existing_public" {
+  count = local.create_vpc ? 0 : length(var.existing_public_subnets)
+  id    = var.existing_public_subnets[count.index]
 }
 
 #######################
