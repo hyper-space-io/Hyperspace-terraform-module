@@ -1,0 +1,4 @@
+region: eu-west-1
+account_id: ""
+ECR_REGISTRY: ""
+init-job: true
