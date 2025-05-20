@@ -8,9 +8,8 @@ resource "helm_release" "ecr_token" {
   cleanup_on_fail = true
   depends_on      = [module.eks, time_sleep.wait_for_cluster_ready, helm_release.argocd]
 
-  values = [<<EOT
-    account_id   = "${var.hyperspace_account_id}"
-    ECR_REGISTRY = "${var.hyperspace_account_id}.dkr.ecr.eu-west-1.amazonaws.com"
-  EOT
-  ]
+  set {
+    name  = "ACCOUNT_ID"
+    value = "${var.hyperspace_account_id}"
+  }
 }
