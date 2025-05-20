@@ -37,9 +37,9 @@ resource "helm_release" "secret_manager_manifests" {
   wait            = true
   force_update    = true
   cleanup_on_fail = true
-  values = [<<EOT
-awsRegion: "${var.aws_region}"
-EOT
-  ]
+  set {
+    name  = "awsRegion"
+    value = var.aws_region
+  }
   depends_on = [helm_release.secrets_manager, time_sleep.wait_for_crd]
 }

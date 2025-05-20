@@ -73,13 +73,13 @@ module "eks" {
       "${var.environment}-az${i}-${pool_name}" => merge(
         pool_config,
         {
-          name       = "${pool_name}-${subnet}"
+          name       = "${pool_name}"
           subnet_ids = [subnet]
           tags = merge(
             local.tags,
             {
               nodegroup = "${pool_name}-${subnet}",
-              subnet    = subnet
+              subnet    = "${subnet}"
             },
             pool_config.tags
           )
@@ -191,6 +191,7 @@ module "irsa-ebs-csi" {
   version               = "~>5.48.0"
   role_name             = "${local.cluster_name}-ebs-csi"
   attach_ebs_csi_policy = true
+  force_detach_policies = true
 
   oidc_providers = {
     eks = {
