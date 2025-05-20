@@ -186,7 +186,7 @@ module "eks" {
 
 # EBS CSI Driver IRSA 
 module "irsa-ebs-csi" {
-  count = var.create_eks ? 1 : 0
+  count                 = var.create_eks ? 1 : 0
   source                = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
   version               = "~>5.48.0"
   role_name             = "${local.cluster_name}-ebs-csi"
@@ -214,7 +214,7 @@ module "eks_blueprints_addons" {
 
 # Remove non encrypted default storage class
 resource "kubernetes_annotations" "default_storageclass" {
-  count = var.create_eks ? 1 : 0
+  count       = var.create_eks ? 1 : 0
   api_version = "storage.k8s.io/v1"
   kind        = "StorageClass"
   force       = "true"
@@ -261,10 +261,10 @@ module "iam_iam-assumable-role-with-oidc" {
 }
 
 module "boto3_irsa" {
-  source                        = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
-  version                       = "~> 5.30.0"
-  for_each                      = var.create_eks ? { for k, v in local.iam_policies : k => v if lookup(v, "create_cluster_wide_role", false) == true } : {}
-  role_name                     = each.value.name
+  source    = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
+  version   = "~> 5.30.0"
+  for_each  = var.create_eks ? { for k, v in local.iam_policies : k => v if lookup(v, "create_cluster_wide_role", false) == true } : {}
+  role_name = each.value.name
   role_policy_arns = {
     policy = local.iam_policy_arns[each.key]
   }
