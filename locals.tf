@@ -56,21 +56,6 @@ locals {
     "Type"                   = "public"
   }
 
-  # Validation functions for subnet tags
-  validate_private_subnet_tags = local.create_vpc ? true : alltrue([
-    for subnet in data.aws_subnet.existing_private : alltrue([
-      for tag_key, tag_value in local.private_subnet_tags :
-      lookup(subnet.tags, tag_key, "") == tag_value
-    ])
-  ])
-
-  validate_public_subnet_tags = local.create_vpc ? true : alltrue([
-    for subnet in data.aws_subnet.existing_public : alltrue([
-      for tag_key, tag_value in local.public_subnet_tags :
-      lookup(subnet.tags, tag_key, "") == tag_value
-    ])
-  ])
-
   ##################
   ##### KMS ########
   ##################

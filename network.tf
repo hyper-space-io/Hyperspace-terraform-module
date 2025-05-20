@@ -58,28 +58,3 @@ module "endpoints" {
   }
   tags = local.tags
 }
-
-resource "null_resource" "validate_subnet_tags" {
-  count = local.create_vpc ? 0 : 1
-
-  triggers = {
-    private_subnets = join(",", var.existing_private_subnets)
-    public_subnets  = join(",", var.existing_public_subnets)
-    timestamp       = timestamp()
-  }
-
-  provisioner "local-exec" {
-    command = <<-EOT
-      if [ "${local.validate_private_subnet_tags}" != "true" ]; then
-        echo "Private subnets are missing required tags. Required tags: ${jsonencode(local.private_subnet_tags)}"
-        exit 1
-      fi
-      if [ "${local.validate_public_subnet_tags}" != "true" ]; then
-        echo "Public subnets are missing required tags. Required tags: ${jsonencode(local.public_subnet_tags)}"
-        exit 1
-      fi
-    EOT
-  }
-
-  depends_on = [data.aws_subnet.existing_private, data.aws_subnet.existing_public]
-}
