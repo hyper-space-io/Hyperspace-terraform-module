@@ -73,13 +73,13 @@ module "eks" {
       "${var.environment}-az${i}-${pool_name}" => merge(
         pool_config,
         {
-          name       = "${pool_name}-${subnet}"
+          name       = "${pool_name}"
           subnet_ids = [subnet]
           tags = merge(
             local.tags,
             {
               nodegroup = "${pool_name}-${subnet}",
-              subnet    = subnet
+              subnet    = "${subnet}"
             },
             pool_config.tags
           )
