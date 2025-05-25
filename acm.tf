@@ -1,13 +1,16 @@
 locals {
   create_acm             = var.domain_name != "" ? true : false
   create_route53_records = local.create_acm && local.validation_zone_id != null ? true : false
+  create_external_acm    = local.public_domain_name != "" && (var.create_public_zone || var.existing_public_zone_id != "")
+  create_internal_acm    = local.internal_domain_name != "" && local.create_private_zone
 }
 
 module "external_acm" {
-  count              = (local.public_domain_name != "" && (var.create_public_zone || var.existing_public_zone_id != "")) ? 1 : 0
   source             = "terraform-aws-modules/acm/aws"
   version            = "~> 5.1.1"
-  create_certificate = local.create_acm
+  # Use create_certificate instead of count to conditionally create the certificate
+  # This is the module's recommended approach for conditional creation - https://registry.terraform.io/modules/terraform-aws-modules/acm/aws/latest#conditional-creation-and-validation
+  create_certificate = local.create_external_acm
   domain_name        = local.public_domain_name
   subject_alternative_names = [
     "*.${local.public_domain_name}",
@@ -20,10 +23,11 @@ module "external_acm" {
 }
 
 module "internal_acm" {
-  count              = (local.internal_domain_name != "" && local.create_private_zone) ? 1 : 0
   source             = "terraform-aws-modules/acm/aws"
   version            = "~> 5.1.1"
-  create_certificate = local.create_acm
+  # Use create_certificate instead of count to conditionally create the certificate
+  # This is the module's recommended approach for conditional creation - https://registry.terraform.io/modules/terraform-aws-modules/acm/aws/latest#conditional-creation-and-validation
+  create_certificate = local.create_internal_acm
   domain_name        = local.internal_domain_name
   subject_alternative_names = [
     "*.${local.internal_domain_name}",
