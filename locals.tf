@@ -80,7 +80,7 @@ locals {
       var.create_public_zone ? module.external_zone[0].route53_zone_zone_id["external"] : null
     )
   )
-  
+
   #################
   ##### EKS #######
   #################

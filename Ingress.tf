@@ -137,11 +137,11 @@ resource "kubernetes_ingress_v1" "nginx_ingress" {
     name      = "${each.key}-ingress"
     namespace = "ingress"
     annotations = merge({
-      "alb.ingress.kubernetes.io/certificate-arn"          = local.create_acm ? (each.key == "internal" ? module.internal_acm[0].acm_certificate_arn : module.external_acm[0].acm_certificate_arn) : ""
+      "alb.ingress.kubernetes.io/certificate-arn"          = (each.key == "internal" && length(module.internal_acm) > 0) || (each.key == "external" && length(module.external_acm) > 0) ? (each.key == "internal" ? module.internal_acm[0].acm_certificate_arn : module.external_acm[0].acm_certificate_arn) : ""
       "alb.ingress.kubernetes.io/scheme"                   = each.value.scheme
       "alb.ingress.kubernetes.io/tags"                     = "Domain=${each.key}"
       "alb.ingress.kubernetes.io/load-balancer-attributes" = "idle_timeout.timeout_seconds=600, access_logs.s3.enabled=true, access_logs.s3.bucket=${local.s3_bucket_names["logs-ingress"]},access_logs.s3.prefix=${each.value.s3_prefix}"
-      "alb.ingress.kubernetes.io/actions.ssl-redirect" = (each.key == "internal" && module.internal_acm[0].acm_certificate_arn != "") || (each.key == "external" && var.create_public_zone && var.domain_name != "") ? jsonencode({
+      "alb.ingress.kubernetes.io/actions.ssl-redirect" = (each.key == "internal" && length(module.internal_acm) > 0 && module.internal_acm[0].acm_certificate_arn != "") || (each.key == "external" && var.create_public_zone && var.domain_name != "") ? jsonencode({
         Type = "redirect"
         RedirectConfig = {
           Protocol   = "HTTPS"
@@ -149,7 +149,7 @@ resource "kubernetes_ingress_v1" "nginx_ingress" {
           StatusCode = "HTTP_301"
         }
       }) : ""
-      "alb.ingress.kubernetes.io/listen-ports" = (each.key == "internal" && module.internal_acm[0].acm_certificate_arn != "") || (each.key == "external" && var.create_public_zone && var.domain_name != "") ? jsonencode([
+      "alb.ingress.kubernetes.io/listen-ports" = (each.key == "internal" && length(module.internal_acm) > 0 && module.internal_acm[0].acm_certificate_arn != "") || (each.key == "external" && var.create_public_zone && var.domain_name != "") ? jsonencode([
         { HTTP = 80 },
         { HTTPS = 443 }
       ]) : jsonencode([{ HTTP = 80 }])
