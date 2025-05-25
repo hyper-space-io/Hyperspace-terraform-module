@@ -196,12 +196,13 @@ resource "kubernetes_ingress_v1" "nginx_ingress" {
 }
 
 resource "time_sleep" "wait_for_internal_ingress" {
+  count           = var.create_eks ? 1 : 0
   create_duration = "300s"
   depends_on      = [kubernetes_ingress_v1.nginx_ingress["internal"]]
 }
 
 resource "time_sleep" "wait_for_external_ingress" {
-  count           = var.create_public_zone ? 1 : 0
+  count           = var.create_eks && var.create_public_zone ? 1 : 0
   create_duration = "300s"
   depends_on      = [kubernetes_ingress_v1.nginx_ingress["external"]]
 }

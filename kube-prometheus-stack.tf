@@ -102,6 +102,7 @@ resource "helm_release" "kube_prometheus_stack" {
 }
 
 resource "random_password" "grafana_admin_password" {
+  count            = var.create_eks ? 1 : 0
   length           = 30
   special          = true
   override_special = "_%@"
@@ -151,6 +152,7 @@ resource "helm_release" "grafana" {
 }
 
 resource "helm_release" "prometheus_adapter" {
+  count      = var.create_eks ? 1 : 0
   name       = "prometheus-adapter"
   version    = "~> 4.11.0"
   namespace  = local.monitoring_namespace
@@ -231,7 +233,7 @@ resource "aws_vpc_endpoint_service" "grafana" {
 }
 
 resource "aws_route53_record" "grafana_privatelink_verification" {
-  count   = local.grafana_privatelink_enabled && local.validation_zone_id != "" ? 1 : 0
+  count   = local.grafana_privatelink_enabled && local.validation_zone_id != null ? 1 : 0
   zone_id = local.validation_zone_id
   name    = aws_vpc_endpoint_service.grafana[0].private_dns_name_configuration[0].name
   type    = aws_vpc_endpoint_service.grafana[0].private_dns_name_configuration[0].type
