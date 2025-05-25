@@ -22,11 +22,6 @@ data "aws_subnet" "existing_private" {
   id    = var.existing_private_subnets[count.index]
 }
 
-data "aws_subnet" "existing_public" {
-  count = local.create_vpc ? 0 : length(var.existing_public_subnets)
-  id    = var.existing_public_subnets[count.index]
-}
-
 #######################
 ######## KMS ##########
 #######################

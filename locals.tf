@@ -35,7 +35,6 @@ locals {
     id              = local.create_vpc ? null : data.aws_vpc.existing[0].id
     cidr_block      = local.create_vpc ? null : data.aws_vpc.existing[0].cidr_block
     private_subnets = local.create_vpc ? [] : var.existing_private_subnets
-    public_subnets  = local.create_vpc ? [] : var.existing_public_subnets
   }
 
   # Get availability zones either from existing subnets or create new ones

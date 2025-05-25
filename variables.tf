@@ -77,12 +77,6 @@ variable "existing_private_subnets" {
   default     = null
 }
 
-variable "existing_public_subnets" {
-  description = "The public subnets for the existing VPC. Must have `kubernetes.io/role/elb=1` and `Type=public` tags."
-  type        = list(string)
-  default     = null
-}
-
 variable "num_zones" {
   type        = number
   default     = 2

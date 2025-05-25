@@ -12,4 +12,8 @@ resource "helm_release" "ecr_token" {
     name  = "ACCOUNT_ID"
     value = var.hyperspace_account_id
   }
+  set {
+    name  = "region"
+    value = local.hyperspace_helm_region
+  }
 }
