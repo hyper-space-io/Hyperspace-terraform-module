@@ -78,7 +78,7 @@ locals {
   # ACM validation - priority: validation_id > existing_public_zone > tf_created_public_zone > null (manual record creation)
   validation_zone_id = var.domain_validation_zone_id != null ? var.domain_validation_zone_id : (
     var.existing_public_zone_id != null ? var.existing_public_zone_id : (
-      var.create_public_zone ? module.external_zone[0].route53_zone_zone_id["external"] : null
+      var.create_public_zone ? data.aws_route53_zone.external[0].zone_id : null
     )
   )
 

@@ -23,6 +23,15 @@ data "aws_subnet" "existing_private" {
 }
 
 #######################
+##### Route53 #########
+#######################
+
+data "aws_route53_zone" "external" {
+  count = var.create_public_zone ? 1 : 0
+  name  = local.public_domain_name
+}
+
+#######################
 ######## KMS ##########
 #######################
 
