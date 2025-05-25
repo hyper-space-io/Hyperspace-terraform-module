@@ -1,0 +1,71 @@
+global:
+  environment: "default"
+  ecr_repository: ""
+
+data-node:
+  replicaCount: 1
+  image:
+    pullPolicy: IfNotPresent
+  config:
+    load_afi: true
+    log_level: DEBUG
+    restore: true
+    restore_doc_values: true
+    save_backup: true
+    load_at_timeout: true
+    save_backup_s3: false
+    restore_from_rocksdb: false
+    query_timeout: 10000
+  ebsVolume:
+    enabled: true
+  priorityClass:
+    enabled: true
+    deployment:
+      replicaCount: 0
+  serviceAccount:
+    annotations: {}
+  hugePages:
+    enabled: true
+    numOfHugePages: 1
+    reduceOsHugePages: true
+  livenessProbe:
+    failureThreshold: 40
+    periodSeconds: 180
+  readinessProbe:
+    failureThreshold: 720
+    periodSeconds: 10
+  startupProbe:
+    failureThreshold: 720
+    periodSeconds: 10
+
+realtime-compiler:
+  replicaCount: 1
+  image:
+    pullPolicy: IfNotPresent
+  config:
+    log_level: DEBUG
+
+search-master:
+  replicaCount: 1
+  image:
+    pullPolicy: IfNotPresent
+  config:
+    log_level: DEBUG
+    restore: false
+    commit_timeout: 120000
+  ingress:
+    className: nginx-internal
+    hosts:
+      - host: search-master.default.example.com
+        paths:
+          - path: /
+            pathType: Prefix
+
+etcd:
+  fullnameOverride: "etcd-default"
+
+backup:
+  daily:
+    enabled: false
+  hourly:
+    enabled: false

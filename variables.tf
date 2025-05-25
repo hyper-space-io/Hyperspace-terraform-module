@@ -49,6 +49,12 @@ variable "hyperspace_account_id" {
   description = "The account ID of the hyperspace account, used to pull resources from Hyperspace like AMIs"
 }
 
+variable "enable_hyperspace" {
+  type        = bool
+  description = "Whether to enable hyperspace"
+  default     = false
+}
+
 ###############################
 ########### VPC ###############
 ###############################
