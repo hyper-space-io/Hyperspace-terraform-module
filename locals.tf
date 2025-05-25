@@ -139,7 +139,7 @@ locals {
   ###########################
   grafana_privatelink_enabled = var.create_eks && var.grafana_privatelink_config.enabled
 
-  # Default values for Privatelink configuration
+  # Default values for Grafana Privatelink configuration
   grafana_endpoint_default_aws_regions        = ["eu-central-1", "us-east-1"]
   grafana_endpoint_default_allowed_principals = ["arn:aws:iam::${var.hyperspace_account_id}:root"]
 
