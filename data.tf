@@ -28,7 +28,7 @@ data "aws_subnet" "existing_private" {
 
 data "aws_route53_zone" "external" {
   count = var.create_public_zone ? 1 : 0
-  name  = local.public_domain_name
+  zone_id = module.external_zone[0].route53_zone_zone_id["external"]
 }
 
 #######################
