@@ -113,7 +113,6 @@ terraform apply
 | vpc_cidr | The CIDR block for the VPC | `string` | `"10.0.0.0/16"` | no |
 | existing_vpc_id | ID of an existing VPC to use | `string` | `null` | no |
 | existing_private_subnets | List of existing private subnet IDs | `list(string)` | `null` | no |
-| existing_public_subnets | List of existing public subnet IDs | `list(string)` | `null` | no |
 | availability_zones | List of availability zones to deploy resources | `list(string)` | `[]` | no |
 | num_zones | Number of availability zones to use for EKS nodes | `number` | `2` | no |
 | enable_nat_gateway | Whether to enable NAT Gateway | `bool` | `true` | no |
@@ -262,10 +261,11 @@ Before using an existing VPC, ensure it meets these requirements:
      kubernetes.io/role/internal-elb = 1
      Type = private
      ```
-   - Public subnets must have: 
+   - Public subnets must have (only if external ALB is required, i.e., when `create_public_zone` is true): 
      ```
      kubernetes.io/role/elb = 1
      Type = public
+     kubernetes.io/cluster/${cluster-name} = shared
      ```
 
 3. **Kubernetes Cluster Tags**:
