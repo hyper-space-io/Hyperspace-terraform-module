@@ -102,6 +102,7 @@ resource "helm_release" "kube_prometheus_stack" {
 }
 
 resource "random_password" "grafana_admin_password" {
+  count            = var.create_eks ? 1 : 0
   length           = 30
   special          = true
   override_special = "_%@"
@@ -118,7 +119,7 @@ resource "helm_release" "grafana" {
   cleanup_on_fail  = true
   values = [
     yamlencode({
-      adminPassword = random_password.grafana_admin_password.result
+      adminPassword = random_password.grafana_admin_password[0].result
       service = {
         type = local.grafana_privatelink_enabled ? "LoadBalancer" : "ClusterIP"
         annotations = local.grafana_privatelink_enabled ? {
@@ -144,13 +145,14 @@ resource "helm_release" "grafana" {
 
   set_sensitive {
     name  = "adminPassword"
-    value = random_password.grafana_admin_password.result
+    value = random_password.grafana_admin_password[0].result
   }
 
   depends_on = [module.eks, time_sleep.wait_for_internal_ingress, module.eks_blueprints_addons]
 }
 
 resource "helm_release" "prometheus_adapter" {
+  count      = var.create_eks ? 1 : 0
   name       = "prometheus-adapter"
   version    = "~> 4.11.0"
   namespace  = local.monitoring_namespace
@@ -174,7 +176,7 @@ EOF
 ##################################
 
 resource "aws_vpc_endpoint" "prometheus" {
-  count               = local.prometheus_endpoint_enabled ? 1 : 0
+  count               = var.create_eks && local.prometheus_endpoint_enabled ? 1 : 0
   vpc_id              = local.vpc_id
   service_name        = local.prometheus_endpoint_config.endpoint_service_name
   vpc_endpoint_type   = "Interface"

@@ -86,11 +86,6 @@ resource "aws_vpc_endpoint_service" "argocd" {
   depends_on = [data.aws_lb.argocd_privatelink_nlb[0]]
 }
 
-resource "random_password" "argocd_readonly" {
-  count  = local.argocd_privatelink_enabled ? 1 : 0
-  length = 16
-}
-
 resource "aws_secretsmanager_secret" "argocd_readonly_password" {
   count                   = local.argocd_privatelink_enabled ? 1 : 0
   name                    = "argocd-readonly-password"
