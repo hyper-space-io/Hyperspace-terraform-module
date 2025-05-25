@@ -188,7 +188,7 @@ variable "create_public_zone" {
   default     = false
 }
 
-variable "domain_validation_id" {
+variable "domain_validation_zone_id" {
   description = "The domain validation ID for the public Route 53 zone"
   type        = string
   default     = null

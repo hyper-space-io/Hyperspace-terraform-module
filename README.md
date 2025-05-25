@@ -141,7 +141,7 @@ terraform apply
 | create_public_zone | Whether to create the public Route 53 zone | `bool` | `false` | no |
 | existing_public_zone_id | ID of an existing public Route 53 zone | `string` | `null` | no |
 | existing_private_zone_id | ID of an existing private Route 53 zone | `string` | `null` | no |
-| domain_validation_id | ID of a public Route 53 zone to use for ACM certificate validation | `string` | `null` | no |
+| domain_validation_zone_id | ID of a public Route 53 zone to use for ACM certificate validation | `string` | `null` | no |
 
 #### Monitoring and Observability
 
@@ -317,7 +317,7 @@ module "hyperspace" {
   # ... other configuration ...
   
   # Use a public zone only for certificate validation
-  domain_validation_id = "Z1234567890ABC"  # ID of a public zone for ACM validation
+  domain_validation_zone_id = "Z1234567890ABC"  # ID of a public zone for ACM validation
 }
 ```
 
@@ -326,7 +326,7 @@ module "hyperspace" {
 Certificate validation is handled automatically when using any of these options:
 - Using `create_public_zone = true` (creates a new public zone)
 - Providing `existing_public_zone_id` (uses existing public zone)
-- Providing `domain_validation_id` (uses specified zone for validation only)
+- Providing `domain_validation_zone_id` (uses specified zone for validation only)
 
 #### Manual Validation
 If none of the above options are used, you'll need to manually validate the certificates:
@@ -342,7 +342,7 @@ If none of the above options are used, you'll need to manually validate the cert
 5. Terraform will automatically continue once validated
 
 ### Important Notes
-1. The `domain_validation_id` must be a public hosted zone ID
+1. The `domain_validation_zone_id` must be a public hosted zone ID
 2. The validation zone is only used for ACM certificate validation
 3. No DNS records will be created in the validation zone
 4. The validation zone must be in the same AWS account as the certificates
@@ -353,6 +353,11 @@ If none of the above options are used, you'll need to manually validate the cert
 ### DNS Record Creation
 - Internal wildcard records are automatically created in the private zone
 - Public wildcard records are only created if `create_public_zone` is true
+
+The module automatically creates the required DNS verification records when:
+- `create_public_zone = true` (creates a new public zone), OR
+- `existing_public_zone_id` is provided, OR
+- `domain_validation_zone_id` is provided
 
 ## Features
 
@@ -407,7 +412,7 @@ When enabled, it creates a secure, private connection that allows Hyperspace to 
 The module automatically creates the required DNS verification records when:
 - `create_public_zone = true` (creates a new public zone), OR
 - `existing_public_zone_id` is provided, OR
-- `domain_validation_id` is provided
+- `domain_validation_zone_id` is provided
 
 If none of these conditions are met, you'll need to manually create the verification records:
 
