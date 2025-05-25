@@ -170,7 +170,7 @@ locals {
   ###########################
   ### ArgoCD Privatelink ####
   ###########################
-  argocd_privatelink_enabled = local.argocd_enabled && local.argocd_config.privatelink.enabled 
+  argocd_privatelink_enabled = local.argocd_enabled && try(local.argocd_config.privatelink.enabled, false)
 
   # Default values for Privatelink configuration
   argocd_endpoint_default_aws_regions        = ["eu-central-1", "us-east-1"]
@@ -178,12 +178,12 @@ locals {
 
   # Combine default and custom allowed principals
   argocd_privatelink_allowed_principals = distinct(concat(
-    local.argocd_config.privatelink.endpoint_allowed_principals,
+    try(local.argocd_config.privatelink.endpoint_allowed_principals, []),
     local.argocd_endpoint_default_allowed_principals
   ))
   argocd_privatelink_supported_regions = distinct(concat(
     [var.aws_region],
-    local.argocd_config.privatelink.additional_aws_regions,
+    try(local.argocd_config.privatelink.additional_aws_regions, []),
     local.argocd_endpoint_default_aws_regions
   ))
 
