@@ -39,6 +39,7 @@ resource "random_string" "random" {
 
 locals {
   s3_default_config = {
+    create_bucket                         = true
     force_destroy                         = true
     ignore_public_acls                    = true
     block_public_policy                   = true
@@ -75,8 +76,10 @@ locals {
         filter = {
           prefix = ""
         }
+        create_bucket = var.create_eks
       }]
     }
+
     core-dump-logs = {
       lifecycle_rule = [{
         id      = "expire-after-one-year"
@@ -87,10 +90,17 @@ locals {
         filter = {
           prefix = ""
         }
+        create_bucket = var.create_eks
       }]
     }
-    velero = {}
-    loki   = {}
+
+    velero = {
+      create_bucket = var.create_eks
+    }
+
+    loki = {
+      create_bucket = var.create_eks
+    }
   }
   s3_buckets = { for name, config in local.s3_config : name => merge(local.s3_default_config, config) }
   s3_bucket_arns = {

@@ -21,19 +21,15 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 5.0"
+      version = "~> 5.90.0"
     }
     kubernetes = {
       source  = "hashicorp/kubernetes"
-      version = "~> 2.36.0"
+      version = "~> 2.37.0"
     }
     helm = {
       source  = "hashicorp/helm"
       version = "~> 2.17.0"
-    }
-    kubectl = {
-      source  = "gavinbunney/kubectl"
-      version = "~> 1.14.0"
     }
   }
 }
@@ -50,16 +46,6 @@ provider "aws" {
 }
 
 provider "kubernetes" {
-  host                   = var.create_eks ? module.eks.cluster_endpoint : null
-  cluster_ca_certificate = var.create_eks ? base64decode(module.eks.cluster_certificate_authority_data) : null
-  exec {
-    api_version = "client.authentication.k8s.io/v1beta1"
-    command     = "aws"
-    args        = local.eks_exec_args
-  }
-}
-
-provider "kubectl" {
   host                   = var.create_eks ? module.eks.cluster_endpoint : null
   cluster_ca_certificate = var.create_eks ? base64decode(module.eks.cluster_certificate_authority_data) : null
   exec {
