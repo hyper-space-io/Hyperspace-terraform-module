@@ -139,6 +139,9 @@ terraform apply
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|----------|
 | create_public_zone | Whether to create the public Route 53 zone | `bool` | `false` | no |
+| existing_public_zone_id | ID of an existing public Route 53 zone | `string` | `null` | no |
+| existing_private_zone_id | ID of an existing private Route 53 zone | `string` | `null` | no |
+| domain_validation_id | ID of a public Route 53 zone to use for ACM certificate validation | `string` | `null` | no |
 
 #### Monitoring and Observability
 
@@ -283,6 +286,74 @@ Before using an existing VPC, ensure it meets these requirements:
    - Private subnets must have NAT Gateway access
    - Sufficient IP addresses in each subnet for EKS nodes
 
+## DNS and Certificate Configuration
+
+The module provides multiple options for managing DNS zones and ACM certificate validation:
+
+### Option 1: Create New Zones (Default)
+By default, the module:
+- Creates a private hosted zone for internal services
+- Does NOT create a public zone (create_public_zone = false)
+- Requires manual certificate validation
+
+### Option 2: Use Existing Zones
+You can use existing Route53 zones, for records to be created and DNS Validaiton by providing their IDs:
+
+```hcl
+module "hyperspace" {
+  # ... other configuration ...
+  
+  # Use existing zones
+  existing_public_zone_id  = "Z1234567890ABC"  # Optional: ID of existing public zone
+  existing_private_zone_id = "Z0987654321XYZ"  # Optional: ID of existing private zone
+}
+```
+
+### Option 3: DNS Validation Only
+If you want to use a public zone only for certificate validation (without creating or managing the zone):
+
+```hcl
+module "hyperspace" {
+  # ... other configuration ...
+  
+  # Use a public zone only for certificate validation
+  domain_validation_id = "Z1234567890ABC"  # ID of a public zone for ACM validation
+}
+```
+
+### Certificate Validation
+
+Certificate validation is handled automatically when using any of these options:
+- Using `create_public_zone = true` (creates a new public zone)
+- Providing `existing_public_zone_id` (uses existing public zone)
+- Providing `domain_validation_id` (uses specified zone for validation only)
+
+#### Manual Validation
+If none of the above options are used, you'll need to manually validate the certificates:
+
+1. In AWS Console > Certificate Manager, find your pending certificate
+2. Copy the validation record name and value
+3. Create CNAME records in your **public** Route 53 hosted zone:
+   ```
+   Name:  <RANDOM_STRING>.<environment>.<your-domain>
+   Value: _<RANDOM_STRING>.validations.aws.
+   ```
+4. Wait for validation (5-30 minutes)
+5. Terraform will automatically continue once validated
+
+### Important Notes
+1. The `domain_validation_id` must be a public hosted zone ID
+2. The validation zone is only used for ACM certificate validation
+3. No DNS records will be created in the validation zone
+4. The validation zone must be in the same AWS account as the certificates
+5. The validation zone must be a public hosted zone (private zones cannot be used for ACM validation)
+6. The CNAME must be created in a public hosted zone, not private
+7. Ensure you include the trailing dot in the Value field when manually creating CNAME records
+
+### DNS Record Creation
+- Internal wildcard records are automatically created in the private zone
+- Public wildcard records are only created if `create_public_zone` is true
+
 ## Features
 
 ### EKS Cluster
@@ -323,30 +394,22 @@ Before using an existing VPC, ensure it meets these requirements:
 - ArgoCD installation and SSO integration
 - ECR credentials sync to gain access to private hyperspace ECR repositories
 
-# Important Notes
-
-## ACM Certificate Validation
-During deployment, Terraform will pause for ACM certificate validation:
-
-1. In AWS Console > Certificate Manager, find your pending certificate
-2. Copy the validation record name and value
-3. Create CNAME records in your **public** Route 53 hosted zone:
-   ```
-   Name:  <RANDOM_STRING>.<environment>.<your-domain>
-   Value: _<RANDOM_STRING>.validations.aws.
-   ```
-3. Wait for validation (5-30 minutes)
-4. Terraform will automatically continue once validated
-
-**Important**: The CNAME must be created in a public hosted zone, not private. Ensure you include the trailing dot in the Value field.
-
 ## Privatelink
 
-Privatelink is disabled by default and can be enabled through the `argocd_config.privatelink` and `grafana_privatelink_config` variables. 
+Privatelink provides a secure, private connection between Hyperspace and your infrastructure for observability & monitoring.
 
-When enabled, it creates a secure, private connection that allows Hyperspace to access your deployed services (ArgoCD, Grafana, Prometheus, and Loki) through AWS PrivateLink. This ensures all traffic between Hyperspace and your services stays private and never traverses the public internet.
+It's disabled by default and can be enabled through the `argocd_config.privatelink` and `grafana_privatelink_config` variables.
 
-After deploying the infrastructure with Privatelink enabled, you'll need to verify your VPC Endpoint Service by creating a DNS record in the hosted zone of your domain:
+When enabled, it creates a secure, private connection that allows Hyperspace to access your deployed services (Hyperspace, ArgoCD, Grafana, Prometheus, and Loki) through AWS PrivateLink, ensuring all traffic stays within the AWS network and never traverses the public internet.
+
+### DNS Verification Records
+
+The module automatically creates the required DNS verification records when:
+- `create_public_zone = true` (creates a new public zone), OR
+- `existing_public_zone_id` is provided, OR
+- `domain_validation_id` is provided
+
+If none of these conditions are met, you'll need to manually create the verification records:
 
 ### 1. Get Verification Details
 1. Open AWS Console and navigate to VPC Services
