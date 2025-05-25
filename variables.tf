@@ -240,6 +240,35 @@ variable "argocd_config" {
       users_additional_rules = optional(list(string), [])
     }))
   })
+  default = {
+    enabled = false
+    privatelink = {
+      enabled                     = false
+      endpoint_allowed_principals = []
+      additional_aws_regions      = []
+    }
+    vcs = {
+      organization = ""
+      repository   = ""
+      github = {
+        enabled                   = false
+        github_app_enabled        = false
+        github_app_secret_name    = "argocd/github_app"
+        github_private_key_secret = "argocd/github_app_private_key"
+      }
+      gitlab = {
+        enabled                 = false
+        oauth_enabled           = false
+        oauth_secret_name       = "argocd/gitlab_oauth"
+        credentials_secret_name = "argocd/gitlab_credentials"
+      }
+    }
+    rbac = {
+      sso_admin_group        = null
+      users_rbac_rules       = []
+      users_additional_rules = []
+    }
+  }
   validation {
     condition     = !var.argocd_config.enabled || (var.argocd_config.vcs != null && var.argocd_config.vcs.organization != "" && var.argocd_config.vcs.repository != "")
     error_message = "When ArgoCD is enabled, vcs configuration must be provided with non-empty organization and repository"
@@ -265,6 +294,12 @@ variable "prometheus_endpoint_config" {
     endpoint_service_region = optional(string, "")
     additional_cidr_blocks  = optional(list(string), [])
   })
+  default = {
+    enabled                 = false
+    endpoint_service_name   = ""
+    endpoint_service_region = ""
+    additional_cidr_blocks  = []
+  }
   description = "Prometheus endpoint configuration"
 }
 
@@ -278,5 +313,10 @@ variable "grafana_privatelink_config" {
     endpoint_allowed_principals = optional(list(string), [])
     additional_aws_regions      = optional(list(string), [])
   })
+  default = {
+    enabled                     = false
+    endpoint_allowed_principals = []
+    additional_aws_regions      = []
+  }
   description = "Grafana privatelink configuration"
 }
