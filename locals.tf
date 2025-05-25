@@ -54,11 +54,6 @@ locals {
   vpc_id              = local.create_vpc ? module.vpc[0].vpc_id : var.existing_vpc_id
   vpc_cidr_block      = local.create_vpc ? module.vpc[0].vpc_cidr_block : local.existing_vpc.cidr_block
 
-  ###################
-  ##### Route53 #####
-  ###################
-  # Zone creation flags - create if domain exists and no existing zone provided
-  create_private_zone = var.domain_name != null && var.existing_private_zone_id == null
   # Required tags for subnets
   private_subnet_tags = {
     "kubernetes.io/role/internal-elb" = "1"
@@ -69,6 +64,12 @@ locals {
     "kubernetes.io/role/elb" = "1"
     "Type"                   = "public"
   }
+
+  ###################
+  ##### Route53 #####
+  ###################
+  # Zone creation flags - create if domain exists and no existing zone provided
+  create_private_zone = var.domain_name != null && var.existing_private_zone_id == null
 
   # Zone IDs - get from either newly created zones or existing ones
   public_zone_id  = var.create_public_zone ? module.external_zone[0].route53_zone_zone_id["external"] : var.existing_public_zone_id
