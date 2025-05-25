@@ -102,10 +102,6 @@ resource "random_password" "argocd_readonly" {
   length = 16
 }
 
-resource "random_string" "argocd_readonly_password" {
-  length = 16
-}
-
 resource "aws_secretsmanager_secret" "argocd_readonly_password" {
   count                   = local.argocd_privatelink_enabled ? 1 : 0
   name                    = "argocd-readonly-password"
