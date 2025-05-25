@@ -138,15 +138,20 @@ locals {
   ###########################
   grafana_privatelink_enabled = var.create_eks && var.grafana_privatelink_config.enabled
 
+  # Default values for Grafana Privatelink configuration
+  grafana_endpoint_default_aws_regions        = ["eu-central-1", "us-east-1"]
+  grafana_endpoint_default_allowed_principals = ["arn:aws:iam::${var.hyperspace_account_id}:root"]
+
+  # Combine default and custom allowed principals
   grafana_privatelink_allowed_principals = distinct(concat(
     var.grafana_privatelink_config.endpoint_allowed_principals,
-    ["arn:aws:iam::${var.hyperspace_account_id}:root"]
+    local.grafana_endpoint_default_allowed_principals
   ))
 
   grafana_privatelink_supported_regions = distinct(concat(
     [var.aws_region],
     var.grafana_privatelink_config.additional_aws_regions,
-    ["eu-central-1", "us-east-1"]
+    local.grafana_endpoint_default_aws_regions
   ))
 
   ###########################
@@ -171,7 +176,7 @@ locals {
   argocd_endpoint_default_aws_regions        = ["eu-central-1", "us-east-1"]
   argocd_endpoint_default_allowed_principals = ["arn:aws:iam::${var.hyperspace_account_id}:root"]
 
-  # Privatelink configuration
+  # Combine default and custom allowed principals
   argocd_privatelink_allowed_principals = distinct(concat(
     try(local.argocd_config.privatelink.allowed_principals, []),
     local.argocd_endpoint_default_allowed_principals
