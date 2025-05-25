@@ -119,7 +119,7 @@ resource "helm_release" "grafana" {
   cleanup_on_fail  = true
   values = [
     yamlencode({
-      adminPassword = random_password.grafana_admin_password.result
+      adminPassword = random_password.grafana_admin_password[0].result
       service = {
         type = local.grafana_privatelink_enabled ? "LoadBalancer" : "ClusterIP"
         annotations = local.grafana_privatelink_enabled ? {
@@ -145,7 +145,7 @@ resource "helm_release" "grafana" {
 
   set_sensitive {
     name  = "adminPassword"
-    value = random_password.grafana_admin_password.result
+    value = random_password.grafana_admin_password[0].result
   }
 
   depends_on = [module.eks, time_sleep.wait_for_internal_ingress, module.eks_blueprints_addons]
