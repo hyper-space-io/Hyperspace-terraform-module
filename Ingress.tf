@@ -16,11 +16,6 @@ locals {
   } : {}
 
   combined_ingress_config = merge(local.ingress_config, local.external_ingress_config)
-<<<<<<< HEAD
-  
-=======
-
->>>>>>> master
   common_ingress_annotations = {
     "alb.ingress.kubernetes.io/healthcheck-path" = "/healthz"
     "alb.ingress.kubernetes.io/ssl-policy"       = "ELBSecurityPolicy-TLS13-1-2-2021-06"
