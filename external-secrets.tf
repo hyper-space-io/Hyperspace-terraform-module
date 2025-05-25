@@ -23,21 +23,23 @@ EOF
 
 # Wait for CRD creation to be ready
 resource "time_sleep" "wait_for_crd" {
+  count           = var.create_eks ? 1 : 0
   depends_on      = [helm_release.secrets_manager]
   create_duration = "30s"
 }
 
-resource "kubectl_manifest" "cluster_secret_store" {
-  yaml_body  = <<-EOF
-    apiVersion: external-secrets.io/v1beta1
-    kind: ClusterSecretStore
-    metadata:
-      name: cluster-secret-store
-    spec:
-      provider:
-        aws:
-          region: ${var.aws_region}
-          service: SecretsManager
-  EOF
-  depends_on = [helm_release.secrets_manager, time_sleep.wait_for_crd, time_sleep.wait_for_cluster_ready]
+# Install the secret manager manifests with helm chart as kubectl_manifest and kubernetes_manifest resources don't work well with CRDS
+resource "helm_release" "secret_manager_manifests" {
+  count           = var.create_eks ? 1 : 0
+  name            = "secret-manager-manifests"
+  namespace       = local.external_secrets_release_name
+  chart           = "${path.module}/secrets-manager-manifests"
+  wait            = true
+  force_update    = true
+  cleanup_on_fail = true
+  set {
+    name  = "awsRegion"
+    value = var.aws_region
+  }
+  depends_on = [helm_release.secrets_manager, time_sleep.wait_for_crd]
 }

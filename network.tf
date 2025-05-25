@@ -23,15 +23,9 @@ module "vpc" {
   flow_log_cloudwatch_log_group_class             = var.flow_log_group_class
   create_flow_log_cloudwatch_iam_role             = var.create_vpc_flow_logs
   flow_log_file_format                            = var.flow_log_file_format
-  public_subnet_tags = {
-    "kubernetes.io/role/elb" = "1"
-    "Type"                   = "public"
-  }
-  private_subnet_tags = {
-    "kubernetes.io/role/internal-elb" = "1"
-    "Type"                            = "private"
-  }
-  tags = local.tags
+  public_subnet_tags                              = local.public_subnet_tags
+  private_subnet_tags                             = local.private_subnet_tags
+  tags                                            = local.tags
 }
 
 module "endpoints" {

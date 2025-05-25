@@ -6,14 +6,19 @@ locals {
     terraform   = "true"
   })
 
-  ###############
-  #### Ingress ##
-  ###############
+  ##################
+  ### Hyperspace ###
+  ##################
+  hyperspace_helm_region = "eu-west-1"
+
+  #################
+  #### Ingress ####
+  #################
   internal_ingress_class_name = "nginx-internal"
 
-  ###############
-  #### ALB ######
-  ###############
+  #################
+  ##### ALB #######
+  #################
   alb_values = <<EOT
   vpcId: ${local.vpc_id}
   region: ${var.aws_region}
@@ -35,11 +40,10 @@ locals {
     id              = local.create_vpc ? null : data.aws_vpc.existing[0].id
     cidr_block      = local.create_vpc ? null : data.aws_vpc.existing[0].cidr_block
     private_subnets = local.create_vpc ? [] : var.existing_private_subnets
-    public_subnets  = local.create_vpc ? [] : var.existing_public_subnets
   }
 
   # Get availability zones either from existing subnets or create new ones
-  availability_zones = local.create_vpc ? (length(var.availability_zones) == 0 ? slice(data.aws_availability_zones.available.names, 0, var.num_zones) : var.availability_zones) : (length(data.aws_subnet.existing) > 0 ? [for subnet in data.aws_subnet.existing : subnet.availability_zone] : [])
+  availability_zones = local.create_vpc ? (length(var.availability_zones) == 0 ? slice(data.aws_availability_zones.available.names, 0, var.num_zones) : var.availability_zones) : (length(data.aws_subnet.existing_private) > 0 ? [for subnet in data.aws_subnet.existing_private : subnet.availability_zone] : [])
 
   # Used to calculate the subnets. These are only used when creating a new VPC
   private_subnets = local.create_vpc ? [for azs_count in local.availability_zones : cidrsubnet(var.vpc_cidr, 4, index(local.availability_zones, azs_count))] : []
@@ -55,6 +59,16 @@ locals {
   ###################
   # Zone creation flags - create if domain exists and no existing zone provided
   create_private_zone = var.domain_name != null && var.existing_private_zone_id == null
+  # Required tags for subnets
+  private_subnet_tags = {
+    "kubernetes.io/role/internal-elb" = "1"
+    "Type"                            = "private"
+  }
+
+  public_subnet_tags = {
+    "kubernetes.io/role/elb" = "1"
+    "Type"                   = "public"
+  }
 
   # Zone IDs - get from either newly created zones or existing ones
   public_zone_id  = var.create_public_zone ? module.external_zone[0].route53_zone_zone_id["external"] : var.existing_public_zone_id

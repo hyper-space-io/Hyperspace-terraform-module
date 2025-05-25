@@ -17,7 +17,7 @@ data "aws_vpc" "existing" {
   id    = var.existing_vpc_id
 }
 
-data "aws_subnet" "existing" {
+data "aws_subnet" "existing_private" {
   count = local.create_vpc ? 0 : length(var.existing_private_subnets)
   id    = var.existing_private_subnets[count.index]
 }
@@ -151,19 +151,29 @@ data "aws_iam_policy_document" "fpga_pull_access" {
 ######### EKS #########
 #######################
 
-data "kubernetes_ingress_v1" "internal_ingress" {
-  metadata {
-    name      = "internal-ingress"
-    namespace = "ingress"
+data "aws_lb" "internal_ingress" {
+  tags = {
+    "Domain"                   = "internal"
+    "elbv2.k8s.aws/cluster"    = module.eks.cluster_name
+    "ingress.k8s.aws/resource" = "LoadBalancer"
   }
   depends_on = [time_sleep.wait_for_internal_ingress, module.eks, kubernetes_ingress_v1.nginx_ingress]
 }
 
+<<<<<<< HEAD
 data "kubernetes_ingress_v1" "external_ingress" {
   count = var.create_public_zone ? 1 : 0
   metadata {
     name      = "external-ingress"
     namespace = "ingress"
+=======
+data "aws_lb" "external_ingress" {
+  count = var.create_public_zone ? 1 : 0
+  tags = {
+    "Domain"                   = "external"
+    "elbv2.k8s.aws/cluster"    = module.eks.cluster_name
+    "ingress.k8s.aws/resource" = "LoadBalancer"
+>>>>>>> master
   }
   depends_on = [time_sleep.wait_for_external_ingress, module.eks, kubernetes_ingress_v1.nginx_ingress]
 }

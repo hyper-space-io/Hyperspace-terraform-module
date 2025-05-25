@@ -16,7 +16,11 @@ locals {
   } : {}
 
   combined_ingress_config = merge(local.ingress_config, local.external_ingress_config)
+<<<<<<< HEAD
   
+=======
+
+>>>>>>> master
   common_ingress_annotations = {
     "alb.ingress.kubernetes.io/healthcheck-path" = "/healthz"
     "alb.ingress.kubernetes.io/ssl-policy"       = "ELBSecurityPolicy-TLS13-1-2-2021-06"
@@ -38,7 +42,7 @@ resource "helm_release" "nginx-ingress" {
   values = [<<EOF
 controller:
   electionID: ${each.key}-controller-leader
-  replicaCount: 2
+  replicaCount: 1
   extraArgs:
     http-port: 8080
     https-port: 9443
@@ -47,13 +51,13 @@ controller:
   resources:
     requests:
       cpu: 100m      
-      memory: 100Mi 
+      memory: 256Mi 
   autoscaling:
     enabled: true
-    minReplicas: 2
+    minReplicas: 1
     maxReplicas: 6
-    targetCPUUtilizationPercentage: 50    
-    targetMemoryUtilizationPercentage: 80 
+    targetCPUUtilizationPercentage: 75    
+    targetMemoryUtilizationPercentage: 75 
     behavior:
       scaleDown:
         stabilizationWindowSeconds: 300  
@@ -140,6 +144,7 @@ resource "kubernetes_ingress_v1" "nginx_ingress" {
     annotations = merge({
       "alb.ingress.kubernetes.io/certificate-arn"          = local.create_acm ? (each.key == "internal" ? module.internal_acm[0].acm_certificate_arn : module.external_acm[0].acm_certificate_arn) : ""
       "alb.ingress.kubernetes.io/scheme"                   = each.value.scheme
+      "alb.ingress.kubernetes.io/tags"                     = "Domain=${each.key}"
       "alb.ingress.kubernetes.io/load-balancer-attributes" = "idle_timeout.timeout_seconds=600, access_logs.s3.enabled=true, access_logs.s3.bucket=${local.s3_bucket_names["logs-ingress"]},access_logs.s3.prefix=${each.value.s3_prefix}"
       "alb.ingress.kubernetes.io/actions.ssl-redirect" = (each.key == "internal" && module.internal_acm[0].acm_certificate_arn != "") || (each.key == "external" && var.create_public_zone && var.domain_name != "") ? jsonencode({
         Type = "redirect"

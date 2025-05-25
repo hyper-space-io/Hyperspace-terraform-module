@@ -94,19 +94,25 @@ terraform apply
 | aws_region | The AWS region where resources will be created | `string` | `"us-east-1"` | yes |
 | domain_name | The main domain name used for creating subdomains for various services | `string` | `""` | yes |
 | environment | The deployment environment (e.g., dev, staging, prod) | `string` | n/a | yes |
-| argocd_config | Configuration for ArgoCD installation and VCS integration | `object` | See below | yes |
+| argocd_config | Configuration for ArgoCD installation and VCS integration | `object` | [See below](#argocd_config-required) | yes |
 
 ### Optional Inputs
+
+#### Global Configuration
+
+| Name | Description | Type | Default | Required |
+|------|-------------|------|---------|----------|
+| terraform_role | IAM role for Terraform to assume | `string` | `null` | no |
+| project | Name of the project | `string` | `"hyperspace"` | no |
+| tags | Map of tags to add to all resources | `map(string)` | `{}` | no |
 
 #### VPC Configuration
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|----------|
 | vpc_cidr | The CIDR block for the VPC | `string` | `"10.0.0.0/16"` | no |
-| create_vpc | Whether to create a new VPC | `bool` | `true` | no |
 | existing_vpc_id | ID of an existing VPC to use | `string` | `null` | no |
-| existing_private_subnets | List of existing private subnet IDs | `list(string)` | `[]` | no |
-| existing_public_subnets | List of existing public subnet IDs | `list(string)` | `[]` | no |
+| existing_private_subnets | List of existing private subnet IDs | `list(string)` | `null` | no |
 | availability_zones | List of availability zones to deploy resources | `list(string)` | `[]` | no |
 | num_zones | Number of availability zones to use for EKS nodes | `number` | `2` | no |
 | enable_nat_gateway | Whether to enable NAT Gateway | `bool` | `true` | no |
@@ -128,21 +134,18 @@ terraform apply
 | eks_additional_admin_roles | Additional IAM roles to add as cluster administrators | `list(string)` | `[]` | no |
 | eks_additional_admin_roles_policy | IAM policy for the EKS additional admin roles | `string` | `"AmazonEKSClusterAdminPolicy"` | no |
 
+#### Route53 Configuration
+
+| Name | Description | Type | Default | Required |
+|------|-------------|------|---------|----------|
+| create_public_zone | Whether to create the public Route 53 zone | `bool` | `false` | no |
+
 #### Monitoring and Observability
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|----------|
 | prometheus_endpoint_config | Configuration for Prometheus endpoint service | `object` | See below | no |
 | grafana_privatelink_config | Configuration for Grafana PrivateLink | `object` | See below | no |
-
-#### Additional Configuration
-
-| Name | Description | Type | Default | Required |
-|------|-------------|------|---------|----------|
-| project | Name of the project | `string` | `"hyperspace"` | no |
-| terraform_role | IAM role for Terraform to assume | `string` | `null` | no |
-| tags | Map of tags to add to all resources | `map(string)` | `{}` | no |
-| create_public_zone | Whether to create the public Route 53 zone | `bool` | `false` | no |
 
 ### Object Inputs
 
@@ -219,24 +222,18 @@ To use an existing VPC, simply provide the VPC and subnet IDs:
 ```hcl
 module "hyperspace" {
   source                = "github.com/hyper-space-io/Hyperspace-terraform-module"
-  aws_region            = "eu-west-1"
+  aws_region            = "us-east-1" 
   domain_name           = "example.com"
   environment           = "dev"
   aws_account_id        = "123456789012"
   hyperspace_account_id = "123456789012"
 
   # Existing VPC Configuration
-  create_vpc             = false
   existing_vpc_id        = "vpc-0dc21447e050ee2b9"
   existing_private_subnets = [
     "subnet-063e309f79a853d4b",
     "subnet-036a1e0052df1a89f",
     "subnet-0661c345359809e05"
-  ]
-  # Optional: If you have public subnets
-  existing_public_subnets = [
-    "subnet-abcdef1234567890",
-    "subnet-fedcba0987654321"
   ]
   argocd_config = {
     vcs = {
@@ -259,12 +256,31 @@ Before using an existing VPC, ensure it meets these requirements:
    - DNS resolution must be enabled
 
 2. **Subnet Tags**:
-   - Private subnets must have: `kubernetes.io/role/internal-elb = "1"`
-   - Public subnets must have: `kubernetes.io/role/elb = "1"`
+   - Private subnets must have: 
+     ```
+     kubernetes.io/role/internal-elb = 1
+     Type = private
+     ```
+   - Public subnets must have (only if external ALB is required, i.e., when `create_public_zone` is true): 
+     ```
+     kubernetes.io/role/elb = 1
+     Type = public
+     kubernetes.io/cluster/${cluster-name} = shared
+     ```
 
-3. **Network Requirements**:
+3. **Kubernetes Cluster Tags**:
+   If the subnets already have an existing EKS cluster, they will have:
+   ```
+   kubernetes.io/cluster/${cluster-name} = shared/owned
+   ```
+   
+   You must add our EKS cluster tag as well:
+   ```
+   kubernetes.io/cluster/<HYPERSPACE_EKS_CLUSTER> = shared
+   ```
+
+4. **Network Requirements**:
    - Private subnets must have NAT Gateway access
-   - Public subnets must have Internet Gateway access
    - Sufficient IP addresses in each subnet for EKS nodes
 
 ## Features
