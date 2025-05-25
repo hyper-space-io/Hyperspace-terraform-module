@@ -176,7 +176,7 @@ EOF
 ##################################
 
 resource "aws_vpc_endpoint" "prometheus" {
-  count               = local.prometheus_endpoint_enabled ? 1 : 0
+  count               = var.create_eks && local.prometheus_endpoint_enabled ? 1 : 0
   vpc_id              = local.vpc_id
   service_name        = local.prometheus_endpoint_config.endpoint_service_name
   vpc_endpoint_type   = "Interface"

@@ -6,19 +6,19 @@ locals {
     terraform   = "true"
   })
 
-  ##################
-  ### Hyperspace ###
-  ##################
+  ################
+  ## Hyperspace ##
+  ################
   hyperspace_helm_region = "eu-west-1"
 
-  #################
-  #### Ingress ####
-  #################
+  ###############
+  ### Ingress ###
+  ###############
   internal_ingress_class_name = "nginx-internal"
 
-  #################
-  ##### ALB #######
-  #################
+  ###############
+  ##### ALB #####
+  ###############
   alb_values = <<EOT
   vpcId: ${local.vpc_id}
   region: ${var.aws_region}
@@ -139,11 +139,10 @@ locals {
   ###########################
   grafana_privatelink_enabled = var.create_eks && var.grafana_privatelink_config.enabled
 
-  # Default values for Grafana Privatelink configuration
+  # Default values for Privatelink configuration
   grafana_endpoint_default_aws_regions        = ["eu-central-1", "us-east-1"]
   grafana_endpoint_default_allowed_principals = ["arn:aws:iam::${var.hyperspace_account_id}:root"]
 
-  # Combine default and custom allowed principals
   grafana_privatelink_allowed_principals = distinct(concat(
     var.grafana_privatelink_config.endpoint_allowed_principals,
     local.grafana_endpoint_default_allowed_principals
@@ -171,7 +170,7 @@ locals {
   ###########################
   ### ArgoCD Privatelink ####
   ###########################
-  argocd_privatelink_enabled = local.argocd_enabled && try(local.argocd_config.privatelink.enabled, false)
+  argocd_privatelink_enabled = local.argocd_enabled && local.argocd_config.privatelink.enabled
 
   # Default values for Privatelink configuration
   argocd_endpoint_default_aws_regions        = ["eu-central-1", "us-east-1"]
@@ -179,12 +178,12 @@ locals {
 
   # Combine default and custom allowed principals
   argocd_privatelink_allowed_principals = distinct(concat(
-    try(local.argocd_config.privatelink.allowed_principals, []),
+    local.argocd_config.privatelink.allowed_principals,
     local.argocd_endpoint_default_allowed_principals
   ))
   argocd_privatelink_supported_regions = distinct(concat(
     [var.aws_region],
-    try(local.argocd_config.privatelink.additional_aws_regions, []),
+    local.argocd_config.privatelink.additional_aws_regions,
     local.argocd_endpoint_default_aws_regions
   ))
 

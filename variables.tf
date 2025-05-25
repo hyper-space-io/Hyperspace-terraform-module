@@ -251,24 +251,7 @@ variable "argocd_config" {
     ))
     error_message = "When ArgoCD is enabled, either GitHub or GitLab Dex configuration must be provided"
   }
-  description = "ArgoCD configuration"
-  default = {
-    enabled = true
-    privatelink = {
-      enabled                     = false
-      endpoint_allowed_principals = []
-      additional_aws_regions      = []
-    }
-    vcs = {
-      organization = ""
-      repository   = ""
-    }
-    rbac = {
-      sso_admin_group        = ""
-      users_rbac_rules       = []
-      users_additional_rules = []
-    }
-  }
+  description = "ArgoCD configuration for VCS, RBAC, and Privatelink"
 }
 
 ################################
@@ -283,12 +266,6 @@ variable "prometheus_endpoint_config" {
     additional_cidr_blocks  = optional(list(string), [])
   })
   description = "Prometheus endpoint configuration"
-  default = {
-    enabled                 = false
-    endpoint_service_name   = ""
-    endpoint_service_region = ""
-    additional_cidr_blocks  = []
-  }
 }
 
 ################################
@@ -302,9 +279,4 @@ variable "grafana_privatelink_config" {
     additional_aws_regions      = optional(list(string), [])
   })
   description = "Grafana privatelink configuration"
-  default = {
-    enabled                     = false
-    endpoint_allowed_principals = []
-    additional_aws_regions      = []
-  }
 }

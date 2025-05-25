@@ -79,6 +79,7 @@ locals {
         create_bucket = var.create_eks
       }]
     }
+
     core-dump-logs = {
       lifecycle_rule = [{
         id      = "expire-after-one-year"
@@ -92,10 +93,12 @@ locals {
         create_bucket = var.create_eks
       }]
     }
+
     velero = {
       create_bucket = var.create_eks
     }
-    loki   = {
+
+    loki = {
       create_bucket = var.create_eks
     }
   }
