@@ -183,7 +183,7 @@ variable "domain_name" {
 }
 
 variable "create_public_zone" {
-  description = "Whether to create the public Route 53 zone. Defaults to true unless existing_public_zone_id is provided"
+  description = "Whether to create the public Route 53 zone."
   type        = bool
   default     = false
 }
