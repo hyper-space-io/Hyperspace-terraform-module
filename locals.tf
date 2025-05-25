@@ -178,7 +178,7 @@ locals {
 
   # Combine default and custom allowed principals
   argocd_privatelink_allowed_principals = distinct(concat(
-    local.argocd_config.privatelink.allowed_principals,
+    local.argocd_config.privatelink.endpoint_allowed_principals,
     local.argocd_endpoint_default_allowed_principals
   ))
   argocd_privatelink_supported_regions = distinct(concat(

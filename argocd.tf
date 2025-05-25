@@ -112,7 +112,7 @@ resource "aws_secretsmanager_secret" "argocd_readonly_password" {
 resource "aws_secretsmanager_secret_version" "argocd_readonly_password" {
   count         = local.argocd_privatelink_enabled ? 1 : 0
   secret_id     = aws_secretsmanager_secret.argocd_readonly_password[0].id
-  secret_string = random_string.argocd_readonly_password.result
+  secret_string = random_password.argocd_readonly[0].result
 }
 
 # Execute ArgoCD CLI setup and password update
