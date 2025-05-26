@@ -68,18 +68,19 @@ locals {
   ###################
   ##### Route53 #####
   ###################
-  # Zone creation flags - create if domain exists and no existing zone provided
+  # Zone creation flags
   create_private_zone = var.domain_name != null && var.existing_private_zone_id == null
 
   # Zone IDs - get from either newly created zones or existing ones
   public_zone_id  = var.create_public_zone ? module.external_zone[0].route53_zone_zone_id["external"] : var.existing_public_zone_id
   private_zone_id = local.create_private_zone ? module.internal_zone[0].route53_zone_zone_id["internal"] : var.existing_private_zone_id
 
-  # ACM validation - priority: validation_id > existing_public_zone > tf_created_public_zone > null (manual record creation)
+  # ACM validation priority:
+  # 1. domain_validation_zone_id (if provided)
+  # 2. existing_public_zone_id (if provided)
+  # 3. null (manual validation)
   validation_zone_id = var.domain_validation_zone_id != null ? var.domain_validation_zone_id : (
-    var.existing_public_zone_id != null ? var.existing_public_zone_id : (
-      var.create_public_zone ? data.aws_route53_zone.external[0].zone_id : null
-    )
+    var.existing_public_zone_id != null ? var.existing_public_zone_id : null
   )
 
   #################

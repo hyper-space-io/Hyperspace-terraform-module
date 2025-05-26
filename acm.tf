@@ -1,9 +1,10 @@
 locals {
-  create_route53_records = local.validation_zone_id != null ? true : false
+  # Only create Route53 records for validation if we have a validation zone ID
+  create_route53_records = local.validation_zone_id != null
 }
 
 module "external_acm" {
-  count       = var.create_public_zone || var.existing_public_zone_id != "" ? 1 : 0
+  count       = var.create_public_zone || var.existing_public_zone_id != null ? 1 : 0
   source      = "terraform-aws-modules/acm/aws"
   version     = "~> 5.1.1"
   domain_name = local.public_domain_name
@@ -15,12 +16,10 @@ module "external_acm" {
   validation_method      = "DNS"
   zone_id                = local.validation_zone_id
   wait_for_validation    = true
-
-  depends_on = [data.aws_route53_zone.external]
 }
 
 module "internal_acm" {
-  count       = local.create_private_zone ? 1 : 0
+  count       = local.create_private_zone || var.existing_private_zone_id != null ? 1 : 0
   source      = "terraform-aws-modules/acm/aws"
   version     = "~> 5.1.1"
   domain_name = local.internal_domain_name
@@ -32,6 +31,4 @@ module "internal_acm" {
   validation_method      = "DNS"
   zone_id                = local.validation_zone_id
   wait_for_validation    = true
-
-  depends_on = [data.aws_route53_zone.external]
 }

@@ -23,22 +23,6 @@ data "aws_subnet" "existing_private" {
 }
 
 #######################
-##### Route53 #########
-#######################
-
-data "aws_route53_zone" "external" {
-  count = var.create_public_zone ? 1 : 0
-  tags = {
-    Name = local.public_domain_name
-    Type = "public"
-    project = "hyperspace"
-    environment = var.environment
-    terraform = "true"
-  }
-  depends_on = [module.external_zone]
-}
-
-#######################
 ######## KMS ##########
 #######################
 
