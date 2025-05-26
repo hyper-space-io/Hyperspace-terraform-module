@@ -14,10 +14,10 @@ module "external_zone" {
       comment     = "Public hosted zone for ${local.public_domain_name}"
       tags = merge(local.tags, {
         Name = local.public_domain_name
+        Type = "public"
       })
     }
   }
-  depends_on = [module.external_acm]
 }
 
 module "internal_zone" {
@@ -35,10 +35,10 @@ module "internal_zone" {
       ]
       tags = merge(local.tags, {
         Name = local.internal_domain_name
+        Type = "private"
       })
     }
   }
-  depends_on = [module.internal_acm]
 }
 
 resource "aws_route53_record" "wildcard" {

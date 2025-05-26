@@ -28,7 +28,13 @@ data "aws_subnet" "existing_private" {
 
 data "aws_route53_zone" "external" {
   count = var.create_public_zone ? 1 : 0
-  zone_id = module.external_zone[0].route53_zone_zone_id["external"]
+  tags = {
+    Name = local.public_domain_name
+    Type = "public"
+    project = "hyperspace"
+    environment = var.environment
+    terraform = "true"
+  }
 }
 
 #######################
