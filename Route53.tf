@@ -5,7 +5,7 @@ locals {
 }
 
 module "external_zone" {
-  count   = var.create_public_zone && local.public_domain_name != "" ? 1 : 0
+  count   = local.create_public_zone ? 1 : 0
   source  = "terraform-aws-modules/route53/aws//modules/zones"
   version = "~> 4.1.0"
   zones = {
@@ -21,7 +21,7 @@ module "external_zone" {
 }
 
 module "internal_zone" {
-  count   = local.create_private_zone && local.internal_domain_name != "" ? 1 : 0
+  count   = local.create_private_zone ? 1 : 0
   source  = "terraform-aws-modules/route53/aws//modules/zones"
   version = "~> 4.1.0"
   zones = {

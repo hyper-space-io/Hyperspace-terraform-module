@@ -69,11 +69,15 @@ locals {
   ##### Route53 #####
   ###################
   # Zone creation flags
-  create_private_zone = var.domain_name != null && var.existing_private_zone_id == null
+  create_private_zone = local.internal_domain_name != null && var.existing_private_zone_id == null
+  create_public_zone  = local.public_domain_name != null && var.existing_public_zone_id == null
 
-  # Zone IDs - get from either newly created zones or existing ones
-  public_zone_id  = var.create_public_zone ? module.external_zone[0].route53_zone_zone_id["external"] : var.existing_public_zone_id
-  private_zone_id = local.create_private_zone ? module.internal_zone[0].route53_zone_zone_id["internal"] : var.existing_private_zone_id
+  # external LB creation
+  create_external_lb = local.create_public_zone || var.domain_validation_zone_id != null
+
+  # Zone IDs - use existing zones when creating new ones, otherwise use newly created zones
+  private_zone_id = local.create_private_zone ? var.existing_private_zone_id : module.internal_zone[0].route53_zone_zone_id["internal"]
+  public_zone_id  = var.create_public_zone ? var.existing_public_zone_id : module.external_zone[0].route53_zone_zone_id["external"]
 
   # ACM validation priority:
   # 1. domain_validation_zone_id (if provided)

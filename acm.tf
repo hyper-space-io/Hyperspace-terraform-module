@@ -4,7 +4,7 @@ locals {
 }
 
 module "external_acm" {
-  count       = var.create_public_zone || var.existing_public_zone_id != null ? 1 : 0
+  count       = local.create_external_lb ? 1 : 0
   source      = "terraform-aws-modules/acm/aws"
   version     = "~> 5.1.1"
   domain_name = local.public_domain_name
@@ -19,7 +19,7 @@ module "external_acm" {
 }
 
 module "internal_acm" {
-  count       = local.create_private_zone || var.existing_private_zone_id != null ? 1 : 0
+  count       = local.create_private_zone ? 1 : 0
   source      = "terraform-aws-modules/acm/aws"
   version     = "~> 5.1.1"
   domain_name = local.internal_domain_name

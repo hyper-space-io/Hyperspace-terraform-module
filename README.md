@@ -288,76 +288,53 @@ Before using an existing VPC, ensure it meets these requirements:
 
 ## DNS and Certificate Configuration
 
-The module provides multiple options for managing DNS zones and ACM certificate validation:
+The module provides flexible options for managing DNS zones and ACM certificate validation. For automatic DNS validation, you must provide either an existing public zone or a domain validation zone.
 
-### Option 1: Create New Zones (Default)
-By default, the module:
-- Creates a private hosted zone for internal services
-- Does NOT create a public zone (create_public_zone = false)
-- Requires manual certificate validation
+### Available Options
 
-### Option 2: Use Existing Zones
-You can use existing Route53 zones, for records to be created and DNS Validaiton by providing their IDs:
+1. **Zone Management**:
+   - Create new private zone (default)
+   - Create new public zone (`create_public_zone = true`)
+   - Use existing public zone (`existing_public_zone_id`)
+   - Use existing private zone (`existing_private_zone_id`)
+   - Use domain validation zone (`domain_validation_zone_id`)
+
+2. **Load Balancer Creation**:
+   - Internal ALB: Always created
+   - External ALB: Created when either:
+     - `create_public_zone = true`, OR
+     - `domain_validation_zone_id` is provided
+
+3. **Certificate Validation**:
+   - Automatic: When either `existing_public_zone_id` or `domain_validation_zone_id` is provided
+   - Manual: When using new public zone or no public zone
+
+### Recommended Combinations
 
 ```hcl
+# Recommended: Automatic validation with existing public zone
 module "hyperspace" {
-  # ... other configuration ...
-  
-  # Use existing zones
-  existing_public_zone_id  = "Z1234567890ABC"  # Optional: ID of existing public zone
-  existing_private_zone_id = "Z0987654321XYZ"  # Optional: ID of existing private zone
+  existing_public_zone_id = "Z1234567890ABC"  # For both DNS and validation
+}
+
+# Recommended: Automatic validation with separate validation zone
+module "hyperspace" {
+  domain_validation_zone_id = "Z1234567890ABC"  # For validation only
+}
+
+# Optional: Use existing private zone with automatic validation
+module "hyperspace" {
+  existing_private_zone_id = "Z0987654321XYZ"
+  domain_validation_zone_id = "Z1234567890ABC"
+}
+
+# Optional: Create new public zone (requires manual validation)
+module "hyperspace" {
+  create_public_zone = true
 }
 ```
 
-### Option 3: DNS Validation Only
-If you want to use a public zone only for certificate validation (without creating or managing the zone):
-
-```hcl
-module "hyperspace" {
-  # ... other configuration ...
-  
-  # Use a public zone only for certificate validation
-  domain_validation_zone_id = "Z1234567890ABC"  # ID of a public zone for ACM validation
-}
-```
-
-### Certificate Validation
-
-Certificate validation is handled automatically when using any of these options:
-- Using `create_public_zone = true` (creates a new public zone)
-- Providing `existing_public_zone_id` (uses existing public zone)
-- Providing `domain_validation_zone_id` (uses specified zone for validation only)
-
-#### Manual Validation
-If none of the above options are used, you'll need to manually validate the certificates:
-
-1. In AWS Console > Certificate Manager, find your pending certificate
-2. Copy the validation record name and value
-3. Create CNAME records in your **public** Route 53 hosted zone:
-   ```
-   Name:  <RANDOM_STRING>.<environment>.<your-domain>
-   Value: _<RANDOM_STRING>.validations.aws.
-   ```
-4. Wait for validation (5-30 minutes)
-5. Terraform will automatically continue once validated
-
-### Important Notes
-1. The `domain_validation_zone_id` must be a public hosted zone ID
-2. The validation zone is only used for ACM certificate validation
-3. No DNS records will be created in the validation zone
-4. The validation zone must be in the same AWS account as the certificates
-5. The validation zone must be a public hosted zone (private zones cannot be used for ACM validation)
-6. The CNAME must be created in a public hosted zone, not private
-7. Ensure you include the trailing dot in the Value field when manually creating CNAME records
-
-### DNS Record Creation
-- Internal wildcard records are automatically created in the private zone
-- Public wildcard records are only created if `create_public_zone` is true
-
-The module automatically creates the required DNS verification records when:
-- `create_public_zone = true` (creates a new public zone), OR
-- `existing_public_zone_id` is provided, OR
-- `domain_validation_zone_id` is provided
+Note: Options can be combined as long as they don't conflict (e.g., you can't provide both `create_public_zone = true` and `existing_public_zone_id`).
 
 ## Features
 
