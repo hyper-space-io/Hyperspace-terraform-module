@@ -17,6 +17,7 @@ module "external_zone" {
       })
     }
   }
+  depends_on = [module.external_acm]
 }
 
 module "internal_zone" {
@@ -37,6 +38,7 @@ module "internal_zone" {
       })
     }
   }
+  depends_on = [module.internal_acm]
 }
 
 resource "aws_route53_record" "wildcard" {
