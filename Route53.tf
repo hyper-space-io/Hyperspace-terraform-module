@@ -10,7 +10,7 @@ module "external_zone" {
   version = "~> 4.1.0"
   zones = {
     external = {
-      domain_name = "${var.environment}.${var.domain_name}"
+      domain_name = local.public_domain_name
       comment     = "Public hosted zone for ${local.public_domain_name}"
       tags = merge(local.tags, {
         Name = local.public_domain_name
