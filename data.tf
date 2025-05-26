@@ -35,6 +35,7 @@ data "aws_route53_zone" "external" {
     environment = var.environment
     terraform = "true"
   }
+  depends_on = [module.external_zone]
 }
 
 #######################

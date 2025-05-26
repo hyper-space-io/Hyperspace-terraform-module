@@ -15,6 +15,8 @@ module "external_acm" {
   validation_method      = "DNS"
   zone_id                = local.validation_zone_id
   wait_for_validation    = true
+
+  depends_on = [data.aws_route53_zone.external]
 }
 
 module "internal_acm" {
@@ -30,4 +32,6 @@ module "internal_acm" {
   validation_method      = "DNS"
   zone_id                = local.validation_zone_id
   wait_for_validation    = true
+
+  depends_on = [data.aws_route53_zone.external]
 }
