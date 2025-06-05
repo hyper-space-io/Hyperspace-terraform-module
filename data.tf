@@ -152,6 +152,7 @@ data "aws_iam_policy_document" "fpga_pull_access" {
 #######################
 
 data "aws_lb" "internal_ingress" {
+  count = var.create_eks ? 1 : 0
   tags = {
     "Domain"                   = "internal"
     "elbv2.k8s.aws/cluster"    = module.eks.cluster_name
@@ -161,7 +162,7 @@ data "aws_lb" "internal_ingress" {
 }
 
 data "aws_lb" "external_ingress" {
-  count = var.create_public_zone ? 1 : 0
+  count = var.create_eks && var.create_public_zone ? 1 : 0
   tags = {
     "Domain"                   = "external"
     "elbv2.k8s.aws/cluster"    = module.eks.cluster_name
