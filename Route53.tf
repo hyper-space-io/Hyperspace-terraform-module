@@ -1,6 +1,6 @@
 locals {
   internal_domain_name = var.domain_name != "" ? "internal.hyperspace.${var.environment}.${var.domain_name}" : ""
-  public_domain_name   = var.domain_name != "" ? "external.hyperspace.${var.environment}.${var.domain_name}" : ""
+  public_domain_name   = var.domain_name != "" ? "hyperspace.${var.environment}.${var.domain_name}" : ""
   create_records       = var.domain_name != "" ? 1 : 0
 }
 
