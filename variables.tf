@@ -207,8 +207,11 @@ variable "existing_private_zone_id" {
 }
 
 variable "additional_private_zone_vpc_ids" {
-  type        = list(string)
-  description = "List of additional VPC IDs that should have access to the private hosted zone"
+  type = list(object({
+    vpc_id     = string
+    vpc_region = optional(string, null)
+  }))
+  description = "List of additional VPC configurations that should have access to the private hosted zone. Each object should contain vpc_id and optionally vpc_region for cross-region VPCs."
   default     = []
 }
 

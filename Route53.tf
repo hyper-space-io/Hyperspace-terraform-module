@@ -5,10 +5,13 @@ locals {
   
   # Combine main VPC with additional VPCs for private hosted zone
   private_zone_vpc_configs = concat(
-    # Main VPC (always included)
+    # Main VPC (always included, same region as the zone)
     [{ vpc_id = local.vpc_id }],
-    # Additional VPCs from user input
-    [for vpc_id in var.additional_private_zone_vpc_ids : { vpc_id = vpc_id }]
+    # Additional VPCs from user input (can be cross-region)
+    [for vpc_config in var.additional_private_zone_vpc_ids : {
+      vpc_id     = vpc_config.vpc_id
+      vpc_region = vpc_config.vpc_region
+    }]
   )
 }
 
