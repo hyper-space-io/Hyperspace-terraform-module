@@ -142,6 +142,7 @@ terraform apply
 | existing_public_zone_id | ID of an existing public Route 53 zone | `string` | `null` | no |
 | existing_private_zone_id | ID of an existing private Route 53 zone | `string` | `null` | no |
 | domain_validation_zone_id | ID of a public Route 53 zone to use for ACM certificate validation | `string` | `null` | no |
+| additional_private_zone_vpc_ids | List of additional VPC IDs that should have access to the private hosted zone | `list(string)` | `[]` | no |
 
 #### Monitoring and Observability
 

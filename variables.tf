@@ -206,6 +206,12 @@ variable "existing_private_zone_id" {
   default     = null
 }
 
+variable "additional_private_zone_vpc_ids" {
+  type        = list(string)
+  description = "List of additional VPC IDs that should have access to the private hosted zone"
+  default     = []
+}
+
 ###############################
 ########## ArgoCD #############
 ###############################

@@ -2,6 +2,14 @@ locals {
   internal_domain_name = var.domain_name != "" ? "internal.hyperspace.${var.environment}.${var.domain_name}" : ""
   public_domain_name   = var.domain_name != "" ? "hyperspace.${var.environment}.${var.domain_name}" : ""
   create_records       = var.domain_name != "" ? 1 : 0
+  
+  # Combine main VPC with additional VPCs for private hosted zone
+  private_zone_vpc_configs = concat(
+    # Main VPC (always included)
+    [{ vpc_id = local.vpc_id }],
+    # Additional VPCs from user input
+    [for vpc_id in var.additional_private_zone_vpc_ids : { vpc_id = vpc_id }]
+  )
 }
 
 module "external_zone" {
@@ -28,11 +36,7 @@ module "internal_zone" {
     internal = {
       domain_name = local.internal_domain_name
       comment     = "Private hosted zone for ${local.internal_domain_name}"
-      vpc = [
-        {
-          vpc_id = local.vpc_id
-        }
-      ]
+      vpc         = local.private_zone_vpc_configs
       tags = merge(local.tags, {
         Name = local.internal_domain_name
         Type = "private"
