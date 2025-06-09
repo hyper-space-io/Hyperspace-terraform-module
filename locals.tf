@@ -278,7 +278,7 @@ locals {
 
   # SSO access rules
   sso_rbac_rules = try(local.argocd_config.rbac.sso_admin_group != "", false) ? [
-    "g, ${try(local.argocd_config.rbac.sso_admin_group, "")}, role:org-admin",
+    "g, ${try(local.argocd_config.vcs.organization, "")}:${try(local.argocd_config.rbac.sso_admin_group, "")}, role:org-admin",
     "g, ${try(local.argocd_config.vcs.organization, "")}:*, role:org-admin"
     ] : [
     "g, ${try(local.argocd_config.vcs.organization, "")}:*, role:org-admin",
