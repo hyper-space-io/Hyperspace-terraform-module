@@ -56,7 +56,7 @@ data "aws_lb" "argocd_privatelink_nlb" {
 resource "time_sleep" "wait_for_grafana_privatelink_nlb" {
   count           = local.grafana_privatelink_enabled ? 1 : 0
   create_duration = "180s"
-  depends_on      = [helm_release.grafana]
+  depends_on      = [helm_release.kube_prometheus_stack]
 }
 
 data "aws_lb" "grafana_privatelink_nlb" {
