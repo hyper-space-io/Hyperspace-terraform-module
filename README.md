@@ -139,6 +139,10 @@ terraform apply
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|----------|
 | create_public_zone | Whether to create the public Route 53 zone | `bool` | `false` | no |
+| existing_public_zone_id | ID of an existing public Route 53 zone | `string` | `null` | no |
+| existing_private_zone_id | ID of an existing private Route 53 zone | `string` | `null` | no |
+| domain_validation_zone_id | ID of a public Route 53 zone to use for ACM certificate validation | `string` | `null` | no |
+| additional_private_zone_vpc_ids | List of additional VPC configurations that should have access to the private hosted zone | `list(object)` | `[]` | no |
 
 #### Monitoring and Observability
 
@@ -283,6 +287,56 @@ Before using an existing VPC, ensure it meets these requirements:
    - Private subnets must have NAT Gateway access
    - Sufficient IP addresses in each subnet for EKS nodes
 
+## DNS and Certificate Configuration
+
+The module provides flexible options for managing DNS zones and ACM certificate validation. For automatic DNS validation, you must provide either an existing public zone or a domain validation zone.
+
+### Available Options
+
+1. **Zone Management**:
+   - Create new private zone (default)
+   - Create new public zone (`create_public_zone = true`)
+   - Use existing public zone (`existing_public_zone_id`)
+   - Use existing private zone (`existing_private_zone_id`)
+   - Use domain validation zone (`domain_validation_zone_id`)
+
+2. **Load Balancer Creation**:
+   - Internal ALB: Always created
+   - External ALB: Created when either:
+     - `create_public_zone = true`, OR
+     - `domain_validation_zone_id` is provided
+
+3. **Certificate Validation**:
+   - Automatic: When either `existing_public_zone_id` or `domain_validation_zone_id` is provided
+   - Manual: When using new public zone or no public zone
+
+### Recommended Combinations
+
+```hcl
+# Recommended: Automatic validation with existing public zone
+module "hyperspace" {
+  existing_public_zone_id = "Z1234567890ABC"  # For both DNS and validation
+}
+
+# Recommended: Automatic validation with separate validation zone
+module "hyperspace" {
+  domain_validation_zone_id = "Z1234567890ABC"  # For validation only
+}
+
+# Optional: Use existing private zone with automatic validation
+module "hyperspace" {
+  existing_private_zone_id = "Z0987654321XYZ"
+  domain_validation_zone_id = "Z1234567890ABC"
+}
+
+# Optional: Create new public zone (requires manual validation)
+module "hyperspace" {
+  create_public_zone = true
+}
+```
+
+Note: Options can be combined as long as they don't conflict (e.g., you can't provide both `create_public_zone = true` and `existing_public_zone_id`).
+
 ## Features
 
 ### EKS Cluster
@@ -323,30 +377,22 @@ Before using an existing VPC, ensure it meets these requirements:
 - ArgoCD installation and SSO integration
 - ECR credentials sync to gain access to private hyperspace ECR repositories
 
-# Important Notes
-
-## ACM Certificate Validation
-During deployment, Terraform will pause for ACM certificate validation:
-
-1. In AWS Console > Certificate Manager, find your pending certificate
-2. Copy the validation record name and value
-3. Create CNAME records in your **public** Route 53 hosted zone:
-   ```
-   Name:  <RANDOM_STRING>.<environment>.<your-domain>
-   Value: _<RANDOM_STRING>.validations.aws.
-   ```
-3. Wait for validation (5-30 minutes)
-4. Terraform will automatically continue once validated
-
-**Important**: The CNAME must be created in a public hosted zone, not private. Ensure you include the trailing dot in the Value field.
-
 ## Privatelink
 
-Privatelink is disabled by default and can be enabled through the `argocd_config.privatelink` and `grafana_privatelink_config` variables. 
+Privatelink provides a secure, private connection between Hyperspace and your infrastructure for observability & monitoring.
 
-When enabled, it creates a secure, private connection that allows Hyperspace to access your deployed services (ArgoCD, Grafana, Prometheus, and Loki) through AWS PrivateLink. This ensures all traffic between Hyperspace and your services stays private and never traverses the public internet.
+It's disabled by default and can be enabled through the `argocd_config.privatelink` and `grafana_privatelink_config` variables.
 
-After deploying the infrastructure with Privatelink enabled, you'll need to verify your VPC Endpoint Service by creating a DNS record in the hosted zone of your domain:
+When enabled, it creates a secure, private connection that allows Hyperspace to access your deployed services (Hyperspace, ArgoCD, Grafana, Prometheus, and Loki) through AWS PrivateLink, ensuring all traffic stays within the AWS network and never traverses the public internet.
+
+### DNS Verification Records
+
+The module automatically creates the required DNS verification records when:
+- `create_public_zone = true` (creates a new public zone), OR
+- `existing_public_zone_id` is provided, OR
+- `domain_validation_zone_id` is provided
+
+If none of these conditions are met, you'll need to manually create the verification records:
 
 ### 1. Get Verification Details
 1. Open AWS Console and navigate to VPC Services

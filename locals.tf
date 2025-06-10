@@ -1,9 +1,9 @@
 locals {
   # General
   tags = merge(var.tags, {
-    project     = "hyperspace"
-    environment = var.environment
-    terraform   = "true"
+    Project     = "hyperspace"
+    Environment = var.environment
+    Terraform   = "true"
   })
 
   ################
@@ -24,9 +24,14 @@ locals {
   region: ${var.aws_region}
   EOT
 
-  ################
-  ##### VPC ######
-  ################
+  ##################
+  ##### KMS ########
+  ##################
+  hyperspace_ami_key_alias = "arn:aws:kms:${var.aws_region}:${var.hyperspace_account_id}:alias/HYPERSPACE_AMI_KEY"
+
+  ##################
+  ##### VPC ########
+  ##################
   # Determine if we need to create a new VPC or use existing one
   create_vpc = var.existing_vpc_id == null ? true : false
 
@@ -60,10 +65,27 @@ locals {
     "Type"                   = "public"
   }
 
-  ##################
-  ##### KMS ########
-  ##################
-  hyperspace_ami_key_alias = "arn:aws:kms:${var.aws_region}:${var.hyperspace_account_id}:alias/HYPERSPACE_AMI_KEY"
+  ###################
+  ##### Route53 #####
+  ###################
+  # Zone creation flags
+  create_private_zone = local.internal_domain_name != null && var.existing_private_zone_id == null
+  create_public_zone  = local.public_domain_name != null && var.existing_public_zone_id == null
+
+  # external LB creation
+  create_external_lb = local.create_public_zone || var.domain_validation_zone_id != null
+
+  # Zone IDs - use existing zones when provided, otherwise use newly created zones
+  private_zone_id = var.existing_private_zone_id != null ? var.existing_private_zone_id : (local.create_private_zone ? module.internal_zone[0].route53_zone_zone_id["internal"] : null)
+  public_zone_id  = var.existing_public_zone_id != null ? var.existing_public_zone_id : (local.create_public_zone ? module.external_zone[0].route53_zone_zone_id["external"] : null)
+
+  # ACM validation priority:
+  # 1. domain_validation_zone_id (if provided)
+  # 2. existing_public_zone_id (if provided)
+  # 3. null (manual validation)
+  validation_zone_id = var.domain_validation_zone_id != null ? var.domain_validation_zone_id : (
+    var.existing_public_zone_id != null ? var.existing_public_zone_id : null
+  )
 
   #################
   ##### EKS #######
@@ -122,7 +144,7 @@ locals {
   ###########################
   grafana_privatelink_enabled = var.create_eks && var.grafana_privatelink_config.enabled
 
-  # Default values for Privatelink configuration
+  # Default values for Grafana Privatelink configuration
   grafana_endpoint_default_aws_regions        = ["eu-central-1", "us-east-1"]
   grafana_endpoint_default_allowed_principals = ["arn:aws:iam::${var.hyperspace_account_id}:root"]
 
@@ -153,7 +175,7 @@ locals {
   ###########################
   ### ArgoCD Privatelink ####
   ###########################
-  argocd_privatelink_enabled = local.argocd_enabled && local.argocd_config.privatelink.enabled
+  argocd_privatelink_enabled = local.argocd_enabled && try(local.argocd_config.privatelink.enabled, false)
 
   # Default values for Privatelink configuration
   argocd_endpoint_default_aws_regions        = ["eu-central-1", "us-east-1"]
@@ -161,12 +183,12 @@ locals {
 
   # Combine default and custom allowed principals
   argocd_privatelink_allowed_principals = distinct(concat(
-    local.argocd_config.privatelink.allowed_principals,
+    try(local.argocd_config.privatelink.endpoint_allowed_principals, []),
     local.argocd_endpoint_default_allowed_principals
   ))
   argocd_privatelink_supported_regions = distinct(concat(
     [var.aws_region],
-    local.argocd_config.privatelink.additional_aws_regions,
+    try(local.argocd_config.privatelink.additional_aws_regions, []),
     local.argocd_endpoint_default_aws_regions
   ))
 
@@ -256,7 +278,7 @@ locals {
 
   # SSO access rules
   sso_rbac_rules = try(local.argocd_config.rbac.sso_admin_group != "", false) ? [
-    "g, ${try(local.argocd_config.rbac.sso_admin_group, "")}, role:org-admin",
+    "g, ${try(local.argocd_config.vcs.organization, "")}:${try(local.argocd_config.rbac.sso_admin_group, "")}, role:org-admin",
     "g, ${try(local.argocd_config.vcs.organization, "")}:*, role:org-admin"
     ] : [
     "g, ${try(local.argocd_config.vcs.organization, "")}:*, role:org-admin",

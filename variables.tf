@@ -175,14 +175,44 @@ variable "eks_additional_admin_roles_policy" {
 variable "domain_name" {
   type        = string
   description = "Main domain name for sub-domains"
-  default     = ""
-  sensitive   = false
+
+  validation {
+    condition     = var.domain_name != null
+    error_message = "Domain name must be provided"
+  }
 }
 
 variable "create_public_zone" {
-  description = "Whether to create the public Route 53 zone"
+  description = "Whether to create the public Route 53 zone."
   type        = bool
   default     = false
+}
+
+variable "domain_validation_zone_id" {
+  description = "The domain validation ID for the public Route 53 zone"
+  type        = string
+  default     = null
+}
+
+variable "existing_public_zone_id" {
+  type        = string
+  description = "Existing public Route 53 zone"
+  default     = null
+}
+
+variable "existing_private_zone_id" {
+  type        = string
+  description = "Existing private Route 53 zone"
+  default     = null
+}
+
+variable "additional_private_zone_vpc_ids" {
+  type = list(object({
+    vpc_id     = string
+    vpc_region = optional(string, null)
+  }))
+  description = "List of additional VPC configurations that should have access to the private hosted zone. Each object should contain vpc_id and optionally vpc_region for cross-region VPCs."
+  default     = []
 }
 
 ###############################
@@ -219,6 +249,35 @@ variable "argocd_config" {
       users_additional_rules = optional(list(string), [])
     }))
   })
+  default = {
+    enabled = false
+    privatelink = {
+      enabled                     = false
+      endpoint_allowed_principals = []
+      additional_aws_regions      = []
+    }
+    vcs = {
+      organization = ""
+      repository   = ""
+      github = {
+        enabled                   = false
+        github_app_enabled        = false
+        github_app_secret_name    = "argocd/github_app"
+        github_private_key_secret = "argocd/github_app_private_key"
+      }
+      gitlab = {
+        enabled                 = false
+        oauth_enabled           = false
+        oauth_secret_name       = "argocd/gitlab_oauth"
+        credentials_secret_name = "argocd/gitlab_credentials"
+      }
+    }
+    rbac = {
+      sso_admin_group        = null
+      users_rbac_rules       = []
+      users_additional_rules = []
+    }
+  }
   validation {
     condition     = !var.argocd_config.enabled || (var.argocd_config.vcs != null && var.argocd_config.vcs.organization != "" && var.argocd_config.vcs.repository != "")
     error_message = "When ArgoCD is enabled, vcs configuration must be provided with non-empty organization and repository"
@@ -244,6 +303,12 @@ variable "prometheus_endpoint_config" {
     endpoint_service_region = optional(string, "")
     additional_cidr_blocks  = optional(list(string), [])
   })
+  default = {
+    enabled                 = false
+    endpoint_service_name   = ""
+    endpoint_service_region = ""
+    additional_cidr_blocks  = []
+  }
   description = "Prometheus endpoint configuration"
 }
 
@@ -257,5 +322,10 @@ variable "grafana_privatelink_config" {
     endpoint_allowed_principals = optional(list(string), [])
     additional_aws_regions      = optional(list(string), [])
   })
+  default = {
+    enabled                     = false
+    endpoint_allowed_principals = []
+    additional_aws_regions      = []
+  }
   description = "Grafana privatelink configuration"
 }
