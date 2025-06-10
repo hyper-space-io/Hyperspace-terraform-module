@@ -1,9 +1,9 @@
 locals {
   # General
   tags = merge(var.tags, {
-    project     = "hyperspace"
-    environment = var.environment
-    terraform   = "true"
+    Project     = "hyperspace"
+    Environment = var.environment
+    Terraform   = "true"
   })
 
   ################
