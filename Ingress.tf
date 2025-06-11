@@ -128,7 +128,7 @@ controller:
           topologyKey: "kubernetes.io/hostname"
   EOF
   ]
-  depends_on = [module.eks_blueprints_addons, module.external_acm, module.internal_acm, module.eks, helm_release.kube_prometheus_stack]
+  depends_on = [module.eks_blueprints_addons, module.external_acm, module.internal_acm, module.eks]
 }
 
 resource "kubernetes_ingress_v1" "nginx_ingress" {
