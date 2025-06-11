@@ -119,7 +119,7 @@ resource "helm_release" "kube_prometheus_stack" {
   namespace        = local.monitoring_namespace
   repository       = "https://prometheus-community.github.io/helm-charts"
   values           = [yamlencode(local.prometheus_values)]
-  depends_on       = [module.eks]
+  depends_on       = [module.eks, time_sleep.wait_for_internal_ingress, module.eks_blueprints_addons]
 }
 
 resource "random_password" "grafana_admin_password" {
