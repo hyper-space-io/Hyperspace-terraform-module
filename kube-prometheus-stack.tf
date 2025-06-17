@@ -118,7 +118,7 @@ resource "helm_release" "kube_prometheus_stack" {
   chart            = local.prometheus_release_name
   create_namespace = true
   cleanup_on_fail  = true
-  version          = "68.3.0"
+  version          = "75.1.0"
   namespace        = local.monitoring_namespace
   repository       = "https://prometheus-community.github.io/helm-charts"
   values           = [yamlencode(local.prometheus_values)]
