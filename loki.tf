@@ -5,8 +5,8 @@ resource "helm_release" "loki" {
   create_namespace = true
   cleanup_on_fail  = true
   repository       = "https://grafana.github.io/helm-charts"
-  chart            = "loki-stack"
-  version          = "~> 2.10.2"
+  chart            = "loki"
+  version          = "~> 6.30.1"
   wait             = true
   values = [<<EOF
 loki:
