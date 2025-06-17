@@ -34,18 +34,21 @@ locals {
         enabled = true
         size    = "10Gi"
       }
+      additionalDataSources = [
+        {
+          name      = "loki"
+          type      = "loki"
+          access    = "proxy"
+          url       = "http://loki.monitoring.svc.cluster.local:3100"
+          version   = 1
+          isDefault = false
+          jsonData = {
+            maxLines = 1000
+            timeout = 30
+          }
+        }
+      ]
     }
-
-    additionalDataSources = [
-      {
-        name      = "loki"
-        type      = "loki"
-        access    = "proxy"
-        url       = "http://loki.monitoring.svc.cluster.local:3100"
-        version   = 1
-        isDefault = false
-      }
-    ]
 
     prometheus = {
       prometheusSpec = merge({
