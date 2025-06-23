@@ -171,7 +171,7 @@ resource "kubernetes_ingress_v1" "nginx_ingress" {
               }
             }
           }
-          path = "/"
+          path = "/*"
         }
         path {
           backend {
@@ -182,7 +182,7 @@ resource "kubernetes_ingress_v1" "nginx_ingress" {
               }
             }
           }
-          path = "/"
+          path = "/*"
         }
       }
     }
