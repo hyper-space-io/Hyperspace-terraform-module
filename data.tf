@@ -156,7 +156,7 @@ data "aws_lb" "internal_ingress" {
   tags = {
     "Domain"                   = "internal"
     "elbv2.k8s.aws/cluster"    = module.eks.cluster_name
-    "ingress.k8s.aws/resource" = "LoadBalancer"
+    "service.k8s.aws/resource" = "LoadBalancer"
   }
   depends_on = [time_sleep.wait_for_internal_ingress, module.eks, kubernetes_ingress_v1.nginx_ingress]
 }
