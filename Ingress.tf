@@ -95,7 +95,7 @@ controller:
         service.beta.kubernetes.io/aws-load-balancer-healthcheck-port: "8080"
         service.beta.kubernetes.io/aws-load-balancer-additional-resource-tags: "scheme=${each.value.scheme}"
         service.beta.kubernetes.io/aws-load-balancer-access-log-enabled: "true"
-        service.beta.kubernetes.io/aws-load-balancer-access-log-s3-bucket-name: "${module.logs_s3_bucket.s3_bucket_id}"
+        service.beta.kubernetes.io/aws-load-balancer-access-log-s3-bucket-name: "${local.s3_bucket_names["logs-ingress"]}"
         service.beta.kubernetes.io/aws-load-balancer-access-log-s3-bucket-prefix: "${each.value.s3_prefix}"
       prometheus.io/scrape: "true"
       prometheus.io/port: "10254"
