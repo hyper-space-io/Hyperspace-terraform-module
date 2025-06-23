@@ -83,22 +83,8 @@ controller:
     port: 10254
     service:
       annotations:
-        service.beta.kubernetes.io/aws-load-balancer-type: "${each.value.internal ? "nlb-ip" : "external"}"
-        service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: "ip"
-        service.beta.kubernetes.io/aws-load-balancer-internal: "${each.value.internal ? "true" : "false"}"
-        service.beta.kubernetes.io/aws-load-balancer-ssl-cert: "${each.key == "internal" ? module.internal_acm[0].acm_certificate_arn : module.external_acm[0].acm_certificate_arn}"
-        service.beta.kubernetes.io/aws-load-balancer-ssl-ports: "443"
-        service.beta.kubernetes.io/aws-load-balancer-proxy-protocol: "*"
-        service.beta.kubernetes.io/aws-load-balancer-attributes: load_balancing.cross_zone.enabled=true
-        service.beta.kubernetes.io/aws-load-balancer-manage-backend-security-group-rules: "true"
-        service.beta.kubernetes.io/aws-load-balancer-healthcheck-path: "/healthz"
-        service.beta.kubernetes.io/aws-load-balancer-healthcheck-port: "8080"
-        service.beta.kubernetes.io/aws-load-balancer-additional-resource-tags: "scheme=${each.value.scheme}"
-        service.beta.kubernetes.io/aws-load-balancer-access-log-enabled: "true"
-        service.beta.kubernetes.io/aws-load-balancer-access-log-s3-bucket-name: "${local.s3_bucket_names["logs-ingress"]}"
-        service.beta.kubernetes.io/aws-load-balancer-access-log-s3-bucket-prefix: "${each.value.s3_prefix}"
-      prometheus.io/scrape: "true"
-      prometheus.io/port: "10254"
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "10254"
   ingressClassByName: true
   ingressClassResource:
     name: nginx-${each.key}
@@ -111,6 +97,21 @@ controller:
     ssl-redirect: "false"
   service:
     type: LoadBalancer
+    annotations:
+      service.beta.kubernetes.io/aws-load-balancer-type: "nlb-ip"
+      service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: "ip"
+      service.beta.kubernetes.io/aws-load-balancer-internal: "${each.value.internal ? "true" : "false"}"
+      service.beta.kubernetes.io/aws-load-balancer-ssl-cert: "${each.key == "internal" ? module.internal_acm[0].acm_certificate_arn : module.external_acm[0].acm_certificate_arn}"
+      service.beta.kubernetes.io/aws-load-balancer-ssl-ports: "443"
+      service.beta.kubernetes.io/aws-load-balancer-proxy-protocol: "*"
+      service.beta.kubernetes.io/aws-load-balancer-attributes: "load_balancing.cross_zone.enabled=true"
+      service.beta.kubernetes.io/aws-load-balancer-manage-backend-security-group-rules: "true"
+      service.beta.kubernetes.io/aws-load-balancer-healthcheck-path: "/healthz"
+      service.beta.kubernetes.io/aws-load-balancer-healthcheck-port: "8080"
+      service.beta.kubernetes.io/aws-load-balancer-additional-resource-tags: "scheme=${each.value.scheme}"
+      service.beta.kubernetes.io/aws-load-balancer-access-log-enabled: "true"
+      service.beta.kubernetes.io/aws-load-balancer-access-log-s3-bucket-name: "${local.s3_bucket_names["logs-ingress"]}"
+      service.beta.kubernetes.io/aws-load-balancer-access-log-s3-bucket-prefix: "${each.value.s3_prefix}"
     server-tokens: false
     externalTrafficPolicy: Local
     ports:
@@ -144,6 +145,7 @@ controller:
   ]
   depends_on = [module.eks_blueprints_addons, module.external_acm, module.internal_acm, module.eks]
 }
+
 resource "kubernetes_ingress_v1" "nginx_ingress" {
   for_each = var.create_eks ? local.combined_ingress_config : {}
   metadata {
