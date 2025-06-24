@@ -154,6 +154,7 @@ data "aws_iam_policy_document" "fpga_pull_access" {
 data "aws_lb" "internal_ingress" {
   count = var.create_eks ? 1 : 0
   tags = {
+    "scheme"                   = "internal"
     "elbv2.k8s.aws/cluster"    = module.eks.cluster_name
     "service.k8s.aws/resource" = "LoadBalancer"
   }
