@@ -37,7 +37,7 @@ resource "helm_release" "nginx-ingress" {
   values = [<<EOF
 controller:
   electionID: ${each.key}-controller-leader
-  replicaCount: 1
+  replicaCount: 2
   extraArgs:
     http-port: 8080
     https-port: 9443
@@ -49,7 +49,7 @@ controller:
       memory: 256Mi 
   autoscaling:
     enabled: true
-    minReplicas: 1
+    minReplicas: 2
     maxReplicas: 6
     targetCPUUtilizationPercentage: 75    
     targetMemoryUtilizationPercentage: 75 
