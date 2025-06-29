@@ -166,7 +166,7 @@ data "aws_lb" "external_ingress" {
   tags = {
     "scheme"                   = "internet-facing"
     "elbv2.k8s.aws/cluster"    = module.eks.cluster_name
-    "ingress.k8s.aws/resource" = "LoadBalancer"
+    "service.k8s.aws/resource" = "LoadBalancer"
   }
   depends_on = [time_sleep.wait_for_external_ingress, module.eks, kubernetes_ingress_v1.nginx_ingress]
 }
