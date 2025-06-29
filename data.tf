@@ -164,7 +164,7 @@ data "aws_lb" "internal_ingress" {
 data "aws_lb" "external_ingress" {
   count = var.create_eks && var.create_public_zone ? 1 : 0
   tags = {
-    "Domain"                   = "external"
+    "scheme"                   = "internet-facing"
     "elbv2.k8s.aws/cluster"    = module.eks.cluster_name
     "ingress.k8s.aws/resource" = "LoadBalancer"
   }
