@@ -11,7 +11,7 @@ locals {
     external = {
       internal  = false
       scheme    = "internet-facing"
-      s3_prefix = "ExternalALB"
+      s3_prefix = "ExternalNLB"
     }
   } : {}
 
