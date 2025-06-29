@@ -95,17 +95,11 @@ locals {
     "k8s.io/cluster-autoscaler/enabled"               = "True"
     "k8s.io/cluster-autoscaler/${local.cluster_name}" = "True"
   }
-
-  additional_self_managed_node_pools = {
-    # data-nodes service nodes
-    eks-data-node-hyperspace = {
-      name                     = "eks-data-node-${local.cluster_name}"
-      iam_role_name            = "data-node-${local.cluster_name}"
+  fpga_node_groups_defaults = {
       enable_monitoring        = true
       min_size                 = 0
       max_size                 = 20
       desired_size             = 0
-      instance_type            = "f1.2xlarge"
       ami_id                   = data.aws_ami.fpga.id
       bootstrap_extra_args     = "--kubelet-extra-args '--node-labels=hyperspace.io/type=fpga --register-with-taints=fpga=true:NoSchedule'"
       post_bootstrap_user_data = <<-EOT
@@ -136,9 +130,19 @@ locals {
           }
         }
       }
-    }
   }
-
+  additional_self_managed_node_pools = {
+    # data-nodes service nodes
+    for instance_type in ["f1.2xlarge", "f1.4xlarge"] :
+      "eks-data-node-${instance_type}" => merge(
+        local.fpga_node_groups_defaults,
+        {
+          name = "eks-data-node-${instance_type}"
+          iam_role_name = "data-node-${instance_type}"
+          instance_type = instance_type
+        }
+      )
+  }
   ###########################
   ### Grafana Privatelink ###
   ###########################

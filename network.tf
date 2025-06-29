@@ -47,10 +47,9 @@ module "endpoints" {
   endpoints = {
     s3 = {
       service             = "s3"
+      service_type        = "Gateway"
+      route_table_ids     = module.vpc[0].private_route_table_ids
       private_dns_enabled = true
-      dns_options = {
-        private_dns_only_for_inbound_resolver_endpoint = false
-      }
       tags = merge(local.tags, {
         Name = "Hyperspace S3 Endpoint"
       })

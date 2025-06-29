@@ -56,7 +56,7 @@ data "aws_lb" "argocd_privatelink_nlb" {
 resource "time_sleep" "wait_for_grafana_privatelink_nlb" {
   count           = local.grafana_privatelink_enabled ? 1 : 0
   create_duration = "180s"
-  depends_on      = [helm_release.grafana]
+  depends_on      = [helm_release.kube_prometheus_stack]
 }
 
 data "aws_lb" "grafana_privatelink_nlb" {
@@ -154,9 +154,9 @@ data "aws_iam_policy_document" "fpga_pull_access" {
 data "aws_lb" "internal_ingress" {
   count = var.create_eks ? 1 : 0
   tags = {
-    "Domain"                   = "internal"
+    "scheme"                   = "internal"
     "elbv2.k8s.aws/cluster"    = module.eks.cluster_name
-    "ingress.k8s.aws/resource" = "LoadBalancer"
+    "service.k8s.aws/resource" = "LoadBalancer"
   }
   depends_on = [time_sleep.wait_for_internal_ingress, module.eks, kubernetes_ingress_v1.nginx_ingress]
 }
@@ -164,9 +164,9 @@ data "aws_lb" "internal_ingress" {
 data "aws_lb" "external_ingress" {
   count = var.create_eks && var.create_public_zone ? 1 : 0
   tags = {
-    "Domain"                   = "external"
+    "scheme"                   = "internet-facing"
     "elbv2.k8s.aws/cluster"    = module.eks.cluster_name
-    "ingress.k8s.aws/resource" = "LoadBalancer"
+    "service.k8s.aws/resource" = "LoadBalancer"
   }
   depends_on = [time_sleep.wait_for_external_ingress, module.eks, kubernetes_ingress_v1.nginx_ingress]
 }

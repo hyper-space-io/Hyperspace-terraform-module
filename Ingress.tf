@@ -3,7 +3,7 @@ locals {
     internal = {
       internal  = true
       scheme    = "internal"
-      s3_prefix = "InternalALB"
+      s3_prefix = "InternalNLB"
     }
   }
 
@@ -11,7 +11,7 @@ locals {
     external = {
       internal  = false
       scheme    = "internet-facing"
-      s3_prefix = "ExternalALB"
+      s3_prefix = "ExternalNLB"
     }
   } : {}
 
@@ -37,7 +37,7 @@ resource "helm_release" "nginx-ingress" {
   values = [<<EOF
 controller:
   electionID: ${each.key}-controller-leader
-  replicaCount: 1
+  replicaCount: 2
   extraArgs:
     http-port: 8080
     https-port: 9443
@@ -49,7 +49,7 @@ controller:
       memory: 256Mi 
   autoscaling:
     enabled: true
-    minReplicas: 1
+    minReplicas: 2
     maxReplicas: 6
     targetCPUUtilizationPercentage: 75    
     targetMemoryUtilizationPercentage: 75 
@@ -91,44 +91,59 @@ controller:
     controllerValue: "k8s.io/nginx-${each.key}"
   config:
     client-max-body-size: "100m"
-    use-forwarded-headers: "true"
-    use-proxy-protocol: "false"
-    compute-full-forwarded-for: "true"
+    use-forwarded-headers: "false"
+    compute-full-forwarded-for: "false"
+    use-proxy-protocol: "true"
+    ssl-redirect: "false"
   service:
-    type: NodePort
+    type: LoadBalancer
+    annotations:
+      service.beta.kubernetes.io/aws-load-balancer-type: "nlb-ip"
+      service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: "ip"
+      service.beta.kubernetes.io/aws-load-balancer-internal: "${each.value.internal ? "true" : "false"}"
+      service.beta.kubernetes.io/aws-load-balancer-ssl-cert: "${each.key == "internal" ? module.internal_acm[0].acm_certificate_arn : module.external_acm[0].acm_certificate_arn}"
+      service.beta.kubernetes.io/aws-load-balancer-ssl-ports: "443"
+      service.beta.kubernetes.io/aws-load-balancer-proxy-protocol: "*"
+      service.beta.kubernetes.io/aws-load-balancer-attributes: "load_balancing.cross_zone.enabled=true"
+      service.beta.kubernetes.io/aws-load-balancer-manage-backend-security-group-rules: "true"
+      service.beta.kubernetes.io/aws-load-balancer-healthcheck-path: "/healthz"
+      service.beta.kubernetes.io/aws-load-balancer-healthcheck-port: "8080"
+      service.beta.kubernetes.io/aws-load-balancer-additional-resource-tags: "scheme=${each.value.scheme}"
+      service.beta.kubernetes.io/aws-load-balancer-access-log-enabled: "true"
+      service.beta.kubernetes.io/aws-load-balancer-access-log-s3-bucket-name: "${local.s3_bucket_names["logs-ingress"]}"
+      service.beta.kubernetes.io/aws-load-balancer-access-log-s3-bucket-prefix: "${each.value.s3_prefix}"
+    server-tokens: false
     externalTrafficPolicy: Local
     ports:
       http: 80
       https: 443
     targetPorts:
       http: 8080
-      https: 9443
+      https: 8080
   containerPort:
     http: 8080
     https: 9443
   affinity:
     podAntiAffinity:
-      preferredDuringSchedulingIgnoredDuringExecution:
-      - weight: 100
-        podAffinityTerm:
-          labelSelector:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        - labelSelector:
             matchExpressions:
-            - key: app.kubernetes.io/name
-              operator: In
-              values:
-              - ingress-nginx
-            - key: app.kubernetes.io/instance
-              operator: In
-              values:
-              - ingress-nginx-${each.key}
-            - key: app.kubernetes.io/component
-              operator: In
-              values:
-              - controller
+              - key: app.kubernetes.io/name
+                operator: In
+                values:
+                  - ingress-nginx
+              - key: app.kubernetes.io/instance
+                operator: In
+                values:
+                  - ingress-nginx-${each.key}
+              - key: app.kubernetes.io/component
+                operator: In
+                values:
+                  - controller
           topologyKey: "kubernetes.io/hostname"
   EOF
   ]
-  depends_on = [module.eks_blueprints_addons, module.external_acm, module.internal_acm, module.eks, helm_release.kube_prometheus_stack]
+  depends_on = [module.eks_blueprints_addons, module.external_acm, module.internal_acm, module.eks]
 }
 
 resource "kubernetes_ingress_v1" "nginx_ingress" {
@@ -136,27 +151,9 @@ resource "kubernetes_ingress_v1" "nginx_ingress" {
   metadata {
     name      = "${each.key}-ingress"
     namespace = "ingress"
-    annotations = merge({
-      "alb.ingress.kubernetes.io/certificate-arn"          = (each.key == "internal" && length(module.internal_acm) > 0) || (each.key == "external" && length(module.external_acm) > 0) ? (each.key == "internal" ? module.internal_acm[0].acm_certificate_arn : module.external_acm[0].acm_certificate_arn) : ""
-      "alb.ingress.kubernetes.io/scheme"                   = each.value.scheme
-      "alb.ingress.kubernetes.io/tags"                     = "Domain=${each.key}"
-      "alb.ingress.kubernetes.io/load-balancer-attributes" = "idle_timeout.timeout_seconds=600, access_logs.s3.enabled=true, access_logs.s3.bucket=${local.s3_bucket_names["logs-ingress"]},access_logs.s3.prefix=${each.value.s3_prefix}"
-      "alb.ingress.kubernetes.io/actions.ssl-redirect" = (each.key == "internal" && length(module.internal_acm) > 0 && module.internal_acm[0].acm_certificate_arn != "") || (each.key == "external" && local.create_public_zone && var.domain_name != "") ? jsonencode({
-        Type = "redirect"
-        RedirectConfig = {
-          Protocol   = "HTTPS"
-          Port       = "443"
-          StatusCode = "HTTP_301"
-        }
-      }) : ""
-      "alb.ingress.kubernetes.io/listen-ports" = (each.key == "internal" && length(module.internal_acm) > 0 && module.internal_acm[0].acm_certificate_arn != "") || (each.key == "external" && local.create_public_zone && var.domain_name != "") ? jsonencode([
-        { HTTP = 80 },
-        { HTTPS = 443 }
-      ]) : jsonencode([{ HTTP = 80 }])
-    }, local.common_ingress_annotations)
   }
   spec {
-    ingress_class_name = "alb"
+    ingress_class_name = "nginx-${each.key}"
     default_backend {
       service {
         name = "ingress-nginx-${each.key}-controller"

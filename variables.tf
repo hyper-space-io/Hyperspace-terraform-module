@@ -149,11 +149,6 @@ variable "worker_instance_type" {
   description = "The instance type for the EKS worker nodes"
   type        = list(string)
   default     = ["m5n.xlarge"]
-
-  validation {
-    condition     = alltrue([for instance in var.worker_instance_type : contains(["m5n.xlarge", "m5n.large", "m5d.xlarge", "m5d.large"], instance)])
-    error_message = "Worker instance type must be one of: m5n.xlarge, m5n.large, m5d.xlarge, m5d.large"
-  }
 }
 
 variable "eks_additional_admin_roles" {

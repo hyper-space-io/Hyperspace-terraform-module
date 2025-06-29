@@ -12,19 +12,43 @@ locals {
     }
 
     grafana = {
-      enabled = false
-    }
-
-    additionalDataSources = [
-      {
-        name      = "loki"
-        type      = "loki"
-        access    = "proxy"
-        url       = "http://loki.monitoring.svc.cluster.local:3100"
-        version   = 1
-        isDefault = false
+      enabled = true
+      adminPassword = random_password.grafana_admin_password[0].result
+      service = {
+        type = local.grafana_privatelink_enabled ? "LoadBalancer" : "ClusterIP"
+        annotations = local.grafana_privatelink_enabled ? {
+          "service.beta.kubernetes.io/aws-load-balancer-internal"               = "true"
+          "service.beta.kubernetes.io/aws-load-balancer-type"                   = "nlb-ip"
+          "service.beta.kubernetes.io/aws-load-balancer-scheme"                 = "internal"
+          "service.beta.kubernetes.io/aws-load-balancer-ssl-negotiation-policy" = "ELBSecurityPolicy-TLS13-1-2-2021-06"
+        } : {}
       }
-    ]
+      ingress = {
+        enabled          = true
+        ingressClassName = local.internal_ingress_class_name
+        hosts = [
+          "grafana.${local.internal_domain_name}"
+        ]
+      }
+      persistence = {
+        enabled = true
+        size    = "10Gi"
+      }
+      additionalDataSources = [
+        {
+          name      = "loki"
+          type      = "loki"
+          access    = "proxy"
+          url       = "http://loki.monitoring.svc.cluster.local:3100"
+          version   = 1
+          isDefault = false
+          jsonData = {
+            maxLines = 1000
+            timeout = 30
+          }
+        }
+      ]
+    }
 
     prometheus = {
       prometheusSpec = merge({
@@ -94,11 +118,11 @@ resource "helm_release" "kube_prometheus_stack" {
   chart            = local.prometheus_release_name
   create_namespace = true
   cleanup_on_fail  = true
-  version          = "68.3.0"
+  version          = "75.1.0"
   namespace        = local.monitoring_namespace
   repository       = "https://prometheus-community.github.io/helm-charts"
   values           = [yamlencode(local.prometheus_values)]
-  depends_on       = [module.eks]
+  depends_on       = [module.eks, module.eks_blueprints_addons, module.external_acm, module.internal_acm, helm_release.nginx-ingress]
 }
 
 resource "random_password" "grafana_admin_password" {
@@ -108,48 +132,7 @@ resource "random_password" "grafana_admin_password" {
   override_special = "_%@"
 }
 
-resource "helm_release" "grafana" {
-  count            = var.create_eks ? 1 : 0
-  name             = "grafana"
-  version          = "~> 8.8.0"
-  namespace        = local.monitoring_namespace
-  chart            = "grafana"
-  repository       = "https://grafana.github.io/helm-charts"
-  create_namespace = true
-  cleanup_on_fail  = true
-  values = [
-    yamlencode({
-      adminPassword = random_password.grafana_admin_password[0].result
-      service = {
-        type = local.grafana_privatelink_enabled ? "LoadBalancer" : "ClusterIP"
-        annotations = local.grafana_privatelink_enabled ? {
-          "service.beta.kubernetes.io/aws-load-balancer-internal"               = "true"
-          "service.beta.kubernetes.io/aws-load-balancer-type"                   = "nlb-ip"
-          "service.beta.kubernetes.io/aws-load-balancer-scheme"                 = "internal"
-          "service.beta.kubernetes.io/aws-load-balancer-ssl-negotiation-policy" = "ELBSecurityPolicy-TLS13-1-2-2021-06"
-        } : {}
-      }
-      ingress = {
-        enabled          = true
-        ingressClassName = local.internal_ingress_class_name
-        hosts = [
-          "grafana.${local.internal_domain_name}"
-        ]
-      }
-      persistence = {
-        enabled = true
-        size    = "10Gi"
-      }
-    })
-  ]
 
-  set_sensitive {
-    name  = "adminPassword"
-    value = random_password.grafana_admin_password[0].result
-  }
-
-  depends_on = [module.eks, time_sleep.wait_for_internal_ingress, module.eks_blueprints_addons]
-}
 
 resource "helm_release" "prometheus_adapter" {
   count      = var.create_eks ? 1 : 0
