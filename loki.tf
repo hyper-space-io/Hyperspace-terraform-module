@@ -50,6 +50,7 @@ loki:
         enable_inactive_throughput_on_demand_mode: true
     
 promtail:
+  enabled: false
   tolerations:
   - key: "fpga"
     operator: "Equal"
