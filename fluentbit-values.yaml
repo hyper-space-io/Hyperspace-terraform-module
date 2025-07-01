@@ -1,0 +1,38 @@
+serviceAccount:
+  create: true
+  name: fluentbit
+
+backend:
+  type: custom
+
+inputs:
+  tail:
+    enabled: true
+    path: /var/log/containers/*.log
+    parser: docker
+    tag: kube.*
+    refresh_interval: 5
+    rotate_wait: 30
+    mem_buf_limit: 5MB
+    skip_long_lines: On
+    db: /var/log/flb_kube.db
+
+filters:
+  kubernetes:
+    enabled: true
+    match: kube.*
+
+outputs:
+  loki:
+    enabled: true
+    host: loki.monitoring.svc.cluster.local
+    port: 3100
+    tls: false
+    match: kube.*
+    labels: "namespace,container_name,pod_name"
+    auto_kubernetes_labels: true
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi

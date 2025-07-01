@@ -49,9 +49,6 @@ loki:
         enable_ondemand_throughput_mode: true
         enable_inactive_throughput_on_demand_mode: true
     
-fluent-bit:
-  enabled: true
-
 promtail:
   enabled: false
   tolerations:
@@ -62,4 +59,17 @@ promtail:
 EOF
   ]
   depends_on = [module.eks, module.iam_iam-assumable-role-with-oidc]
+}
+
+
+resource "helm_release" "fluentbit" {
+  name       = "fluentbit"
+  namespace  = "monitoring"
+  repository = "https://charts.bitnami.com/bitnami"
+  chart      = "fluent-bit"
+  version    = "0.46.2"
+
+  values = [
+    file("${path.module}/fluentbit-values.yaml")
+  ]
 }
