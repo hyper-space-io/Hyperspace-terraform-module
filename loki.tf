@@ -63,11 +63,11 @@ EOF
 
 
 resource "helm_release" "fluentbit" {
-  name       = "fluentbit"
+  name       = "fluent-bit"
   namespace  = "monitoring"
-  repository = "https://charts.bitnami.com/bitnami"
+  repository = "https://fluent.github.io/helm-charts"
   chart      = "fluent-bit"
-  version    = "0.46.2"
+  version    = "0.50.0"
 
   values = [
     file("${path.module}/fluentbit-values.yaml")
