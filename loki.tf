@@ -49,6 +49,9 @@ loki:
         enable_ondemand_throughput_mode: true
         enable_inactive_throughput_on_demand_mode: true
     
+fluent-bit:
+  enabled: true
+
 promtail:
   enabled: false
   tolerations:
