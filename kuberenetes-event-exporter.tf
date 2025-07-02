@@ -3,5 +3,5 @@ resource "helm_release" "kubernetes-event-exporter" {
   namespace  = "monitoring"
   repository = "https://charts.bitnami.com/bitnami"
   chart      = "kubernetes-event-exporter"
-  version    = "3.5.6"
+  version    = "~>3.5.0"
 }
