@@ -50,6 +50,7 @@ loki:
         enable_inactive_throughput_on_demand_mode: true
     
 promtail:
+  enabled: false
   tolerations:
   - key: "fpga"
     operator: "Equal"
@@ -58,4 +59,17 @@ promtail:
 EOF
   ]
   depends_on = [module.eks, module.iam_iam-assumable-role-with-oidc]
+}
+
+
+resource "helm_release" "fluentbit" {
+  name       = "fluent-bit"
+  namespace  = "monitoring"
+  repository = "https://fluent.github.io/helm-charts"
+  chart      = "fluent-bit"
+  version    = "0.50.0"
+
+  values = [
+    file("${path.module}/fluentbit-values.yaml")
+  ]
 }
