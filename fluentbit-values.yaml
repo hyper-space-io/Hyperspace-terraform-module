@@ -26,14 +26,6 @@ config:
         Remove _p
         Remove time
 
-  #   [FILTER]
-  #       Name           kubernetes
-  #       Match          kube.nginx-ingress.*
-  #       Kube_URL       https://kubernetes.default.svc:443
-  #       Merge_Log      On
-  #       K8S-Logging.Exclude On
-  #       K8S-Logging.Parser On
-
   outputs: |
     [OUTPUT]
         name loki
@@ -43,7 +35,7 @@ config:
         labels level=$level,job=fluent-bit,namespace=$kubernetes['namespace_name'],pod=$kubernetes['pod_name'],container=$kubernetes['container_name'],app=$kubernetes['labels']['app.kubernetes.io/name']
         line_format json
         log_level info
-        remove_keys kubernetes
+        # remove_keys kubernetes
 
 resources:
   requests:

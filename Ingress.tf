@@ -90,7 +90,7 @@ controller:
     name: nginx-${each.key}
     controllerValue: "k8s.io/nginx-${each.key}"
   config:
-    log-format-upstream: '{"time":"$time_iso8601","remote_addr":"$proxy_protocol_addr","host":"$host","request":"$request","status":$status,"ingress_namespace":"$namespace","ingress_name":"$ingress_name"}'
+    log-format-upstream: '{"time":"$time_iso8601","remote_addr":"$proxy_protocol_addr","host":"$host","request":"$request","status":$status,"ingress_namespace":"$namespace","ingress_name":"$ingress_name","hipaa":"$ingress_label_hipaa"}'
     client-max-body-size: "100m"
     use-forwarded-headers: "false"
     compute-full-forwarded-for: "false"
