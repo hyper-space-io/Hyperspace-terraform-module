@@ -3,49 +3,47 @@ serviceAccount:
   name: fluent-bit
 
 config:
-  service: |
-    [SERVICE]
-        Log_Level warn
-        Flush 1
-        Parsers_File /fluent-bit/etc/parsers.conf
-        HTTP_Server On
-        HTTP_Listen 0.0.0.0
-        HTTP_Port 2020
-        Health_Check On
-
-  inputs: |
-    [INPUT]
-        Name tail
-        Path /var/log/containers/*.log
-        Tag kube.*
-        Mem_Buf_Limit 5MB
-        Skip_Long_Lines On
-        Buffer_Chunk_Size 32k
-        Buffer_Max_Size 32k
-
   filters: |
     [FILTER]
-        Name kubernetes
-        Match kube.*
+        Name           kubernetes
+        Match          kube.*
+        Kube_URL       https://kubernetes.default.svc:443
         Merge_Log On
-        Keep_Log Off
-        K8S-Logging.Parser Off
-        K8S-Logging.Exclude Off
+        K8S-Logging.Exclude On
+        K8S-Logging.Parser On
 
     [FILTER]
-        Name modify
-        Match kube.*
-        Remove kubernetes
+        Name   parser
+        Match  *
+        Key_Name log
+        Parser  json
+        Reserve_Data On
+
+    [FILTER]
+        Name   modify
+        Match  *
         Remove stream
+        Remove _p
+        Remove time
+
+  #   [FILTER]
+  #       Name           kubernetes
+  #       Match          kube.nginx-ingress.*
+  #       Kube_URL       https://kubernetes.default.svc:443
+  #       Merge_Log      On
+  #       K8S-Logging.Exclude On
+  #       K8S-Logging.Parser On
 
   outputs: |
     [OUTPUT]
-        Name loki
-        Match kube.*
-        Host loki.monitoring.svc.cluster.local
-        Port 3100
-        Line_Format json
-        Labels job=fluent-bit,namespace=$kubernetes['namespace_name'],pod=$kubernetes['pod_name'],container=$kubernetes['container_name'],log_level=$kubernetes['log_level']
+        name loki
+        match *
+        host loki.monitoring.svc.cluster.local
+        port 3100
+        labels level=$level,job=fluent-bit,namespace=$kubernetes['namespace_name'],pod=$kubernetes['pod_name'],container=$kubernetes['container_name'],app=$kubernetes['labels']['app.kubernetes.io/name']
+        line_format json
+        log_level info
+        remove_keys kubernetes
 
 resources:
   requests:

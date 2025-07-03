@@ -13,6 +13,9 @@ resource "helm_release" "argocd" {
     yamlencode({
       global = {
         domain = "argocd.${local.internal_domain_name}"
+        logging = {
+          format = "json"
+        }
       }
       dex = {
         enabled = true
