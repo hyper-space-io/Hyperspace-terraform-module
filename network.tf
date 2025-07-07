@@ -25,7 +25,9 @@ module "vpc" {
   flow_log_file_format                            = var.flow_log_file_format
   public_subnet_tags                              = local.public_subnet_tags
   private_subnet_tags                             = local.private_subnet_tags
-  tags                                            = local.tags
+  tags                                            = merge(local.tags, {
+    "karpenter.sh/discovery" = "${var.project}-${var.environment}"
+  })
 }
 
 module "endpoints" {
