@@ -58,7 +58,7 @@ locals {
   private_subnet_tags = {
     "kubernetes.io/role/internal-elb" = "1"
     "Type"                            = "private"
-    "karpenter.sh/discovery" = "${var.project}-${var.environment}-cluster"
+    "karpenter.sh/discovery" = "${var.project}-${var.environment}"
   }
 
   public_subnet_tags = {
