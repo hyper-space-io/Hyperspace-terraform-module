@@ -49,7 +49,7 @@ config:
     # Only parse logs that start with '{' (likely JSON)
     [FILTER]
         Name   grep
-        Match  *
+        Match  kube.*
         Regex  log ^\{
 
     [FILTER]
