@@ -6,7 +6,8 @@ module "eks" {
   cluster_version = "1.31"
   subnet_ids      = local.private_subnets_ids
   vpc_id          = local.vpc_id
-  tags            = local.tags
+  # tags            = local.tags
+  tags            = merge(local.tags, { "karpenter.sh/discovery" = "${var.project}-${var.environment}" })
 
   cluster_addons = {
     aws-ebs-csi-driver = { most_recent = true }
