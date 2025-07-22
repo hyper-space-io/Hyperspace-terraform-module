@@ -9,17 +9,16 @@ config:
         Path  /var/log/containers/*.log
         Tag   kube.*
         multiline.parser docker, cri
-        Exclude_Path  *nginx*
         Mem_Buf_Limit 5MB
         Skip_Long_Lines On
 
-    [INPUT]
-        Name  tail
-        Path  /var/log/containers/*nginx*.log
-        Tag   nginx.*
-        multiline.parser docker, cri
-        Mem_Buf_Limit 5MB
-        Skip_Long_Lines On
+    # [INPUT]
+    #     Name  tail
+    #     Path  /var/log/containers/ingress-nginx-external-controller-*.log
+    #     Tag   nginx-ingress.*
+    #     multiline.parser docker, cri
+    #     Mem_Buf_Limit 5MB
+    #     Skip_Long_Lines On
 
 
     [INPUT]
@@ -38,13 +37,13 @@ config:
         K8S-Logging.Exclude On
         K8S-Logging.Parser On
 
-    [FILTER]
-        Name           kubernetes
-        Match          nginx.*
-        Kube_URL       https://kubernetes.default.svc:443
-        Merge_Log      On
-        K8S-Logging.Exclude On
-        K8S-Logging.Parser On
+    # [FILTER]
+    #     Name           kubernetes
+    #     Match          controller.*
+    #     Kube_URL       https://kubernetes.default.svc:443
+    #     Merge_Log      On
+    #     K8S-Logging.Exclude On
+    #     K8S-Logging.Parser On
 
     # Only parse logs that start with '{' (likely JSON)
     [FILTER]
@@ -66,6 +65,11 @@ config:
         Remove _p
         Remove time
 
+    [FILTER]
+        Name          rewrite_tag
+        Match         *
+        Rule          $kubernetes['pod_name'] ^ingress-nginx-external-controller-.*$ nginx-ingress false
+
   outputs: |
     [OUTPUT]
         name loki
@@ -77,15 +81,24 @@ config:
         log_level info
         remove_keys kubernetes
 
+    # [OUTPUT]
+    #     name loki
+    #     match controller.*
+    #     host loki.monitoring.svc.cluster.local
+    #     port 3100
+    #     labels cluster=devops
+    #     line_format json
+    #     log_level info
+    #     # remove_keys kubernetes
+
     [OUTPUT]
         name loki
-        match nginx.*
+        match nginx-ingress.*
         host loki.monitoring.svc.cluster.local
         port 3100
-        labels cluster=devops
+        labels special_label=nginx-ingress,job=fluent-bit,namespace=$kubernetes['namespace_name'],pod=$kubernetes['pod_name'],container=$kubernetes['container_name']
         line_format json
         log_level info
-        # remove_keys kubernetes
 
 resources:
   requests:
