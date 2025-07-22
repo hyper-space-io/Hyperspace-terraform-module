@@ -133,7 +133,7 @@ locals {
   }
   additional_self_managed_node_pools = {
     # data-nodes service nodes
-    for instance_type in ["f1.2xlarge", "f1.4xlarge"] :
+    for instance_type in ["f1.2xlarge", "f1.4xlarge", "f2.6xlarge"] :
       "eks-data-node-${instance_type}" => merge(
         local.fpga_node_groups_defaults,
         {
