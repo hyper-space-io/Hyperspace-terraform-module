@@ -29,6 +29,7 @@ module "vpc" {
 }
 
 module "endpoints" {
+  count                      = local.create_vpc ? 1 : 0
   source                     = "terraform-aws-modules/vpc/aws//modules/vpc-endpoints"
   version                    = "~>5.13.0"
   vpc_id                     = local.vpc_id
