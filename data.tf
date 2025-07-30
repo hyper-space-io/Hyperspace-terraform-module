@@ -399,3 +399,11 @@ data "aws_iam_policy_document" "kms" {
     }
   }
 }
+
+#######################
+####### ECR ##########
+#######################
+
+data "aws_ecrpublic_authorization_token" "token" {
+  provider = aws # ECR Public Gallery is only available in us-east-1
+}

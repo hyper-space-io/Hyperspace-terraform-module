@@ -1,0 +1,41 @@
+apiVersion: karpenter.sh/v1
+kind: NodePool
+metadata:
+  name: system-tools-node
+spec:
+  template:
+    metadata:
+      labels:
+        node-type: karpenter-system-tools-node
+    spec:
+      taints:
+        - key: system-tools
+          value: "true"
+          effect: NoSchedule
+      requirements:
+        - key: "karpenter.sh/capacity-type"
+          operator: In
+          values: ["spot","on-demand"]
+        - key: "node.kubernetes.io/instance-category"
+          operator: In
+          values: ["c", "t", "r", "m"]
+        - key: "node.kubernetes.io/instance-cpu"
+          operator: In
+          values: ["1", "2", "4", "8", "16", "32", "64"]
+        - key: "node.kubernetes.io/instance-generation"
+          operator: "Gt"
+          values: ["2"]
+        - key: "kubernetes.io/arch"
+          operator: In
+          values: ["amd64"]
+      nodeClassRef:
+        group: karpenter.k8s.aws
+        kind: EC2NodeClass
+        name: medium-node
+      expireAfter: 72h
+  limits:
+    cpu: "10000"
+    memory: 10000Gi
+  disruption:
+    consolidationPolicy: WhenEmptyOrUnderutilized
+    consolidateAfter: 5m

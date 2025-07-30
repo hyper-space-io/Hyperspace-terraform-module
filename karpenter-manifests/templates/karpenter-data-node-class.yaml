@@ -1,0 +1,30 @@
+apiVersion: karpenter.k8s.aws/v1
+kind: EC2NodeClass
+metadata:
+  name: data-node
+spec:
+  amiFamily: AL2
+  amiSelectorTerms:
+    - id: {{ .Values.dataNode.ami }}
+  role: {{ .Values.nodeClass.role }}
+  blockDeviceMappings:
+    - deviceName: /dev/xvda
+      ebs:
+        volumeSize: 200Gi
+        volumeType: gp3
+        iops: 10000
+        encrypted: true
+        deleteOnTermination: true
+        throughput: 125
+        kmsKeyID: {{ .Values.dataNode.kmsKeyId }}
+        snapshotID: snap-0a864b5f647959d63
+        volumeInitializationRate: 100
+  subnetSelectorTerms:
+    - tags:
+        karpenter.sh/discovery: {{ .Values.nodeClass.discovery }}
+  securityGroupSelectorTerms:
+    - tags:
+        karpenter.sh/discovery: {{ .Values.nodeClass.discovery }}
+  tags:
+    app: data-node
+    Name: karpenter-data-node

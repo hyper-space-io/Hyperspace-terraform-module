@@ -41,6 +41,13 @@ resource "helm_release" "velero" {
     server:
       annotations:
         eks.amazonaws.com/role-arn: "${module.iam_iam-assumable-role-with-oidc["velero"].iam_role_arn}"
+  tolerations:
+  - key: "system-tools"
+    operator: "Equal"
+    value: "true"
+    effect: "NoSchedule"
+  nodeSelector:
+    "node-type": "karpenter-system-tools-node"
   EOF
   ]
   depends_on = [module.eks, module.iam_iam-assumable-role-with-oidc]

@@ -1,0 +1,6 @@
+nodeClass:
+  role: ""
+  discovery: ""
+dataNode:
+  ami: ""
+  kmsKeyId: ""

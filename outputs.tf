@@ -4,7 +4,7 @@
 
 output "eks" {
   description = "EKS module outputs"
-  value = module.eks
+  value       = module.eks
 }
 
 output "ec2_tags_policy_arn" {
@@ -18,7 +18,7 @@ output "ec2_tags_policy_arn" {
 
 output "vpc" {
   description = "VPC module outputs"
-  value = module.vpc
+  value       = module.vpc
 }
 
 ########################

@@ -10,6 +10,13 @@ resource "helm_release" "loki" {
   wait             = true
   values = [<<EOF
 loki:
+  tolerations:
+  - key: "system-tools"
+    operator: "Equal"
+    value: "true"
+    effect: "NoSchedule"
+  nodeSelector:
+    "node-type": "karpenter-system-tools-node"
   serviceAccount:
     name: loki
     create: true
@@ -52,6 +59,11 @@ loki:
 promtail:
   tolerations:
   - key: "fpga"
+    operator: "Equal"
+    value: "true"
+    effect: "NoSchedule"
+  tolerations:
+  - key: "system-tools"
     operator: "Equal"
     value: "true"
     effect: "NoSchedule"

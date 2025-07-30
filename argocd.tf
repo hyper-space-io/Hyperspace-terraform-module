@@ -13,12 +13,22 @@ resource "helm_release" "argocd" {
     yamlencode({
       global = {
         domain = "argocd.${local.internal_domain_name}"
+        nodeSelector = {
+          "node-type" = "karpenter-system-tools-node"
+        }
+        tolerations = [
+          {
+            key = "system-tools"
+            operator = "Equal"
+            value = "true"
+            effect = "NoSchedule"
+          }
+        ]
       }
       dex = {
         enabled = true
       }
-      redis = {
-      }
+      redis = {}
       configs = {
         rbac = {
           "policy.default" = local.argocd_rbac_policy_default

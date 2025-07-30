@@ -2,7 +2,7 @@ locals {
   internal_domain_name = var.domain_name != "" ? "internal.hyperspace.${var.environment}.${var.domain_name}" : ""
   public_domain_name   = var.domain_name != "" ? "hyperspace.${var.environment}.${var.domain_name}" : ""
   create_records       = var.domain_name != "" ? 1 : 0
-  
+
   # Combine main VPC with additional VPCs for private hosted zone
   private_zone_vpc_configs = concat(
     # Main VPC (always included, same region as the zone)
