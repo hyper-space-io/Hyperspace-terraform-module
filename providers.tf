@@ -46,8 +46,10 @@ provider "aws" {
 }
 
 provider "kubernetes" {
-  host                   = var.create_eks ? module.eks.cluster_endpoint : null
-  cluster_ca_certificate = var.create_eks ? base64decode(module.eks.cluster_certificate_authority_data) : null
+  host                   = module.eks.cluster_endpoint
+  cluster_ca_certificate = base64decode(module.eks.cluster_certificate_authority_data)
+  # host                   = var.create_eks ? module.eks.cluster_endpoint : null
+  # cluster_ca_certificate = var.create_eks ? base64decode(module.eks.cluster_certificate_authority_data) : null
   exec {
     api_version = "client.authentication.k8s.io/v1beta1"
     command     = "aws"
@@ -57,8 +59,11 @@ provider "kubernetes" {
 
 provider "helm" {
   kubernetes {
-    host                   = var.create_eks ? module.eks.cluster_endpoint : null
-    cluster_ca_certificate = var.create_eks ? base64decode(module.eks.cluster_certificate_authority_data) : null
+    host                   = module.eks.cluster_endpoint
+    # host                   = var.create_eks ? module.eks.cluster_endpoint : null
+    cluster_ca_certificate = base64decode(module.eks.cluster_certificate_authority_data)
+    # cluster_ca_certificate = var.create_eks ? base64decode(module.eks.cluster_certificate_authority_data) : null
+
     exec {
       api_version = "client.authentication.k8s.io/v1beta1"
       command     = "aws"
