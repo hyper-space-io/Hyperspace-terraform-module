@@ -9,11 +9,11 @@ resource "helm_release" "ecr_token" {
   depends_on      = [module.eks, time_sleep.wait_for_cluster_ready, helm_release.argocd]
 
   set {
-      name  = "ACCOUNT_ID"
-      value = var.hyperspace_account_id
-    }
+    name  = "ACCOUNT_ID"
+    value = var.hyperspace_account_id
+  }
   set {
-      name  = "region"
-      value = local.hyperspace_helm_region
-    }
+    name  = "region"
+    value = local.hyperspace_helm_region
+  }
 }

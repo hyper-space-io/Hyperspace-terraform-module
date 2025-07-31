@@ -38,8 +38,8 @@ resource "helm_release" "secret_manager_manifests" {
   force_update    = true
   cleanup_on_fail = true
   set {
-      name  = "awsRegion"
-      value = var.aws_region
-    }
+    name  = "awsRegion"
+    value = var.aws_region
+  }
   depends_on = [helm_release.secrets_manager, time_sleep.wait_for_crd]
 }
