@@ -29,7 +29,7 @@ terraform {
     }
     helm = {
       source  = "hashicorp/helm"
-      version = ">= 3.0.0"
+      version = "~> 2.17.0"
     }
   }
 }
@@ -56,10 +56,10 @@ provider "kubernetes" {
 }
 
 provider "helm" {
-  kubernetes = {
+  kubernetes {
     host                   = var.create_eks ? module.eks.cluster_endpoint : null
     cluster_ca_certificate = var.create_eks ? base64decode(module.eks.cluster_certificate_authority_data) : null
-    exec = {
+    exec {
       api_version = "client.authentication.k8s.io/v1beta1"
       command     = "aws"
       args        = local.eks_exec_args
