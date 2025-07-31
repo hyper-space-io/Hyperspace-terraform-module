@@ -29,7 +29,7 @@ terraform {
     }
     helm = {
       source  = "hashicorp/helm"
-      version = ">= 3.0.0"
+      version = ">= 2.17.0"
     }
   }
 }
@@ -56,10 +56,10 @@ provider "kubernetes" {
 }
 
 provider "helm" {
-  kubernetes = {
+  kubernetes {
     host                   = var.create_eks ? module.eks.cluster_endpoint : null
     cluster_ca_certificate = var.create_eks ? base64decode(module.eks.cluster_certificate_authority_data) : null
-    exec = {
+    exec {
       api_version = "client.authentication.k8s.io/v1beta1"
       command     = "aws"
       args        = local.eks_exec_args
@@ -69,11 +69,11 @@ provider "helm" {
 
 provider "helm" {
   alias = "karpenter"
-  kubernetes = {
+  kubernetes {
     host                   = var.create_eks ? module.eks.cluster_endpoint : null
     cluster_ca_certificate = var.create_eks ? base64decode(module.eks.cluster_certificate_authority_data) : null
 
-    exec = {
+    exec {
       api_version = "client.authentication.k8s.io/v1beta1"
       command     = "aws"
       # This requires the awscli to be installed locally where Terraform is executed
@@ -83,7 +83,7 @@ provider "helm" {
 
   # Registry configuration for accessing AWS ECR Public Gallery
   # Uses authentication token from data source
-  registry = {
+  registry {
     url      = "oci://public.ecr.aws"
     username = var.create_eks ? data.aws_ecrpublic_authorization_token.token.user_name : null
     password = var.create_eks ? data.aws_ecrpublic_authorization_token.token.password : null
