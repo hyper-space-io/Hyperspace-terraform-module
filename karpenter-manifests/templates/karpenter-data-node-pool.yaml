@@ -24,6 +24,8 @@ spec:
         kind: EC2NodeClass
         name: data-node
       expireAfter: 72h
+      tags:
+        Environment: {{ .Values.environment }}
   limits:
     cpu: "10000"
     memory: 10000Gi

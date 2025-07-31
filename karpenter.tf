@@ -123,6 +123,7 @@ nodeClass:
 dataNode:
   ami: ${data.aws_ami.fpga.id}
   kmsKeyId: ${data.aws_kms_key.by_alias.arn}
+environment: ${var.environment}
 EOF
   ]
   depends_on = [module.karpenter, helm_release.karpenter, helm_release.karpenter_crd]

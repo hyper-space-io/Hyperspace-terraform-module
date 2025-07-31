@@ -4,3 +4,4 @@ nodeClass:
 dataNode:
   ami: ""
   kmsKeyId: ""
+environment: ""
