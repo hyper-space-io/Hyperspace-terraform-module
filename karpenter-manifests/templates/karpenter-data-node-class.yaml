@@ -28,3 +28,4 @@ spec:
   tags:
     app: data-node
     Name: karpenter-data-node
+    Environment: {{ .Values.environment }}

@@ -21,3 +21,4 @@ spec:
   tags:
     app: medium-node
     Name: karpenter-medium-node
+    Environment: {{ .Values.environment }}
