@@ -108,6 +108,7 @@ data "aws_ami" "fpga" {
     name   = "description"
     values = ["*Customers*"]
   }
+  most_recent = true
 }
 
 data "aws_iam_policy_document" "ec2_tags_control" {
@@ -121,7 +122,7 @@ data "aws_iam_policy_document" "ec2_tags_control" {
   statement {
     sid       = "EC2TagsCreate"
     actions   = ["ec2:CreateTags"]
-    resources = ["arn:aws:ec2:*:*:instance/*"]
+    resources = ["*"]
     effect    = "Allow"
   }
 }
@@ -171,55 +172,7 @@ data "aws_lb" "external_ingress" {
   depends_on = [time_sleep.wait_for_external_ingress, module.eks, kubernetes_ingress_v1.nginx_ingress]
 }
 
-data "aws_iam_policy_document" "cluster_autoscaler" {
-  statement {
-    sid = "AutoscalingWrite"
-    actions = [
-      "autoscaling:SetDesiredCapacity",
-      "autoscaling:TerminateInstanceInAutoScalingGroup"
-    ]
-    resources = [
-      "arn:aws:autoscaling:${var.aws_region}:${data.aws_caller_identity.current.account_id}:autoScalingGroup:*:autoScalingGroupName/*",
-    ]
-    effect = "Allow"
-  }
-
-  statement {
-    sid = "AutoscalingRead"
-    actions = [
-      "autoscaling:DescribeAutoScalingGroups",
-      "autoscaling:DescribeAutoScalingInstances",
-      "autoscaling:DescribeLaunchConfigurations",
-      "autoscaling:DescribeScalingActivities",
-      "autoscaling:DescribeTags"
-    ]
-    resources = ["*"]
-    effect    = "Allow"
-  }
-
-  statement {
-    sid = "EC2Describe"
-    actions = [
-      "ec2:DescribeInstanceTypes",
-      "ec2:DescribeLaunchTemplateVersions",
-      "ec2:DescribeImages",
-      "ec2:GetInstanceTypesFromInstanceRequirements"
-    ]
-    resources = ["*"]
-    effect    = "Allow"
-  }
-
-  statement {
-    sid = "EKSDescribe"
-    actions = [
-      "eks:DescribeNodegroup"
-    ]
-    resources = [
-      "arn:aws:eks:${var.aws_region}:${data.aws_caller_identity.current.account_id}:nodegroup/${local.cluster_name}/*"
-    ]
-    effect = "Allow"
-  }
-}
+ 
 
 #######################
 ######### S3 ##########

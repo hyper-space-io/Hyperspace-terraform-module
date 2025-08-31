@@ -5,3 +5,4 @@ dataNode:
   ami: ""
   kmsKeyId: ""
 environment: ""
+useSpot: true

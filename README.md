@@ -128,7 +128,7 @@ terraform apply
 |------|-------------|------|---------|----------|
 | create_eks | Whether to create the EKS cluster | `bool` | `true` | no |
 | cluster_endpoint_public_access | Whether to enable public access to the EKS cluster endpoint | `bool` | `false` | no |
-| enable_cluster_autoscaler | Whether to enable and install cluster-autoscaler | `bool` | `true` | no |
+
 | worker_nodes_max | Maximum number of worker nodes allowed | `number` | `10` | no |
 | worker_instance_type | Instance type(s) for EKS worker nodes | `list(string)` | `["m5n.xlarge"]` | no |
 | eks_additional_admin_roles | Additional IAM roles to add as cluster administrators | `list(string)` | `[]` | no |

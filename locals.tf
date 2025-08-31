@@ -92,7 +92,7 @@ locals {
   ##### EKS #######
   #################
   merged_map_roles = distinct(concat(
-    [
+    var.enable_karpenter ? [
       {
         rolearn  = module.karpenter[0].iam_role_arn
         username = "system:node:{{EC2PrivateDNSName}}"
@@ -109,7 +109,7 @@ locals {
           "system:nodes",
         ]
       }
-    ],
+    ] : [],
 
     var.map_roles,
   ))
@@ -127,10 +127,7 @@ locals {
     var.fargate_profiles
   )
   cluster_name = "${var.project}-${var.environment}"
-  default_node_pool_tags = {
-    "k8s.io/cluster-autoscaler/enabled"               = "True"
-    "k8s.io/cluster-autoscaler/${local.cluster_name}" = "True"
-  }
+  
   fpga_node_groups_defaults = {
     enable_monitoring        = true
     min_size                 = 0
@@ -150,10 +147,7 @@ locals {
       mkdir /data/private/
       EOT
     tags                     = merge(local.tags, { nodegroup = "fpga" })
-    autoscaling_group_tags = merge(local.default_node_pool_tags, {
-      "k8s.io/cluster-autoscaler/node-template/taint/fpga"              = "true:NoSchedule"
-      "k8s.io/cluster-autoscaler/node-template/resources/hugepages-1Gi" = "100Gi"
-    })
+    
     block_device_mappings = {
       root = {
         device_name = "/dev/xvda"

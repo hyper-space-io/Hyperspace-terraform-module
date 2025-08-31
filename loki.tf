@@ -62,7 +62,6 @@ promtail:
     operator: "Equal"
     value: "true"
     effect: "NoSchedule"
-  tolerations:
   - key: "system-tools"
     operator: "Equal"
     value: "true"

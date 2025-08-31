@@ -373,6 +373,12 @@ variable "enable_karpenter" {
   default     = false
 }
 
+variable "karpenter_enable_spot" {
+  description = "Allow Karpenter NodePools to use EC2 Spot capacity"
+  type        = bool
+  default     = true
+}
+
 variable "karpenter_controller_config" {
   description = "Configuration for Karpenter controller"
   type = object({

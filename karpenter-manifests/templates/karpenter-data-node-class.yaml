@@ -3,6 +3,11 @@ kind: EC2NodeClass
 metadata:
   name: data-node
 spec:
+  metadataOptions:
+    httpEndpoint: enabled
+    httpProtocolIPv6: disabled
+    httpPutResponseHopLimit: 2
+    httpTokens: required
   amiFamily: AL2
   amiSelectorTerms:
     - id: {{ .Values.dataNode.ami }}
@@ -17,7 +22,7 @@ spec:
         deleteOnTermination: true
         throughput: 125
         kmsKeyID: {{ .Values.dataNode.kmsKeyId }}
-        snapshotID: snap-0a864b5f647959d63
+        snapshotID: snap-095d39f453364a8fa
         volumeInitializationRate: 100
   subnetSelectorTerms:
     - tags:

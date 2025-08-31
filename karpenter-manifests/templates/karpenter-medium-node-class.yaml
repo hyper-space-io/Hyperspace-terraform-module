@@ -4,6 +4,14 @@ metadata:
   name: medium-node
 spec:
   amiFamily: AL2023
+  blockDeviceMappings:
+    - deviceName: /dev/xvda
+      ebs:
+        volumeSize: 100Gi
+        volumeType: gp3
+        iops: 3000
+        throughput: 125
+        encrypted: true
   amiSelectorTerms:
   - alias: al2023@latest
   role: {{ .Values.nodeClass.role }}

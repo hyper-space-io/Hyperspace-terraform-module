@@ -16,6 +16,7 @@ module "karpenter" {
   node_iam_role_additional_policies = {
     AmazonSSMManagedInstanceCore = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore" # Allow SSM access to nodes
     AmazonEBSCSIDriverPolicy     = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy" # Allow EBS CSI driver access
+    AmazonEC2ContainerRegistryReadOnly = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly" # Allow ECR image pulling
   }
   tags       = var.tags
   depends_on = [module.eks]
@@ -125,6 +126,7 @@ dataNode:
   ami: ${data.aws_ami.fpga.id}
   kmsKeyId: ${data.aws_kms_key.by_alias.arn}
 environment: ${var.environment}
+useSpot: ${var.karpenter_enable_spot}
 EOF
   ]
   depends_on = [module.karpenter, helm_release.karpenter, helm_release.karpenter_crd]

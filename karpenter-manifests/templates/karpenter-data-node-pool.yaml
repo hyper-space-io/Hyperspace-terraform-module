@@ -15,7 +15,7 @@ spec:
       requirements:
         - key: "karpenter.sh/capacity-type"
           operator: In
-          values: ["spot","on-demand"]
+          values: [{{ if .Values.useSpot }}"spot", {{ end }}"on-demand"]
         - key: "node.kubernetes.io/instance-type"
           operator: In
           values: ["f2.6xlarge", "f2.12xlarge"]
@@ -23,10 +23,10 @@ spec:
         group: karpenter.k8s.aws
         kind: EC2NodeClass
         name: data-node
-      expireAfter: 72h
+      expireAfter: 720h
   limits:
     cpu: "10000"
     memory: 10000Gi
   disruption:
-    consolidationPolicy: WhenEmptyOrUnderutilized
+    consolidationPolicy: WhenEmpty
     consolidateAfter: 5m

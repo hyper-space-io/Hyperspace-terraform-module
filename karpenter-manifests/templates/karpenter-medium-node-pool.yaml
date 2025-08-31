@@ -11,15 +11,15 @@ spec:
       requirements:
         - key: "karpenter.sh/capacity-type"
           operator: In
-          values: ["spot","on-demand"]
+          values: [{{ if .Values.useSpot }}"spot", {{ end }}"on-demand"]
         - key: "node.kubernetes.io/instance-type"
           operator: In
-          values: ["m5n.medium", "m5n.large", "m5n.xlarge", "m5n.4xlarge", "m5n.8xlarge", "c6in.4xlarge"]
+          values: ["c7a.2xlarge", "c7a.4xlarge", "c7a.8xlarge", "c7a.16xlarge"]
       nodeClassRef:
         group: karpenter.k8s.aws
         kind: EC2NodeClass
         name: medium-node
-      expireAfter: 72h
+      expireAfter: 720h
   limits:
     cpu: "10000"
     memory: 10000Gi

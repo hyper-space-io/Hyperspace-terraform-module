@@ -8,6 +8,7 @@ module "eks" {
   vpc_id           = local.vpc_id
   fargate_profiles = local.fargate_profiles
   tags             = merge(local.tags, { "karpenter.sh/discovery" = "${var.project}-${var.environment}" })
+  cloudwatch_log_group_class = "STANDARD"
 
   cluster_addons = {
     aws-ebs-csi-driver = { most_recent = true }
