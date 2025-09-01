@@ -1,0 +1,32 @@
+apiVersion: karpenter.k8s.aws/v1
+kind: EC2NodeClass
+metadata:
+  name: medium-node
+spec:
+  amiFamily: AL2023
+  blockDeviceMappings:
+    - deviceName: /dev/xvda
+      ebs:
+        volumeSize: 100Gi
+        volumeType: gp3
+        iops: 3000
+        throughput: 125
+        encrypted: true
+  amiSelectorTerms:
+  - alias: al2023@latest
+  role: {{ .Values.nodeClass.role }}
+  subnetSelectorTerms:
+    - tags:
+        karpenter.sh/discovery: {{ .Values.nodeClass.discovery }}
+  securityGroupSelectorTerms:
+    - tags:
+        karpenter.sh/discovery: {{ .Values.nodeClass.discovery }}
+  metadataOptions:
+    httpEndpoint: enabled
+    httpTokens: required
+    httpPutResponseHopLimit: 2
+    httpProtocolIpv6: disabled
+  tags:
+    app: medium-node
+    Name: karpenter-medium-node
+    Environment: {{ .Values.environment }}

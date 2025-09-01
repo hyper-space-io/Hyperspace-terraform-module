@@ -1,0 +1,32 @@
+apiVersion: karpenter.sh/v1
+kind: NodePool
+metadata:
+  name: data-node
+spec:
+  template:
+    metadata:
+      labels:
+        node-type: karpenter-data-node
+    spec:
+      taints:
+        - key: fpga
+          value: "true"
+          effect: NoSchedule
+      requirements:
+        - key: "karpenter.sh/capacity-type"
+          operator: In
+          values: [{{ if .Values.useSpot }}"spot", {{ end }}"on-demand"]
+        - key: "node.kubernetes.io/instance-type"
+          operator: In
+          values: ["f2.6xlarge", "f2.12xlarge"]
+      nodeClassRef:
+        group: karpenter.k8s.aws
+        kind: EC2NodeClass
+        name: data-node
+      expireAfter: 720h
+  limits:
+    cpu: "10000"
+    memory: 10000Gi
+  disruption:
+    consolidationPolicy: WhenEmpty
+    consolidateAfter: 5m

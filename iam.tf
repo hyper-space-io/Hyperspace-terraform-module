@@ -17,14 +17,7 @@ locals {
       policy                   = data.aws_iam_policy_document.ec2_tags_control.json
       create_cluster_wide_role = true
     }
-    cluster-autoscaler = {
-      name                  = "${local.cluster_name}-cluster-autoscaler"
-      path                  = "/"
-      description           = "Policy for cluster-autoscaler service"
-      policy                = data.aws_iam_policy_document.cluster_autoscaler.json
-      create_assumable_role = true
-      sa_namespace          = "cluster-autoscaler"
-    }
+    
     core-dump = {
       name                  = "${local.cluster_name}-core-dump"
       path                  = "/"

@@ -123,12 +123,43 @@ variable "flow_log_file_format" {
 ############ EKS ##############
 ###############################
 
+# Additional IAM roles to add to the aws-auth configmap for cluster access
+variable "map_roles" {
+  description = "Additional IAM roles to add to the aws-auth configmap"
+  type = list(object({
+    rolearn  = string
+    username = string
+    groups   = list(string)
+  }))
+  default = []
+}
+
+# Additional IAM users to add to the aws-auth configmap for cluster access
+variable "map_users" {
+  description = "Additional IAM users to add to the aws-auth configmap"
+  type = list(object({
+    userarn  = string
+    username = string
+    groups   = list(string)
+  }))
+  default = []
+}
+
+# Additional AWS accounts to add to the aws-auth configmap
+variable "map_accounts" {
+  description = "Additional AWS account numbers to add to the aws-auth configmap"
+  type        = list(string)
+  default     = []
+}
+
+# Create EKS cluster flag
 variable "create_eks" {
   type        = bool
   default     = true
   description = "Should we create the eks cluster?"
 }
 
+# Enable public access to the EKS cluster endpoint
 variable "cluster_endpoint_public_access" {
   description = "Whether to enable public access to the EKS cluster endpoint"
   type        = bool
@@ -161,6 +192,13 @@ variable "eks_additional_admin_roles_policy" {
   type        = string
   description = "IAM policy for the EKS additional admin roles"
   default     = "arn:aws:iam::aws:policy/AmazonEKSClusterAdminPolicy"
+}
+
+# Configuration for Fargate profiles to run pods without nodes
+variable "fargate_profiles" {
+  description = "Map of Fargate Profile definitions to create."
+  type        = any
+  default     = {}
 }
 
 ###############################
@@ -323,4 +361,57 @@ variable "grafana_privatelink_config" {
     additional_aws_regions      = []
   }
   description = "Grafana privatelink configuration"
+}
+
+################################
+######### Karpenter ############
+################################
+
+variable "enable_karpenter" {
+  description = "Enable Karpenter"
+  type        = bool
+  default     = false
+}
+
+variable "karpenter_enable_spot" {
+  description = "Allow Karpenter NodePools to use EC2 Spot capacity"
+  type        = bool
+  default     = true
+}
+
+variable "karpenter_controller_config" {
+  description = "Configuration for Karpenter controller"
+  type = object({
+    fargate_enabled = optional(bool, true)
+    replicas        = optional(number, 1)
+    resources = optional(object({
+      requests = optional(object({
+        cpu    = optional(string, "2")
+        memory = optional(string, "2Gi")
+      }))
+      limits = optional(object({
+        cpu    = optional(string, "8")
+        memory = optional(string, "4Gi")
+      }))
+    }))
+    feature_gates = optional(map(string), {
+      spotToSpotConsolidation = "true"
+    })
+  })
+  default = {
+    replicas = 1
+    resources = {
+      requests = {
+        cpu    = "2"
+        memory = "2Gi"
+      }
+      limits = {
+        cpu    = "8"
+        memory = "4Gi"
+      }
+    }
+    feature_gates = {
+      spotToSpotConsolidation = "true"
+    }
+  }
 }

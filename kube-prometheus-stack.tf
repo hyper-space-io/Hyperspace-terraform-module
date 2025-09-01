@@ -2,6 +2,20 @@ locals {
   prometheus_release_name = "kube-prometheus-stack"
   monitoring_namespace    = "monitoring"
 
+  # Centralized nodeSelector and tolerations configuration
+  monitoring_node_selector = {
+    "node-type" = "karpenter-system-tools-node"
+  }
+
+  monitoring_tolerations = [
+    {
+      key = "system-tools"
+      operator = "Equal"
+      value = "true"
+      effect = "NoSchedule"
+    }
+  ]
+
   prometheus_values = {
     global = {
       imagePullSecrets = [
@@ -9,11 +23,15 @@ locals {
           name = "regcred-secret"
         }
       ]
+      nodeSelector = local.monitoring_node_selector
+      tolerations = local.monitoring_tolerations
     }
 
     grafana = {
-      enabled = true
+      enabled       = true
       adminPassword = random_password.grafana_admin_password[0].result
+      nodeSelector = local.monitoring_node_selector
+      tolerations = local.monitoring_tolerations
       service = {
         type = local.grafana_privatelink_enabled ? "LoadBalancer" : "ClusterIP"
         annotations = local.grafana_privatelink_enabled ? {
@@ -33,6 +51,10 @@ locals {
       persistence = {
         enabled = true
         size    = "10Gi"
+        accessMode = "ReadWriteOnce"
+      }
+      deploymentStrategy = {
+        type = "Recreate"
       }
       additionalDataSources = [
         {
@@ -44,7 +66,7 @@ locals {
           isDefault = false
           jsonData = {
             maxLines = 1000
-            timeout = 30
+            timeout  = 30
           }
         }
       ]
@@ -96,6 +118,14 @@ locals {
 
     alertmanager = {
       enabled = true
+      nodeSelector = local.monitoring_node_selector
+      tolerations = local.monitoring_tolerations
+    }
+
+    kubeStateMetrics = {
+      enabled = true
+      nodeSelector = local.monitoring_node_selector
+      tolerations = local.monitoring_tolerations
     }
 
     kubeEtcd = {
@@ -122,7 +152,7 @@ resource "helm_release" "kube_prometheus_stack" {
   namespace        = local.monitoring_namespace
   repository       = "https://prometheus-community.github.io/helm-charts"
   values           = [yamlencode(local.prometheus_values)]
-  depends_on       = [module.eks, module.eks_blueprints_addons, module.external_acm, module.internal_acm, helm_release.nginx-ingress]
+  depends_on       = [module.eks, module.eks_blueprints_addons, module.external_acm, module.internal_acm]
 }
 
 resource "random_password" "grafana_admin_password" {
@@ -141,15 +171,19 @@ resource "helm_release" "prometheus_adapter" {
   namespace  = local.monitoring_namespace
   chart      = "prometheus-adapter"
   repository = "https://prometheus-community.github.io/helm-charts"
-  values = [<<EOF
-resources:
-  requests:
-    cpu: "10m"
-    memory: "32Mi"
-prometheus:
-  url: http://"kube-prometheus-stack-prometheus.monitoring.svc"
-EOF
-  ]
+  values = [yamlencode({
+    resources = {
+      requests = {
+        cpu    = "10m"
+        memory = "32Mi"
+      }
+    }
+    prometheus = {
+      url = "http://kube-prometheus-stack-prometheus.monitoring.svc"
+    }
+    tolerations = local.monitoring_tolerations
+    nodeSelector = local.monitoring_node_selector
+  })]
   depends_on = [helm_release.kube_prometheus_stack, module.eks, module.eks_blueprints_addons]
 }
 

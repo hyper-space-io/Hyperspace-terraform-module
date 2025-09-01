@@ -1,0 +1,8 @@
+nodeClass:
+  role: ""
+  discovery: ""
+dataNode:
+  ami: ""
+  kmsKeyId: ""
+environment: ""
+useSpot: true

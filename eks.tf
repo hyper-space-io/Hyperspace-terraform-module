@@ -1,12 +1,14 @@
 module "eks" {
-  source          = "terraform-aws-modules/eks/aws"
-  version         = "~> 20.30.0"
-  create          = var.create_eks
-  cluster_name    = local.cluster_name
-  cluster_version = "1.31"
-  subnet_ids      = local.private_subnets_ids
-  vpc_id          = local.vpc_id
-  tags            = local.tags
+  source           = "terraform-aws-modules/eks/aws"
+  version          = "~> 20.30.0"
+  create           = var.create_eks
+  cluster_name     = local.cluster_name
+  cluster_version  = "1.31"
+  subnet_ids       = local.private_subnets_ids
+  vpc_id           = local.vpc_id
+  fargate_profiles = local.fargate_profiles
+  tags             = merge(local.tags, { "karpenter.sh/discovery" = "${var.project}-${var.environment}" })
+  cloudwatch_log_group_class = "STANDARD"
 
   cluster_addons = {
     aws-ebs-csi-driver = { most_recent = true }
@@ -15,90 +17,6 @@ module "eks" {
     vpc-cni            = { most_recent = true }
   }
 
-  #######################
-  # MANAGED NODE GROUPS #
-  #######################
-  eks_managed_node_groups = {
-    eks-hyperspace-medium = {
-      min_size       = 1
-      max_size       = var.worker_nodes_max
-      desired_size   = 1
-      instance_types = var.worker_instance_type
-      capacity_type  = "ON_DEMAND"
-      labels         = { Environment = var.environment }
-      tags           = merge(local.tags, { nodegroup = "workers", Name = "${local.cluster_name}-eks-medium" })
-      ami_type       = "BOTTLEROCKET_x86_64"
-
-      block_device_mappings = {
-        xvdb = {
-          device_name = "/dev/xvdb"
-          ebs = {
-            volume_size           = 80
-            volume_type           = "gp3"
-            iops                  = 3000
-            throughput            = 125
-            encrypted             = true
-            delete_on_termination = true
-          }
-        }
-      }
-    }
-  }
-
-  eks_managed_node_group_defaults = {
-    update_launch_template_default_version = true
-    iam_role_additional_policies = {
-      AmazonSSMManagedInstanceCore = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore",
-      AmazonEBSCSIDriverPolicy     = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
-    }
-    subnets = local.private_subnets_ids
-
-    tags = {
-      "k8s.io/cluster-autoscaler/enabled"               = "True"
-      "k8s.io/cluster-autoscaler/${local.cluster_name}" = "True"
-      "Name"                                            = local.cluster_name
-    }
-  }
-
-
-  ############################
-  # SELF MANAGED NODE GROUPS #
-  ############################
-
-  # Sperating the self managed nodegroups to az's ( 1 AZ : 1 ASG )
-  # Using AZ index in map key to avoid Terraform's for_each unknown value error
-  self_managed_node_groups = merge([
-    for i, subnet in slice(local.private_subnets_ids, 0, length(local.availability_zones)) : {
-      for pool_name, pool_config in local.additional_self_managed_node_pools :
-      "${var.environment}-az${i}-${pool_name}" => merge(
-        pool_config,
-        {
-          name       = "${pool_name}"
-          subnet_ids = [subnet]
-          tags = merge(
-            local.tags,
-            {
-              nodegroup = "${pool_name}-${subnet}",
-              subnet    = "${subnet}"
-            },
-            pool_config.tags
-          )
-        }
-      )
-    }
-  ]...)
-
-  self_managed_node_group_defaults = {
-    update_launch_template_default_version = true
-    iam_role_use_name_prefix               = true
-    iam_role_additional_policies = {
-      AmazonSSMManagedInstanceCore = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
-      AmazonEBSCSIDriverPolicy     = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
-      EC2TagsControl               = local.iam_policy_arns["ec2_tags"]
-      FpgaPull                     = local.iam_policy_arns["fpga_pull"]
-      KMSAccess                    = local.iam_policy_arns["kms"]
-    }
-  }
   #######################
   #      SECURITY       #
   #######################
@@ -277,4 +195,17 @@ module "boto3_irsa" {
     }
   }
   depends_on = [module.eks]
+}
+
+# AWS Auth ConfigMap module to manage cluster access
+module "eks-auth" {
+  source  = "terraform-aws-modules/eks/aws//modules/aws-auth"
+  version = "20.36.0"
+
+  manage_aws_auth_configmap = true # Enable management of the aws-auth ConfigMap
+
+  aws_auth_roles = local.merged_map_roles # IAM roles that can access the cluster (includes Karpenter roles)
+  aws_auth_users = var.map_users          # IAM users that can access the cluster
+
+  aws_auth_accounts = var.map_accounts # AWS accounts that can access the cluster
 }

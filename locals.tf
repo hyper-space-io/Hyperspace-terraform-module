@@ -58,6 +58,7 @@ locals {
   private_subnet_tags = {
     "kubernetes.io/role/internal-elb" = "1"
     "Type"                            = "private"
+    "karpenter.sh/discovery"          = "${var.project}-${var.environment}"
   }
 
   public_subnet_tags = {
@@ -90,19 +91,51 @@ locals {
   #################
   ##### EKS #######
   #################
+  merged_map_roles = distinct(concat(
+    var.enable_karpenter ? [
+      {
+        rolearn  = module.karpenter[0].iam_role_arn
+        username = "system:node:{{EC2PrivateDNSName}}"
+        groups = [
+          "system:bootstrappers",
+          "system:nodes",
+        ]
+      },
+      {
+        rolearn  = module.karpenter[0].node_iam_role_arn
+        username = "system:node:{{EC2PrivateDNSName}}"
+        groups = [
+          "system:bootstrappers",
+          "system:nodes",
+        ]
+      }
+    ] : [],
+
+    var.map_roles,
+  ))
+
+  fargate_profiles = merge(
+    # Only add Karpenter Fargate profile if Karpenter is enabled and Fargate is enabled for it
+    var.enable_karpenter && try(var.karpenter_controller_config.fargate_enabled, false) ? {
+      karpenter = {
+        selectors = [
+          { namespace = "karpenter" }
+        ]
+        subnet_ids = slice(local.private_subnets_ids, 0, var.num_zones)
+      }
+    } : {},
+    var.fargate_profiles
+  )
   cluster_name = "${var.project}-${var.environment}"
-  default_node_pool_tags = {
-    "k8s.io/cluster-autoscaler/enabled"               = "True"
-    "k8s.io/cluster-autoscaler/${local.cluster_name}" = "True"
-  }
+  
   fpga_node_groups_defaults = {
-      enable_monitoring        = true
-      min_size                 = 0
-      max_size                 = 20
-      desired_size             = 0
-      ami_id                   = data.aws_ami.fpga.id
-      bootstrap_extra_args     = "--kubelet-extra-args '--node-labels=hyperspace.io/type=fpga --register-with-taints=fpga=true:NoSchedule'"
-      post_bootstrap_user_data = <<-EOT
+    enable_monitoring        = true
+    min_size                 = 0
+    max_size                 = 20
+    desired_size             = 0
+    ami_id                   = data.aws_ami.fpga.id
+    bootstrap_extra_args     = "--kubelet-extra-args '--node-labels=hyperspace.io/type=fpga --register-with-taints=fpga=true:NoSchedule'"
+    post_bootstrap_user_data = <<-EOT
       #!/bin/bash -e
       mkdir /data
       vgcreate "data" /dev/nvme0n1
@@ -113,35 +146,32 @@ locals {
       echo "/dev/mapper/data-data /data xfs defaults,noatime 1 1" >> /etc/fstab
       mkdir /data/private/
       EOT
-      tags                     = merge(local.tags, { nodegroup = "fpga" })
-      autoscaling_group_tags = merge(local.default_node_pool_tags, {
-        "k8s.io/cluster-autoscaler/node-template/taint/fpga"              = "true:NoSchedule"
-        "k8s.io/cluster-autoscaler/node-template/resources/hugepages-1Gi" = "100Gi"
-      })
-      block_device_mappings = {
-        root = {
-          device_name = "/dev/xvda"
-          ebs = {
-            encrypted   = true
-            volume_size = 200
-            volume_type = "gp3"
-            iops        = 3000
-            throughput  = 125
-          }
+    tags                     = merge(local.tags, { nodegroup = "fpga" })
+    
+    block_device_mappings = {
+      root = {
+        device_name = "/dev/xvda"
+        ebs = {
+          encrypted   = true
+          volume_size = 200
+          volume_type = "gp3"
+          iops        = 3000
+          throughput  = 125
         }
       }
+    }
   }
   additional_self_managed_node_pools = {
     # data-nodes service nodes
     for instance_type in ["f1.2xlarge", "f1.4xlarge", "f2.6xlarge"] :
-      "eks-data-node-${instance_type}" => merge(
-        local.fpga_node_groups_defaults,
-        {
-          name = "eks-data-node-${instance_type}"
-          iam_role_name = "data-node-${instance_type}"
-          instance_type = instance_type
-        }
-      )
+    "eks-data-node-${instance_type}" => merge(
+      local.fpga_node_groups_defaults,
+      {
+        name          = "eks-data-node-${instance_type}"
+        iam_role_name = "data-node-${instance_type}"
+        instance_type = instance_type
+      }
+    )
   }
   ###########################
   ### Grafana Privatelink ###

@@ -25,6 +25,10 @@ tolerations:
   operator: "Equal"
   value: "true"
   effect: "NoSchedule"
+- key: "system-tools"
+  operator: "Equal"
+  value: "true"
+  effect: "NoSchedule"
 EOT
   ]
   depends_on = [module.eks]

@@ -16,6 +16,7 @@ resource "helm_release" "opentelemetry-collector" {
   wait             = true
   values = [<<EOT
 mode: "deployment"
+replicaCount: 1
 config:
   exporters:
     prometheus:
@@ -46,6 +47,16 @@ ports:
 image:
   repository: "otel/opentelemetry-collector-contrib"
 useGOMEMLIMIT: true
+affinity:
+  podAntiAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchLabels:
+            app.kubernetes.io/name: opentelemetry-collector
+        topologyKey: kubernetes.io/hostname
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
 EOT
   ]
   depends_on = [time_sleep.wait_for_cluster_ready]
