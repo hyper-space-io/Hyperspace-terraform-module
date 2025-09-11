@@ -14,7 +14,7 @@ spec:
           values: [{{ if .Values.useSpot }}"spot", {{ end }}"on-demand"]
         - key: "node.kubernetes.io/instance-type"
           operator: In
-          values: ["c7a.2xlarge", "c7a.4xlarge", "c7a.8xlarge", "c7a.16xlarge"]
+          values: ["c7a.2xlarge", "c7a.4xlarge", "c7a.8xlarge", "c7a.16xlarge", "c7i.2xlarge", "c7i.4xlarge", "c7i.8xlarge", "c7i.16xlarge", "c7in.2xlarge", "c7in.4xlarge", "c7in.8xlarge", "c7in.16xlarge"]
       nodeClassRef:
         group: karpenter.k8s.aws
         kind: EC2NodeClass
