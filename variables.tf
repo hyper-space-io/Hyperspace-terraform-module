@@ -415,3 +415,13 @@ variable "karpenter_controller_config" {
     }
   }
 }
+
+################################
+######### OpenTelemetry #######
+################################
+
+variable "opentelemetry_disable_otlp" {
+  description = "Disable OTLP receiver and ports for OpenTelemetry Collector (useful for development environments)"
+  type        = bool
+  default     = false
+}

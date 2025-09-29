@@ -21,7 +21,7 @@ config:
   receivers:
     otlp:
       protocols:
-%{if var.environment == "development"}
+%{if var.opentelemetry_disable_otlp}
         grpc: null
 %{else}
         grpc:
@@ -49,7 +49,7 @@ config:
         - prometheus
         - debug
 ports:
-%{if var.environment == "development"}
+%{if var.opentelemetry_disable_otlp}
   otlp:
     enabled: false
 %{endif}
