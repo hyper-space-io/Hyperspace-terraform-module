@@ -18,6 +18,17 @@ resource "helm_release" "opentelemetry-collector" {
 mode: "deployment"
 replicaCount: 1
 config:
+  receivers:
+    otlp:
+      protocols:
+%{if var.opentelemetry_disable_otlp}
+        grpc: null
+%{else}
+        grpc:
+          endpoint: $${env:MY_POD_IP}:4317
+%{endif}
+        http:
+          endpoint: $${env:MY_POD_IP}:4318
   exporters:
     prometheus:
       endpoint: 0.0.0.0:9100
@@ -38,6 +49,10 @@ config:
         - prometheus
         - debug
 ports:
+%{if var.opentelemetry_disable_otlp}
+  otlp:
+    enabled: false
+%{endif}
   prometheus:
     enabled: true
     containerPort: 9100
