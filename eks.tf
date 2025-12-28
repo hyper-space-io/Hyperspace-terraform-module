@@ -3,7 +3,7 @@ module "eks" {
   version          = "~> 20.30.0"
   create           = var.create_eks
   cluster_name     = local.cluster_name
-  cluster_version  = "1.31"
+  cluster_version  = "1.32"
   subnet_ids       = local.private_subnets_ids
   vpc_id           = local.vpc_id
   fargate_profiles = local.fargate_profiles
