@@ -37,7 +37,7 @@ resource "helm_release" "nginx-ingress" {
   values = [<<EOF
 controller:
   electionID: ${each.key}-controller-leader
-  replicaCount: 2
+  replicaCount: ${var.ingress_controller_replicas}
   extraArgs:
     http-port: 8080
     https-port: 9443
@@ -48,9 +48,9 @@ controller:
       cpu: 100m      
       memory: 256Mi 
   autoscaling:
-    enabled: true
-    minReplicas: 2
-    maxReplicas: 6
+    enabled: ${var.ingress_controller_autoscaling_enabled}
+    minReplicas: ${var.ingress_controller_replicas}
+    maxReplicas: ${var.ingress_controller_max_replicas}
     targetCPUUtilizationPercentage: 75    
     targetMemoryUtilizationPercentage: 75 
     behavior:
@@ -123,6 +123,13 @@ controller:
   containerPort:
     http: 8080
     https: 9443
+  nodeSelector:
+    node-type: karpenter-system-tools-node
+  tolerations:
+    - key: system-tools
+      operator: Equal
+      value: "true"
+      effect: NoSchedule
   affinity:
     podAntiAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:

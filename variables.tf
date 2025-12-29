@@ -425,3 +425,45 @@ variable "opentelemetry_disable_otlp" {
   type        = bool
   default     = false
 }
+
+################################
+########### Velero #############
+################################
+
+variable "enable_velero" {
+  description = "Enable Velero for backup and disaster recovery"
+  type        = bool
+  default     = true
+}
+
+################################
+######## Core Dump #############
+################################
+
+variable "enable_core_dump" {
+  description = "Enable Core Dump Handler for capturing and uploading core dumps"
+  type        = bool
+  default     = true
+}
+
+################################
+###### Ingress Controller ######
+################################
+
+variable "ingress_controller_replicas" {
+  description = "Number of replicas for the ingress controller (also used as minReplicas for autoscaling)"
+  type        = number
+  default     = 2
+}
+
+variable "ingress_controller_autoscaling_enabled" {
+  description = "Enable autoscaling for the ingress controller"
+  type        = bool
+  default     = true
+}
+
+variable "ingress_controller_max_replicas" {
+  description = "Maximum number of replicas for the ingress controller autoscaling"
+  type        = number
+  default     = 6
+}

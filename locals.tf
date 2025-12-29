@@ -22,6 +22,13 @@ locals {
   alb_values = <<EOT
   vpcId: ${local.vpc_id}
   region: ${var.aws_region}
+  nodeSelector:
+    node-type: karpenter-system-tools-node
+  tolerations:
+    - key: system-tools
+      operator: Equal
+      value: "true"
+      effect: NoSchedule
   EOT
 
   ##################
