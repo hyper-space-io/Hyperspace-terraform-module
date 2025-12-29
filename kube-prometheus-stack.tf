@@ -74,6 +74,8 @@ locals {
 
     prometheus = {
       prometheusSpec = merge({
+        nodeSelector = local.monitoring_node_selector
+        tolerations = local.monitoring_tolerations
         storageSpec = {
           volumeClaimTemplate = {
             spec = {
@@ -116,10 +118,30 @@ locals {
       })
     }
 
-    alertmanager = {
-      enabled = true
+    prometheusOperator = {
       nodeSelector = local.monitoring_node_selector
       tolerations = local.monitoring_tolerations
+      admissionWebhooks = {
+        patch = {
+          nodeSelector = local.monitoring_node_selector
+          tolerations = local.monitoring_tolerations
+        }
+      }
+    }
+    nodeExporter = {
+      tolerations = [
+        {
+          operator = "Exists"
+        }
+      ]
+    }
+
+    alertmanager = {
+      enabled = true
+      alertmanagerSpec = {
+        nodeSelector = local.monitoring_node_selector
+        tolerations = local.monitoring_tolerations
+      }
     }
 
     kubeStateMetrics = {

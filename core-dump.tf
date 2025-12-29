@@ -2,7 +2,7 @@ locals {
   dump_release_name = "core-dump"
 }
 resource "helm_release" "core_dump" {
-  count            = var.create_eks ? 1 : 0
+  count            = var.create_eks && var.enable_core_dump ? 1 : 0
   name             = local.dump_release_name
   chart            = "${local.dump_release_name}-handler"
   version          = "~> 9.0.0"

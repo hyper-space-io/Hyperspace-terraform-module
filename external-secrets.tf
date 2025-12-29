@@ -16,13 +16,14 @@ serviceAccount:
   annotations:
     eks.amazonaws.com/role-arn: "${module.iam_iam-assumable-role-with-oidc[local.external_secrets_release_name].iam_role_arn}"
 installCRDs: true
-tolerations:
-- key: "system-tools"
-  operator: "Equal"
-  value: "true"
-  effect: "NoSchedule"
-nodeSelector:
-  "node-type": "karpenter-system-tools-node"
+global:
+  nodeSelector:
+    "node-type": "karpenter-system-tools-node"
+  tolerations:
+    - key: "system-tools"
+      operator: "Equal"
+      value: "true"
+      effect: "NoSchedule"
 EOF
   ]
   depends_on = [time_sleep.wait_for_cluster_ready]

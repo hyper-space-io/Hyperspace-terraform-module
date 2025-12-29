@@ -65,7 +65,7 @@ resource "helm_release" "argocd" {
         }
       }
       applicationSet = {
-        replicas = 2
+        replicas = 1
       }
       repoServer = {
         autoscaling = {
